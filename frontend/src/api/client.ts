@@ -32,7 +32,7 @@ apiClient.interceptors.response.use(
           apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.access}`;
           return apiClient(originalRequest);
         }
-      } catch (refreshError) {
+      } catch {
         // Refresh token invalid, logout user
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
