@@ -57,3 +57,34 @@ class TestAuthFlow:
         # Try to use refresh token again
         refresh_response = api_client.post(reverse('token_refresh'), {"refresh": refresh_token})
         assert refresh_response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_profile_retrieval_and_update(self, api_client):
+        user = User.objects.create_user(
+            email="profile@example.com",
+            password="password",
+            first_name="Jane",
+            last_name="Doe"
+        )
+        api_client.force_authenticate(user=user)
+
+        # GET /api/v1/users/me/
+        get_res = api_client.get('/api/v1/users/me/')
+        assert get_res.status_code == status.HTTP_200_OK
+        assert get_res.data['email'] == "profile@example.com"
+        assert get_res.data['first_name'] == "Jane"
+
+        # GET /api/v1/auth/me/
+        auth_me_res = api_client.get('/api/v1/auth/me/')
+        assert auth_me_res.status_code == status.HTTP_200_OK
+
+        # PATCH /api/v1/users/me/
+        patch_res = api_client.patch('/api/v1/users/me/', {
+            "first_name": "Janet",
+            "last_name": "Smith",
+            "role": "ADMIN" # Attempt role escalation
+        })
+        assert patch_res.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        assert user.first_name == "Janet"
+        assert user.last_name == "Smith"
+        assert user.role == "STUDENT" # Role escalation rejected
