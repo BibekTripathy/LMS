@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
 
 from .models import Enrollment
 from .serializers import EnrollmentSerializer
@@ -36,11 +37,21 @@ class CourseEnrollView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        enrollment = Enrollment.objects.create(
-            student=user,
-            course=course,
-            status='ACTIVE'
-        )
+        try:
+            enrollment = Enrollment.objects.create(
+                student=user,
+                course=course,
+                status='ACTIVE'
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Already enrolled in this course",
+                    "code": "ALREADY_ENROLLED"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         return Response(
             EnrollmentSerializer(enrollment, context={'request': request}).data,
             status=status.HTTP_201_CREATED

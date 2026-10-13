@@ -23,12 +23,31 @@ class LessonSerializer(serializers.ModelSerializer):
 
 class LessonSummarySerializer(serializers.ModelSerializer):
     position = serializers.IntegerField(source='order', read_only=True)
+    video_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = [
             'id', 'title', 'video_url', 'order', 'position', 'is_required'
         ]
+
+    def get_video_url(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return None
+        user = request.user
+        if user.role == 'ADMIN' or user.is_staff or user.is_superuser:
+            return obj.video_url
+        if hasattr(obj, 'module') and hasattr(obj.module, 'course'):
+            course = obj.module.course
+            if course.instructor == user:
+                return obj.video_url
+            user_enrolled_courses = self.context.get('user_enrolled_courses')
+            if user_enrolled_courses is not None:
+                return obj.video_url if course.id in user_enrolled_courses else None
+            if Enrollment.objects.filter(student=user, course=course, status='ACTIVE').exists():
+                return obj.video_url
+        return None
 
 
 class ModuleSerializer(serializers.ModelSerializer):
@@ -71,14 +90,21 @@ class CourseSerializer(serializers.ModelSerializer):
         return name if name else obj.instructor.email
 
     def get_modules_count(self, obj):
+        if hasattr(obj, 'annotated_modules_count'):
+            return obj.annotated_modules_count
         return obj.modules.count()
 
     def get_lessons_count(self, obj):
+        if hasattr(obj, 'annotated_lessons_count'):
+            return obj.annotated_lessons_count
         return Lesson.objects.filter(module__course=obj).count()
 
     def get_is_enrolled(self, obj):
         request = self.context.get('request')
         if request and request.user and request.user.is_authenticated:
+            user_enrolled_courses = self.context.get('user_enrolled_courses')
+            if user_enrolled_courses is not None:
+                return obj.id in user_enrolled_courses
             return Enrollment.objects.filter(
                 student=request.user,
                 course=obj,
