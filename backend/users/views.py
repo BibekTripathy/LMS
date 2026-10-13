@@ -54,3 +54,19 @@ class MeView(APIView):
             "last_name": user.last_name,
             "role": user.role
         })
+
+    def patch(self, request):
+        user = request.user
+        if 'first_name' in request.data:
+            user.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            user.last_name = request.data['last_name']
+        # Explicitly ignore any attempt to modify email or role via this endpoint
+        user.save()
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": user.role
+        })
