@@ -75,3 +75,46 @@ export interface Enrollment {
   enrolled_at: string;
   status: EnrollmentStatus;
 }
+
+export type AIResourceType = 'SUMMARY' | 'FLASHCARDS' | 'MCQ_REVISION';
+
+export interface FlashcardItem {
+  front: string;
+  back: string;
+}
+
+export interface FlashcardContent {
+  flashcards: FlashcardItem[];
+}
+
+export interface SummaryContent {
+  summary: string;
+  key_takeaways: string[];
+}
+
+export interface MCQItem {
+  question: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+}
+
+export interface MCQContent {
+  mcqs: MCQItem[];
+}
+
+export type AIResourceContent = SummaryContent | FlashcardContent | MCQContent;
+
+export interface AIResource<T = AIResourceContent> {
+  id: string;
+  student: string;
+  student_email: string;
+  lesson: string;
+  lesson_title: string;
+  course_id: string;
+  course_title: string;
+  resource_type: AIResourceType;
+  content: T;
+  generated_at: string;
+}
+

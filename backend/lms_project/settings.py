@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'users',
     'courses',
     'enrollments',
+    'ai_resources',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -138,3 +139,10 @@ STATIC_URL = 'static/'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# AI Provider Configuration
+AI_PROVIDER = os.getenv('AI_PROVIDER', 'mock')
+AI_API_KEY = os.getenv('AI_API_KEY', os.getenv('GEMINI_API_KEY', ''))
+AI_MODEL = os.getenv('AI_MODEL', 'gemini-1.5-flash')
+AI_REQUEST_TIMEOUT = int(os.getenv('AI_REQUEST_TIMEOUT', '30'))
+
