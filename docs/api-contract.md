@@ -82,15 +82,29 @@ List endpoints use offset/limit or page number pagination.
 
 ## 6. Quizzes
 - `GET /api/v1/quizzes/{id}/`
-  - Returns quiz details and questions. **Does not return correct answers.**
+  - Returns quiz details and questions. **Does not return correct answers or explanations.**
   - **Authorization**: Requires valid `Enrollment`.
 - `POST /api/v1/quizzes/{id}/start/`
-  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS`. Returns attempt ID.
+  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS` with deadline. Returns attempt details.
+  - **Authorization**: Requires valid `Enrollment`.
+- `GET /api/v1/attempts/{id}/`
+  - Returns current attempt state and saved answers for the student.
+  - **Authorization**: Student owner of attempt.
+- `PUT /api/v1/attempts/{id}/answers/`
+  - **Payload**: `{ "answers": [ {"question_id": "...", "selected_option_id": "..."} ] }`
+  - Saves in-progress draft answers. Enforces deadline and option ownership.
+  - **Authorization**: Student owner of attempt.
+- `POST /api/v1/attempts/{id}/submit/`
+  - **Payload** (optional): `{ "answers": [ ... ] }`
+  - Grades the submission on the server using an atomic transaction, updates status to `SUBMITTED`, and returns score, percentage, and detailed review. Rejects expired or duplicate submissions.
+  - **Authorization**: Student owner of attempt.
 - `POST /api/v1/quizzes/{id}/submit/`
-  - **Payload**: `{ "attempt_id": "...", "answers": [ {"question_id": "...", "choice_id": "..."} ] }`
-  - Grades the submission on the server, updates attempt to `SUBMITTED`, and returns the final score. Validates answer ownership.
-- `GET /api/v1/quizzes/{id}/attempts/`
-  - Returns historical attempts for the authenticated student.
+  - **Payload**: `{ "attempt_id": "...", "answers": [ ... ] }`
+  - Alternate endpoint for submitting and grading an attempt.
+- `GET /api/v1/quizzes/{id}/results/me/`
+  - Returns student's historical attempts, best score, highest percentage, and pass/fail summary.
+  - **Authorization**: Requires valid `Enrollment`.
+
 
 ## 7. AI Study Resources
 *Note: All AI endpoints require the user to be enrolled in the lesson's course.*
