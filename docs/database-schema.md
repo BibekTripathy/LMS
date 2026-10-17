@@ -49,51 +49,70 @@ The database uses PostgreSQL, managed via the Django ORM. Below is an outline of
 - `enrolled_at`: DateTime
 - **Constraints**: `UniqueConstraint(fields=['student', 'course'])`. A student can only enroll once per course.
 
-**`VideoProgress`**
+**`LessonProgress`**
 - `id`: UUID / Primary Key
-- `student`: ForeignKey to `User`
-- `lesson`: ForeignKey to `Lesson`
-- `timestamp`: Integer (seconds watched)
-- `is_completed`: Boolean
-- `last_updated`: DateTime
-- **Constraints**: `UniqueConstraint(fields=['student', 'lesson'])`. Makes progress unique per student and lesson.
+- `enrollment`: ForeignKey to `Enrollment` (Related name: `lesson_progresses`)
+- `lesson`: ForeignKey to `Lesson` (Related name: `progresses`)
+- `last_position_seconds`: Integer (Playback position in seconds)
+- `completed`: Boolean (Completion status)
+- `created_at`: DateTime
+- `updated_at`: DateTime
+- **Constraints**: `UniqueConstraint(fields=['enrollment', 'lesson'])`. Makes progress unique per enrollment and lesson.
 
 ## 4. Assessments
 **`Quiz`**
 - `id`: UUID / Primary Key
-- `lesson`: ForeignKey to `Lesson` (OneToOne or ForeignKey depending on structure)
+- `course`: ForeignKey to `Course` (Related name: `quizzes`)
+- `lesson`: ForeignKey to `Lesson` (Optional, Related name: `quizzes`)
 - `title`: String
-- `passing_score_percentage`: Integer
+- `description`: Text
+- `time_limit_seconds`: Integer (default 1800, 0 for unlimited)
+- `pass_percentage`: Integer (default 70)
+- `status`: String (Choices: `DRAFT`, `PUBLISHED`, `ARCHIVED`)
+- `created_at`: DateTime
+- `updated_at`: DateTime
 
 **`Question`**
 - `id`: UUID / Primary Key
 - `quiz`: ForeignKey to `Quiz` (Related name: `questions`)
-- `text`: Text
-- `order`: Integer
+- `prompt`: Text (alias: `text`)
+- `question_type`: String (Choices: `MCQ`)
+- `marks`: Integer (default 1)
+- `explanation`: Text (revealed after submission)
+- `position`: Integer (alias: `order`)
+- **Constraints**: `UniqueConstraint(fields=['quiz', 'position'])`.
 
-**`AnswerChoice`**
+**`QuestionOption`**
 - `id`: UUID / Primary Key
-- `question`: ForeignKey to `Question` (Related name: `choices`)
+- `question`: ForeignKey to `Question` (Related name: `options`)
 - `text`: String
-- `is_correct`: Boolean
+- `is_correct`: Boolean (not exposed before submission)
+- `position`: Integer (alias: `order`)
+- **Constraints**: `UniqueConstraint(fields=['question', 'position'])`.
 
 **`QuizAttempt`**
 - `id`: UUID / Primary Key
-- `student`: ForeignKey to `User`
-- `quiz`: ForeignKey to `Quiz`
-- `status`: String (Choices: `IN_PROGRESS`, `SUBMITTED`)
+- `quiz`: ForeignKey to `Quiz` (Related name: `attempts`)
+- `student`: ForeignKey to `User` (Related name: `quiz_attempts`)
+- `status`: String (Choices: `IN_PROGRESS`, `SUBMITTED`, `EXPIRED`)
 - `score`: Decimal (Null if IN_PROGRESS)
-- `passed`: Boolean (Null if IN_PROGRESS)
-- `start_time`: DateTime
-- `completed_at`: DateTime (Null if IN_PROGRESS)
-- **Note**: Unlimited retakes are allowed. Every attempt is kept as a separate historical record.
+- `marks_obtained`: Decimal
+- `total_marks_possible`: Integer
+- `percentage`: Decimal
+- `passed`: Boolean
+- `started_at`: DateTime (alias: `start_time`)
+- `deadline_at`: DateTime
+- `submitted_at`: DateTime (alias: `completed_at`)
 
-**`StudentAnswer`**
+**`Answer`**
 - `id`: UUID / Primary Key
-- `attempt`: ForeignKey to `QuizAttempt`
-- `question`: ForeignKey to `Question`
-- `selected_choice`: ForeignKey to `AnswerChoice`
-- **Constraints**: `UniqueConstraint(fields=['attempt', 'question'])`. Ensures a student submits only one answer per question per attempt. (Backend must also validate that `selected_choice` belongs to `question` and `question` belongs to the `attempt`'s `quiz`).
+- `attempt`: ForeignKey to `QuizAttempt` (Related name: `answers`)
+- `question`: ForeignKey to `Question` (Related name: `student_answers`)
+- `selected_option`: ForeignKey to `QuestionOption` (Optional, Related name: `selected_answers`, alias: `selected_choice`)
+- `is_correct`: Boolean
+- `marks_awarded`: Decimal
+- **Constraints**: `UniqueConstraint(fields=['attempt', 'question'])`. Validates that `selected_option` belongs to `question` and `question` belongs to `attempt.quiz`.
+
 
 ## 5. AI Study Resources
 **`AIResource`**
