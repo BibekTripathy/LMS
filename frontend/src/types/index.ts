@@ -118,3 +118,175 @@ export interface AIResource<T = AIResourceContent> {
   generated_at: string;
 }
 
+// Authentication Types
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface AuthTokens {
+  access: string;
+  refresh: string;
+}
+
+// Quiz & Assessment Types
+export interface QuestionOption {
+  id: string;
+  text: string;
+  position: number;
+  order: number;
+  is_correct?: boolean; // Only present in review or builder
+}
+
+export interface QuestionOptionInput {
+  id?: string;
+  text: string;
+  is_correct?: boolean;
+  position?: number;
+  order?: number;
+}
+
+export interface Question {
+  id: string;
+  quiz?: string;
+  prompt: string;
+  text: string;
+  question_type: 'MCQ';
+  marks: number;
+  position: number;
+  order: number;
+  explanation?: string;
+  options: QuestionOption[];
+}
+
+export interface QuestionInput {
+  prompt?: string;
+  text?: string;
+  question_type?: 'MCQ';
+  marks?: number;
+  position?: number;
+  order?: number;
+  explanation?: string;
+  options?: QuestionOptionInput[];
+}
+
+export type QuizStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+export interface Quiz {
+  id: string;
+  course: string;
+  lesson?: string | null;
+  title: string;
+  description: string;
+  time_limit_seconds: number;
+  pass_percentage: number;
+  passing_score_percentage: number;
+  status: QuizStatus;
+  total_marks: number;
+  total_questions: number;
+  questions?: Question[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type AttemptStatus = 'IN_PROGRESS' | 'SUBMITTED' | 'EXPIRED';
+
+export interface QuizAttemptAnswer {
+  id: string;
+  question_id: string;
+  selected_option_id: string | null;
+  choice_id?: string | null;
+  selected_choice_id?: string | null;
+  is_correct?: boolean;
+  marks_awarded?: number;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quiz_id: string;
+  student_id: string;
+  status: AttemptStatus;
+  started_at: string;
+  start_time: string;
+  deadline_at: string | null;
+  submitted_at: string | null;
+  completed_at: string | null;
+  score: number | null;
+  marks_obtained: number;
+  total_marks_possible: number;
+  percentage: number | null;
+  passed: boolean | null;
+  pass_percentage: number;
+  answers?: QuizAttemptAnswer[];
+  questions?: Question[];
+}
+
+export interface QuizResultsMe {
+  quiz_id: string;
+  quiz_title: string;
+  pass_percentage: number;
+  total_attempts: number;
+  best_score: number | null;
+  highest_percentage: number | null;
+  has_passed: boolean;
+  attempts: QuizAttempt[];
+}
+
+// Analytics & Certificate Types
+export interface QuizAnalyticsSummary {
+  quiz_id: string;
+  title: string;
+  attempts_count: number;
+  average_score: number;
+  pass_rate: number;
+}
+
+export interface CourseAnalytics {
+  course_id: string;
+  title: string;
+  total_students: number;
+  completion_rate: number;
+  average_quiz_score: number;
+  quizzes: QuizAnalyticsSummary[];
+  module_progress: {
+    module_id: string;
+    title: string;
+    completion_percentage: number;
+  }[];
+}
+
+export interface StudentAnalytics {
+  total_enrolled: number;
+  completed_courses: number;
+  total_quizzes_taken: number;
+  average_quiz_percentage: number;
+  study_resources_count: number;
+  recent_attempts: {
+    quiz_id: string;
+    quiz_title: string;
+    course_title: string;
+    score_percentage: number;
+    passed: boolean;
+    date: string;
+  }[];
+}
+
+export interface Certificate {
+  id: string;
+  student: string;
+  student_name?: string;
+  course: string;
+  course_title?: string;
+  verification_code: string;
+  issued_at: string;
+  certificate_url?: string;
+}
+
+

@@ -4,13 +4,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Quiz, QuizAttempt
+from .models import Quiz, Question, QuizAttempt
 from .permissions import CanAccessQuiz, IsAttemptStudent
+from courses.models import Course
+from courses.permissions import IsCourseOwnerOrAdmin, IsInstructorOrAdmin
 from .serializers import (
     QuizDetailSerializer,
     QuizAttemptSerializer,
     QuizAttemptDetailSerializer,
-    QuizResultsMeSerializer
+    QuizResultsMeSerializer,
+    QuizCreateSerializer,
+    QuestionCreateSerializer,
+    QuestionReviewSerializer,
 )
 from .services import (
     start_quiz_attempt,
@@ -154,3 +159,112 @@ class QuizResultsMeView(APIView):
         results_data = get_student_quiz_results(request.user, quiz)
         serializer = QuizResultsMeSerializer(results_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CourseQuizListView(APIView):
+    """
+    GET /api/v1/courses/{course_id}/quizzes/
+    POST /api/v1/courses/{course_id}/quizzes/
+    """
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsInstructorOrAdmin()]
+        return [IsAuthenticated()]
+
+    def get(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+        is_instructor = request.user.role in ['INSTRUCTOR', 'ADMIN'] or course.instructor == request.user
+        
+        quizzes = course.quizzes.all().prefetch_related('questions__options')
+        if not is_instructor:
+            quizzes = quizzes.filter(status='PUBLISHED')
+
+        if is_instructor:
+            return Response(QuizCreateSerializer(quizzes, many=True).data, status=status.HTTP_200_OK)
+        return Response(QuizDetailSerializer(quizzes, many=True).data, status=status.HTTP_200_OK)
+
+    def post(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+        if course.instructor != request.user and request.user.role != 'ADMIN':
+            return Response({"error": "You do not own this course."}, status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data.copy()
+        data['course'] = str(course.id)
+        serializer = QuizCreateSerializer(data=data)
+        if serializer.is_valid():
+            quiz = serializer.save(course=course)
+            return Response(QuizCreateSerializer(quiz).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuizManageView(APIView):
+    """
+    GET, PATCH, DELETE /api/v1/quizzes/{id}/manage/ and /api/v1/quizzes/{id}/
+    """
+    permission_classes = [IsAuthenticated, IsCourseOwnerOrAdmin]
+
+    def get(self, request, id):
+        quiz = get_object_or_404(Quiz.objects.prefetch_related('questions__options'), id=id)
+        self.check_object_permissions(request, quiz.course)
+        return Response(QuizCreateSerializer(quiz).data, status=status.HTTP_200_OK)
+
+    def patch(self, request, id):
+        quiz = get_object_or_404(Quiz, id=id)
+        self.check_object_permissions(request, quiz.course)
+
+        serializer = QuizCreateSerializer(quiz, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated = serializer.save()
+            return Response(QuizCreateSerializer(updated).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        quiz = get_object_or_404(Quiz, id=id)
+        self.check_object_permissions(request, quiz.course)
+        quiz.delete()
+        return Response({"message": "Quiz deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class QuizQuestionsCreateView(APIView):
+    """
+    POST /api/v1/quizzes/{id}/questions/
+    """
+    permission_classes = [IsAuthenticated, IsCourseOwnerOrAdmin]
+
+    def post(self, request, id):
+        quiz = get_object_or_404(Quiz, id=id)
+        self.check_object_permissions(request, quiz.course)
+
+        data = request.data.copy()
+        if 'position' not in data and 'order' not in data:
+            data['position'] = quiz.questions.count() + 1
+
+        serializer = QuestionCreateSerializer(data=data)
+        if serializer.is_valid():
+            question = serializer.save(quiz=quiz)
+            return Response(QuestionReviewSerializer(question).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuestionManageView(APIView):
+    """
+    PATCH, DELETE /api/v1/questions/{id}/
+    """
+    permission_classes = [IsAuthenticated, IsCourseOwnerOrAdmin]
+
+    def patch(self, request, id):
+        question = get_object_or_404(Question.objects.select_related('quiz__course'), id=id)
+        self.check_object_permissions(request, question.quiz.course)
+
+        serializer = QuestionCreateSerializer(question, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated = serializer.save()
+            return Response(QuestionReviewSerializer(updated).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        question = get_object_or_404(Question.objects.select_related('quiz__course'), id=id)
+        self.check_object_permissions(request, question.quiz.course)
+        question.delete()
+        return Response({"message": "Question deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+

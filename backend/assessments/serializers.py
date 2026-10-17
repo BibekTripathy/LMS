@@ -147,3 +147,62 @@ class QuizResultsMeSerializer(serializers.Serializer):
     highest_percentage = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True)
     has_passed = serializers.BooleanField()
     attempts = QuizAttemptSerializer(many=True)
+
+
+class QuestionOptionCreateSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(required=False)
+    order = serializers.IntegerField(source='position', required=False)
+
+    class Meta:
+        model = QuestionOption
+        fields = ['id', 'text', 'is_correct', 'position', 'order']
+
+
+class QuestionCreateSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(required=False)
+    text = serializers.CharField(source='prompt', required=False)
+    order = serializers.IntegerField(source='position', required=False)
+    options = QuestionOptionCreateSerializer(many=True, required=False)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'prompt', 'text', 'question_type', 'marks', 'explanation', 'position', 'order', 'options']
+
+    def create(self, validated_data):
+        options_data = validated_data.pop('options', [])
+        question = Question.objects.create(**validated_data)
+        for i, opt in enumerate(options_data):
+            opt.setdefault('position', i + 1)
+            QuestionOption.objects.create(question=question, **opt)
+        return question
+
+    def update(self, instance, validated_data):
+        options_data = validated_data.pop('options', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if options_data is not None:
+            instance.options.all().delete()
+            for i, opt in enumerate(options_data):
+                opt.setdefault('position', i + 1)
+                QuestionOption.objects.create(question=instance, **opt)
+        return instance
+
+
+class QuizCreateSerializer(serializers.ModelSerializer):
+    passing_score_percentage = serializers.IntegerField(source='pass_percentage', required=False)
+    total_marks = serializers.IntegerField(read_only=True)
+    total_questions = serializers.IntegerField(read_only=True)
+    questions = QuestionReviewSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Quiz
+        fields = [
+            'id', 'course', 'lesson', 'title', 'description',
+            'time_limit_seconds', 'pass_percentage', 'passing_score_percentage',
+            'status', 'total_marks', 'total_questions', 'questions',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'total_marks', 'total_questions', 'created_at', 'updated_at']
+
