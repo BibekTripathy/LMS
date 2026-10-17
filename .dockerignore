@@ -1,0 +1,41 @@
+# Python / Django
+venv/
+.venv/
+backend/venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Frontend artefacts & dependencies
+frontend/
+node_modules/
+dist/
+.vite/
+.eslintcache
+
+# Build artefacts
+*.egg-info/
+build/
+dist-ssr/
+
+# Test caches
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Misc
+*.log
+*.sqlite3
+*.sqlite3-journal
+media/
+uploads/
+tmp/
+.git/
+.github/
+docs/
