@@ -49,14 +49,15 @@ The database uses PostgreSQL, managed via the Django ORM. Below is an outline of
 - `enrolled_at`: DateTime
 - **Constraints**: `UniqueConstraint(fields=['student', 'course'])`. A student can only enroll once per course.
 
-**`VideoProgress`**
+**`LessonProgress`**
 - `id`: UUID / Primary Key
-- `student`: ForeignKey to `User`
-- `lesson`: ForeignKey to `Lesson`
-- `timestamp`: Integer (seconds watched)
-- `is_completed`: Boolean
-- `last_updated`: DateTime
-- **Constraints**: `UniqueConstraint(fields=['student', 'lesson'])`. Makes progress unique per student and lesson.
+- `enrollment`: ForeignKey to `Enrollment` (Related name: `lesson_progresses`)
+- `lesson`: ForeignKey to `Lesson` (Related name: `progresses`)
+- `last_position_seconds`: Integer (Playback position in seconds)
+- `completed`: Boolean (Completion status)
+- `created_at`: DateTime
+- `updated_at`: DateTime
+- **Constraints**: `UniqueConstraint(fields=['enrollment', 'lesson'])`. Makes progress unique per enrollment and lesson.
 
 ## 4. Assessments
 **`Quiz`**

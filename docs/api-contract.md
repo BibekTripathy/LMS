@@ -65,10 +65,20 @@ List endpoints use offset/limit or page number pagination.
 - `GET /api/v1/lessons/{id}/`
   - Returns lesson content and associated video URL. 
   - **Authorization**: Requires a valid `Enrollment` for the related course.
-- `PATCH /api/v1/lessons/{id}/progress/`
-  - **Payload**: `{ "timestamp": 120, "is_completed": false }`
-  - Updates the student's unique video progress.
+- `GET /api/v1/lessons/{id}/progress/`
+  - Retrieves student's saved playback position and completion status. Restores latest persisted position from PostgreSQL.
   - **Authorization**: Requires a valid `Enrollment`.
+- `PATCH /api/v1/lessons/{id}/progress/`
+  - **Payload**: `{ "last_position_seconds": 120, "completed": false }` (or aliases `"timestamp"`, `"is_completed"`).
+  - Updates the student's playback position and completion status in PostgreSQL.
+  - **Authorization**: Requires a valid `Enrollment`. Validates playback position on the backend.
+- `POST /api/v1/lessons/{id}/complete/`
+  - Marks the lesson completed for the student.
+  - **Authorization**: Requires a valid `Enrollment`.
+- `GET /api/v1/courses/{id}/progress/`
+  - Returns overall course completion statistics: `total_lessons`, `completed_lessons`, `progress_percentage`, `is_completed`, and lesson breakdown.
+  - **Authorization**: Requires a valid `Enrollment`.
+
 
 ## 6. Quizzes
 - `GET /api/v1/quizzes/{id}/`
