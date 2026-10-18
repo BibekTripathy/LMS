@@ -102,6 +102,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# ...but the frontend's shared helpers live in src/lib
+!frontend/src/lib/
 parts/
 sdist/
 var/

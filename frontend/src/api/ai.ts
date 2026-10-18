@@ -50,8 +50,9 @@ export const aiApi = {
     lesson_id?: string;
     resource_type?: AIResourceType;
   }): Promise<AIResource[]> => {
-    const response = await apiClient.get<AIResource[]>('/ai/resources/', { params });
-    return response.data;
+    // The endpoint is paginated (see docs/api-contract.md, Pagination).
+    const response = await apiClient.get<{ results: AIResource[] } | AIResource[]>('/ai/resources/', { params });
+    return Array.isArray(response.data) ? response.data : response.data.results;
   },
 
   /**
