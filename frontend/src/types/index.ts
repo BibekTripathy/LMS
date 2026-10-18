@@ -76,7 +76,21 @@ export interface Enrollment {
   status: EnrollmentStatus;
 }
 
-export type AIResourceType = 'SUMMARY' | 'FLASHCARDS' | 'MCQ_REVISION';
+export type AIResourceType = 'MCQ' | 'FLASHCARDS' | 'SUMMARY' | 'REVISION';
+export type AIGeneratableType = Exclude<AIResourceType, 'REVISION'>;
+export type AIResourceStatus = 'DRAFT' | 'PUBLISHED';
+
+export interface MCQItem {
+  prompt: string;
+  options: string[];
+  correct_option_index: number;
+  explanation: string;
+}
+
+export interface MCQContent {
+  title: string;
+  questions: MCQItem[];
+}
 
 export interface FlashcardItem {
   front: string;
@@ -84,38 +98,89 @@ export interface FlashcardItem {
 }
 
 export interface FlashcardContent {
-  flashcards: FlashcardItem[];
+  title: string;
+  cards: FlashcardItem[];
 }
 
 export interface SummaryContent {
+  title: string;
   summary: string;
-  key_takeaways: string[];
+  key_points: string[];
+  revision_topics: string[];
 }
 
-export interface MCQItem {
-  question: string;
-  options: string[];
-  correct_index: number;
-  explanation: string;
+export interface RevisionTopicStat {
+  topic: string;
+  accuracy_percent: number;
+  target_percent: number;
+  questions_answered: number;
+  questions_correct: number;
 }
 
-export interface MCQContent {
-  mcqs: MCQItem[];
+export interface RevisionContent {
+  title: string;
+  overview: string;
+  focus_areas: { topic: string; reason: string; actions: string[] }[];
+  next_steps: string[];
+  /** Server-computed from submitted attempts; display these figures, not the model's. */
+  performance: {
+    submitted_attempts: number;
+    quizzes_attempted: number;
+    overall_accuracy_percent: number;
+    topics: RevisionTopicStat[];
+    weak_topics: {
+      topic: string;
+      accuracy_percent: number;
+      target_percent: number;
+      missed_questions: { question: string; correct_answer: string; your_answer: string }[];
+    }[];
+  };
 }
 
-export type AIResourceContent = SummaryContent | FlashcardContent | MCQContent;
+export type AIResourceContent = MCQContent | FlashcardContent | SummaryContent | RevisionContent;
 
 export interface AIResource<T = AIResourceContent> {
   id: string;
-  student: string;
-  student_email: string;
-  lesson: string;
-  lesson_title: string;
-  course_id: string;
+  course: string;
   course_title: string;
+  lesson: string | null;
+  lesson_title: string | null;
+  created_by: string;
   resource_type: AIResourceType;
+  status: AIResourceStatus;
   content: T;
-  generated_at: string;
+  converted_quiz: string | null;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+}
+
+export interface AIErrorResponse {
+  error: string;
+  code:
+    | 'INSUFFICIENT_CONTENT' | 'RATE_LIMITED' | 'AI_INVALID_OUTPUT' | 'AI_PROVIDER_ERROR'
+    | 'AI_RATE_LIMITED' | 'AI_QUOTA_EXHAUSTED' | 'AI_NOT_CONFIGURED' | 'AI_TIMEOUT'
+    | 'NOT_COURSE_INSTRUCTOR' | 'NOT_A_DRAFT' | 'NOT_EDITABLE' | 'ALREADY_CONVERTED'
+    | 'ALREADY_PUBLISHED' | 'NOT_MCQ' | 'NO_ATTEMPTS' | 'VALIDATION_ERROR' | string;
+  details?: Record<string, string[]>;
+}
+
+/** Response of POST /resources/{id}/convert-to-quiz/ (student-safe quiz shape, no answers). */
+export interface ConvertedQuiz {
+  id: string;
+  course: string;
+  lesson: string | null;
+  title: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  total_questions: number;
+  total_marks: number;
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 // Authentication Types

@@ -13,7 +13,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
   lessonTitle,
   onClose,
 }) => {
-  const mcqs = content.mcqs || [];
+  const mcqs = content.questions || [];
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
 
   const handleSelectOption = (questionIndex: number, optionIndex: number) => {
@@ -38,7 +38,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
 
   const answeredCount = Object.keys(userAnswers).length;
   const correctCount = Object.entries(userAnswers).filter(
-    ([qIdx, optIdx]) => optIdx === mcqs[parseInt(qIdx)].correct_index
+    ([qIdx, optIdx]) => optIdx === mcqs[parseInt(qIdx)].correct_option_index
   ).length;
 
   return (
@@ -87,7 +87,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
         {mcqs.map((mcq, qIdx) => {
           const selectedOption = userAnswers[qIdx];
           const isAnswered = selectedOption !== undefined;
-          const isCorrect = isAnswered && selectedOption === mcq.correct_index;
+          const isCorrect = isAnswered && selectedOption === mcq.correct_option_index;
 
           return (
             <div
@@ -107,7 +107,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                     {qIdx + 1}
                   </span>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                    {mcq.question}
+                    {mcq.prompt}
                   </h3>
                 </div>
 
@@ -129,7 +129,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
               <div className="space-y-2.5 pt-1">
                 {mcq.options.map((optionText, optIdx) => {
                   const isSelected = selectedOption === optIdx;
-                  const isRightChoice = optIdx === mcq.correct_index;
+                  const isRightChoice = optIdx === mcq.correct_option_index;
 
                   let optionStyles =
                     'border-slate-200 dark:border-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200';

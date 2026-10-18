@@ -17,7 +17,7 @@ export const SummaryViewer: React.FC<SummaryViewerProps> = ({
 
   const handleCopy = () => {
     const textToCopy = `Lesson: ${lessonTitle}\n\nSummary:\n${content.summary}\n\nKey Takeaways:\n${(
-      content.key_takeaways || []
+      content.key_points || []
     )
       .map((k) => `• ${k}`)
       .join('\n')}`;
@@ -74,14 +74,14 @@ export const SummaryViewer: React.FC<SummaryViewerProps> = ({
       </div>
 
       {/* Key Takeaways Callout Card */}
-      {content.key_takeaways && content.key_takeaways.length > 0 && (
+      {content.key_points && content.key_points.length > 0 && (
         <div className="bg-gradient-to-br from-indigo-50/70 to-purple-50/50 dark:from-indigo-950/30 dark:to-purple-950/20 border border-indigo-200/80 dark:border-indigo-800/60 rounded-2xl p-6 space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-indigo-600" />
             Core Key Takeaways
           </h3>
           <ul className="space-y-2">
-            {content.key_takeaways.map((point, index) => (
+            {content.key_points.map((point, index) => (
               <li key={index} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
                 <span>{point}</span>
@@ -101,6 +101,19 @@ export const SummaryViewer: React.FC<SummaryViewerProps> = ({
         <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-sm leading-relaxed space-y-4 whitespace-pre-line">
           {content.summary}
         </div>
+
+        {content.revision_topics && content.revision_topics.length > 0 && (
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Topics to revise</h4>
+            <div className="flex flex-wrap gap-2">
+              {content.revision_topics.map((topic) => (
+                <span key={topic} className="px-2.5 py-1 text-xs rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {topic}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

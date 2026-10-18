@@ -1,72 +1,71 @@
 import { apiClient } from './client';
 import type {
+  AIGeneratableType,
   AIResource,
+  AIResourceContent,
   AIResourceType,
-  FlashcardContent,
-  SummaryContent,
-  MCQContent,
+  ConvertedQuiz,
+  PaginatedResponse,
+  RevisionContent,
 } from '../types';
 
 /**
- * API client service for AI Study Resources.
- * All generation endpoints require active enrollment in the parent course.
+ * API client for AI study resources (see docs/api-contract.md §7).
+ * The LLM is only ever called by the backend; this client never talks to a provider.
  */
 export const aiApi = {
-  /**
-   * Generates, stores, and returns structured flashcards for a specific lesson.
-   */
-  generateFlashcards: async (lessonId: string): Promise<AIResource<FlashcardContent>> => {
-    const response = await apiClient.post<AIResource<FlashcardContent>>('/ai/generate-flashcards/', {
-      lesson_id: lessonId,
+  /** Course instructor: generate a DRAFT resource from a lesson's transcript/reading material. */
+  generate: async <T = AIResourceContent>(
+    lessonId: string,
+    resourceType: AIGeneratableType,
+    count?: number
+  ): Promise<AIResource<T>> => {
+    const response = await apiClient.post<AIResource<T>>(`/lessons/${lessonId}/ai/generate/`, {
+      resource_type: resourceType,
+      ...(count !== undefined ? { count } : {}),
     });
     return response.data;
   },
 
-  /**
-   * Generates, stores, and returns an executive summary with key takeaways.
-   */
-  generateSummary: async (lessonId: string): Promise<AIResource<SummaryContent>> => {
-    const response = await apiClient.post<AIResource<SummaryContent>>('/ai/generate-summary/', {
-      lesson_id: lessonId,
-    });
+  /** Instructor: all resources for the lesson. Enrolled student: published resources only. */
+  listLessonResources: async (
+    lessonId: string,
+    params?: { resource_type?: AIResourceType; page?: number }
+  ): Promise<PaginatedResponse<AIResource>> => {
+    const response = await apiClient.get<PaginatedResponse<AIResource>>(`/lessons/${lessonId}/resources/`, { params });
     return response.data;
   },
 
-  /**
-   * Generates, stores, and returns structured revision MCQs.
-   */
-  generateMCQs: async (lessonId: string): Promise<AIResource<MCQContent>> => {
-    const response = await apiClient.post<AIResource<MCQContent>>('/ai/generate-mcq/', {
-      lesson_id: lessonId,
-    });
+  getResource: async <T = AIResourceContent>(id: string): Promise<AIResource<T>> => {
+    const response = await apiClient.get<AIResource<T>>(`/resources/${id}/`);
     return response.data;
   },
 
-  /**
-   * Retrieves previously generated study resources for the authenticated student.
-   * Can be filtered by lesson_id and resource_type.
-   */
-  getAIResources: async (params?: {
-    lesson_id?: string;
-    resource_type?: AIResourceType;
-  }): Promise<AIResource[]> => {
-    // The endpoint is paginated (see docs/api-contract.md, Pagination).
-    const response = await apiClient.get<{ results: AIResource[] } | AIResource[]>('/ai/resources/', { params });
-    return Array.isArray(response.data) ? response.data : response.data.results;
-  },
-
-  /**
-   * Fetches a single AI resource by ID.
-   */
-  getAIResource: async (id: string): Promise<AIResource> => {
-    const response = await apiClient.get<AIResource>(`/ai/resources/${id}/`);
+  /** Instructor: replace a draft's content. The backend re-validates it (400 with details on failure). */
+  updateResource: async <T = AIResourceContent>(id: string, content: T): Promise<AIResource<T>> => {
+    const response = await apiClient.patch<AIResource<T>>(`/resources/${id}/`, { content });
     return response.data;
   },
 
-  /**
-   * Deletes a specific AI resource owned by the student.
-   */
-  deleteAIResource: async (id: string): Promise<void> => {
-    await apiClient.delete(`/ai/resources/${id}/`);
+  publishResource: async (id: string): Promise<AIResource> => {
+    const response = await apiClient.post<AIResource>(`/resources/${id}/publish/`);
+    return response.data;
+  },
+
+  /** Instructor: turn an MCQ draft into a regular DRAFT quiz, then edit it in the quiz builder. */
+  convertToQuiz: async (id: string): Promise<ConvertedQuiz> => {
+    const response = await apiClient.post<ConvertedQuiz>(`/resources/${id}/convert-to-quiz/`);
+    return response.data;
+  },
+
+  /** Enrolled student: personalised revision built from their submitted quiz attempts. */
+  generateRevision: async (courseId: string): Promise<AIResource<RevisionContent>> => {
+    const response = await apiClient.post<AIResource<RevisionContent>>(`/courses/${courseId}/ai/revisions/`);
+    return response.data;
+  },
+
+  listRevisions: async (courseId: string): Promise<PaginatedResponse<AIResource<RevisionContent>>> => {
+    const response = await apiClient.get<PaginatedResponse<AIResource<RevisionContent>>>(`/courses/${courseId}/ai/revisions/`);
+    return response.data;
   },
 };
