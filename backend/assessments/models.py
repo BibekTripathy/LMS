@@ -35,7 +35,7 @@ class Quiz(models.Model):
         default=70,
         help_text="Passing score percentage threshold (0-100)."
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PUBLISHED')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

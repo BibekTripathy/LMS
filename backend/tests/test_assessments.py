@@ -352,3 +352,77 @@ class TestInvalidQuestionOptionValidation:
             format='json'
         )
         assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+class TestReviewRegressions:
+    """Regression tests for issues found in review of PR #6."""
+
+    def _expire(self, attempt):
+        attempt.deadline_at = timezone.now() - timedelta(seconds=1)
+        attempt.save(update_fields=['deadline_at'])
+
+    def test_expired_attempt_does_not_reveal_answers(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        attempt_id = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/').data['id']
+        self._expire(QuizAttempt.objects.get(id=attempt_id))
+        api_client.put(f'/api/v1/attempts/{attempt_id}/answers/', {'answers': []}, format='json')
+        assert QuizAttempt.objects.get(id=attempt_id).status == 'EXPIRED'
+
+        res = api_client.get(f'/api/v1/attempts/{attempt_id}/')
+        assert res.status_code == status.HTTP_200_OK
+        for question in res.data['questions']:
+            assert 'explanation' not in question
+            for option in question['options']:
+                assert 'is_correct' not in option
+
+    def test_unsubmitted_answers_hide_grading_fields(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        attempt_id = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/').data['id']
+        q1 = quiz.questions.get(position=1)
+        api_client.put(f'/api/v1/attempts/{attempt_id}/answers/', {'answers': [
+            {'question_id': str(q1.id), 'selected_option_id': str(q1.options.get(is_correct=True).id)}]}, format='json')
+        answer = api_client.get(f'/api/v1/attempts/{attempt_id}/').data['answers'][0]
+        assert 'is_correct' not in answer and 'marks_awarded' not in answer
+
+    def test_invalid_attempt_id_returns_400(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        res = api_client.post(f'/api/v1/quizzes/{quiz.id}/submit/', {'attempt_id': 'not-a-uuid'}, format='json')
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_draft_quiz_hidden_from_students_but_visible_to_instructor(self, api_client, student1, instructor, enrollment1, quiz):
+        quiz.status = 'DRAFT'
+        quiz.save()
+        api_client.force_authenticate(user=student1)
+        assert api_client.get(f'/api/v1/quizzes/{quiz.id}/').status_code == status.HTTP_404_NOT_FOUND
+        assert api_client.post(f'/api/v1/quizzes/{quiz.id}/start/').status_code == status.HTTP_404_NOT_FOUND
+        api_client.force_authenticate(user=instructor)
+        assert api_client.get(f'/api/v1/quizzes/{quiz.id}/').status_code == status.HTTP_200_OK
+
+    def test_new_quizzes_default_to_draft(self, course):
+        assert Quiz.objects.create(course=course, title='New quiz').status == 'DRAFT'
+
+    def test_resume_returns_200_and_same_attempt(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        first = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/')
+        second = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/')
+        assert first.status_code == status.HTTP_201_CREATED
+        assert second.status_code == status.HTTP_200_OK and second.data['id'] == first.data['id']
+
+    def test_malformed_answer_payload_is_rejected(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        attempt_id = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/').data['id']
+        res = api_client.put(f'/api/v1/attempts/{attempt_id}/answers/', {'answers': [{'question_id': 'nope'}]}, format='json')
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        res = api_client.put(f'/api/v1/attempts/{attempt_id}/answers/', {'answers': 'oops'}, format='json')
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_answers_cannot_be_saved_after_submission(self, api_client, student1, enrollment1, quiz):
+        api_client.force_authenticate(user=student1)
+        attempt_id = api_client.post(f'/api/v1/quizzes/{quiz.id}/start/').data['id']
+        api_client.post(f'/api/v1/attempts/{attempt_id}/submit/')
+        q1 = quiz.questions.get(position=1)
+        res = api_client.put(f'/api/v1/attempts/{attempt_id}/answers/', {'answers': [
+            {'question_id': str(q1.id), 'selected_option_id': str(q1.options.get(is_correct=True).id)}]}, format='json')
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert QuizAttempt.objects.get(id=attempt_id).percentage == 0

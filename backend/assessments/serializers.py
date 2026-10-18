@@ -112,11 +112,21 @@ class QuizAttemptSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class AnswerItemDraftSerializer(serializers.ModelSerializer):
+    """Saved-but-ungraded answer: no correctness or marks before submission."""
+    choice_id = serializers.UUIDField(source='selected_option_id', read_only=True)
+    selected_choice_id = serializers.UUIDField(source='selected_option_id', read_only=True)
+
+    class Meta:
+        model = Answer
+        fields = ['id', 'question_id', 'selected_option_id', 'choice_id', 'selected_choice_id']
+
+
 class QuizAttemptDetailSerializer(serializers.ModelSerializer):
     start_time = serializers.DateTimeField(source='started_at', read_only=True)
     completed_at = serializers.DateTimeField(source='submitted_at', read_only=True)
     pass_percentage = serializers.IntegerField(source='quiz.pass_percentage', read_only=True)
-    answers = AnswerItemReviewSerializer(many=True, read_only=True)
+    answers = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
 
     class Meta:
@@ -131,9 +141,15 @@ class QuizAttemptDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_answers(self, obj):
+        serializer = AnswerItemReviewSerializer if obj.status == 'SUBMITTED' else AnswerItemDraftSerializer
+        return serializer(obj.answers.all(), many=True).data
+
     def get_questions(self, obj):
-        # Reveal explanations and answers only if submitted or expired
-        if obj.status in ['SUBMITTED', 'EXPIRED']:
+        # Reveal correct answers and explanations only after a graded submission.
+        # EXPIRED attempts were never graded; revealing answers there would let a
+        # student read them and score full marks on a retake.
+        if obj.status == 'SUBMITTED':
             return QuestionReviewSerializer(obj.quiz.questions.all(), many=True).data
         return QuestionSerializer(obj.quiz.questions.all(), many=True).data
 
