@@ -115,13 +115,17 @@ The database uses PostgreSQL, managed via the Django ORM. Below is an outline of
 
 
 ## 5. AI Study Resources
-**`AIResource`**
+**`StudyResource`** (`ai_study` app)
 - `id`: UUID / Primary Key
-- `student`: ForeignKey to `User` (The user who requested/owns the resource)
-- `lesson`: ForeignKey to `Lesson` (The context of the resource)
-- `resource_type`: String (Choices: `SUMMARY`, `FLASHCARDS`, `MCQ_REVISION`)
-- `content`: JSONField (Stores the structured output from the AI provider)
-- `generated_at`: DateTime
+- `lesson`: ForeignKey to `Lesson` (Related name: `study_resources`; null only for `REVISION`)
+- `course`: ForeignKey to `Course` (Related name: `study_resources`; always set, must match the lesson's course)
+- `created_by`: ForeignKey to `User` (instructor for lesson resources, the student for `REVISION`)
+- `resource_type`: String (Choices: `MCQ`, `FLASHCARDS`, `SUMMARY`, `REVISION`)
+- `content`: JSONField (validated structured content; see API contract §7)
+- `status`: String (Choices: `DRAFT`, `PUBLISHED`; default `DRAFT`)
+- `converted_quiz`: ForeignKey to `assessments.Quiz` (Optional, `SET_NULL`; set when an MCQ draft is converted)
+- `created_at`, `updated_at`, `published_at`: DateTime
+- **Constraints**: `CheckConstraint` requiring `lesson` unless `resource_type = REVISION`. Indexes on (`lesson`, `status`) and (`course`, `created_by`, `resource_type`).
 
 ## 6. Certificates
 **`Certificate`**

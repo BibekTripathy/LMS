@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
-class AiResourcesConfig(AppConfig):
+
+class AiStudyConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'ai_resources'
+    name = 'ai_study'

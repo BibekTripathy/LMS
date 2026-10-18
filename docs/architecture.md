@@ -39,7 +39,8 @@ The stack consists of:
 ## 5. AI Feature Integration
 AI functionalities (MCQs, flashcards, summaries, personalized revision) are handled entirely on the backend to prevent exposing API keys.
 - **Provider Adapter Pattern**: An adapter class abstracts the AI provider's API. This ensures the provider can be swapped without rewriting core application logic.
-- **Data Flow**: The frontend requests an AI resource (e.g., "generate flashcards for lesson 5") -> Django backend validates authorization (must be enrolled in the course) -> Backend calls AI Provider via Adapter -> Backend receives, validates, and stores the structured output tied to the requesting student and lesson -> Backend returns data to the frontend.
+- **Data Flow**: The course instructor requests a resource for a lesson -> Django checks course ownership and the per-user rate limit -> lesson transcript/reading material is sanitised, size-capped and wrapped as untrusted data in a task prompt -> the configured provider adapter (`ai_study/providers/`, selected by `AI_PROVIDER`) is called with timeouts and bounded retries -> the JSON output is validated structurally and semantically (`ai_study/validators.py`) -> it is saved as a `DRAFT` `StudyResource` -> the instructor edits and publishes it (or converts an MCQ draft into a regular draft `Quiz`) -> enrolled students read published resources.
+- **Personalised Revision**: An enrolled student requests a revision summary for a course. The backend aggregates their submitted `QuizAttempt`/`Answer` records into per-topic accuracy and weak topics. Only those aggregates and the weak topics' lesson material are sent to the provider, and the result is validated so it cannot invent topics.
 - **Data Privacy**: Only necessary learning context is sent to the AI provider; sensitive student data is omitted.
 
 ## 6. Security and Data Integrity

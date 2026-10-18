@@ -4,8 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../lib/errors';
 import { useCourseDetail } from '../authoring/hooks';
 import { quizKeys, useCourseQuizzes, useQuizAuthoring, useQuizManage } from './hooks';
-import { aiApi } from '../../api/ai';
-import type { Quiz, Question, QuizStatus, MCQContent } from '../../types';
+import type { Quiz, Question, QuizStatus } from '../../types';
 import { QuestionEditorModal } from './QuestionEditorModal';
 import {
   HelpCircle,
@@ -57,7 +56,6 @@ export const QuizBuilder: React.FC = () => {
 
   const loading = courseQuery.isLoading || quizzesQuery.isLoading;
   const savingQuiz = authoring.updateQuiz.isPending;
-  const [importingAI, setImportingAI] = useState(false);
   const [actionError, setError] = useState<string | null>(null);
   const loadError = courseQuery.error ?? quizzesQuery.error ?? activeQuizQuery.error;
   const error = actionError ?? (loadError ? getErrorMessage(loadError, 'Failed to load quizzes for course.') : null);
@@ -134,52 +132,6 @@ export const QuizBuilder: React.FC = () => {
       { quizId: activeQuizId, questionId },
       { onError: (err) => alert('Failed to delete question: ' + getErrorMessage(err)) }
     );
-  };
-
-  const handleImportAIMCQs = async () => {
-    if (!activeQuizId) return;
-    setImportingAI(true);
-    try {
-      const resources = await aiApi.getAIResources({ resource_type: 'MCQ_REVISION' });
-      const mcqResources = resources.filter(
-        (r) => (r.content as MCQContent)?.mcqs && (r.content as MCQContent).mcqs.length > 0
-      );
-
-      if (mcqResources.length === 0) {
-        alert(
-          'No AI-generated MCQs found in the Study Centre yet. Please generate some in the AI Study Centre first!'
-        );
-        return;
-      }
-
-      let importedCount = 0;
-      for (const res of mcqResources) {
-        const content = res.content as MCQContent;
-        for (const mcq of content.mcqs) {
-          const formattedOptions = mcq.options.map((optText, idx) => ({
-            text: optText,
-            is_correct: idx === mcq.correct_index,
-          }));
-
-          await authoring.saveQuestion.mutateAsync({
-            quizId: activeQuizId,
-            data: {
-              prompt: mcq.question,
-              marks: 1,
-              explanation: mcq.explanation,
-              options: formattedOptions,
-            },
-          });
-          importedCount++;
-        }
-      }
-
-      alert(`Successfully imported ${importedCount} questions from AI Study Centre!`);
-    } catch (err) {
-      alert('Failed to import AI MCQs: ' + getErrorMessage(err));
-    } finally {
-      setImportingAI(false);
-    }
   };
 
   if (loading) {
@@ -410,15 +362,14 @@ export const QuizBuilder: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleImportAIMCQs}
-                        disabled={importingAI}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 rounded-lg transition disabled:opacity-50"
+                      <Link
+                        to="/study-centre"
+                        title="Generate MCQs from a lesson, review them, then use “Convert to graded quiz”"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 rounded-lg transition"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                        {importingAI ? 'Importing...' : 'Import from AI Study'}
-                      </button>
+                        Create from AI Study
+                      </Link>
 
                       <button
                         type="button"

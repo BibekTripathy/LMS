@@ -119,16 +119,58 @@ List endpoints use offset/limit or page number pagination.
   - Options are updated in place (send an option's `id` to keep it). Once students have answered a question, its options cannot change (`400`) and it cannot be deleted (`400 HAS_ANSWERS`); prompt/explanation/marks can still be edited.
 
 ## 7. AI Study Resources
-*Note: All AI endpoints require the user to be enrolled in the lesson's course.*
-- `POST /api/v1/ai/generate-flashcards/`
-  - **Payload**: `{ "lesson_id": "..." }`
-  - Generates, stores (tied to student and lesson), and returns flashcards.
-- `POST /api/v1/ai/generate-summary/`
-  - **Payload**: `{ "lesson_id": "..." }`
-  - Generates, stores, and returns a lesson summary.
-- `POST /api/v1/ai/generate-mcq/`
-  - **Payload**: `{ "lesson_id": "..." }`
-  - Generates, stores, and returns revision MCQs for the student.
+The AI provider is called only by the backend (`ai_study` app). Every generated item is validated before it is saved. Lesson resources start as `DRAFT` and are visible only to the course instructor (and admins) until they are published.
+
+**Roles**
+- *Course manager* means the course's instructor, or an admin. Only managers can generate, edit, publish, or convert lesson resources (other users get `403 NOT_COURSE_INSTRUCTOR`).
+- Students with an `ACTIVE` enrollment can read `PUBLISHED` lesson resources. Drafts, and resources from courses they are not enrolled in, return `404`.
+- `REVISION` resources are private to the student who requested them (and admins).
+
+**Resource object**
+```json
+{
+  "id": "uuid", "course": "uuid", "course_title": "...", "lesson": "uuid | null", "lesson_title": "... | null",
+  "created_by": "uuid", "resource_type": "MCQ | FLASHCARDS | SUMMARY | REVISION",
+  "status": "DRAFT | PUBLISHED", "content": { }, "converted_quiz": "uuid | null",
+  "created_at": "ISO-8601", "updated_at": "ISO-8601", "published_at": "ISO-8601 | null"
+}
+```
+
+**`content` by type** (enforced by `ai_study/validators.py`)
+- `MCQ`: `{ "title", "questions": [ { "prompt", "options": [2-6 unique strings], "correct_option_index": 0-based int, "explanation" } ] }` (1-20 questions; the AI is asked for exactly 4 options)
+- `FLASHCARDS`: `{ "title", "cards": [ { "front", "back" } ] }` (1-40 cards, fronts unique)
+- `SUMMARY`: `{ "title", "summary", "key_points": [..], "revision_topics": [..] }`
+- `REVISION`: `{ "title", "overview", "focus_areas": [ { "topic", "reason", "actions": [..] } ], "next_steps": [..], "performance": { server-computed figures } }`. Each `focus_areas[].topic` must be one of the learner's computed weak topics.
+
+**Endpoints**
+- `POST /api/v1/lessons/{id}/ai/generate/` (course manager, rate-limited per user)
+  - **Payload**: `{ "resource_type": "MCQ" | "FLASHCARDS" | "SUMMARY", "count": 5 }`. `count` is optional and applies to MCQ (max 20) and FLASHCARDS (max 40).
+  - Generation is synchronous, grounded in the lesson's `transcript` / `reading_content`, and returns `201` with a `DRAFT` resource.
+- `GET /api/v1/lessons/{id}/resources/` (paginated; optional `?resource_type=`)
+  - Managers see every resource. Enrolled students see only `PUBLISHED` ones. Anyone else gets `403`.
+- `GET /api/v1/resources/{id}/`
+- `PATCH /api/v1/resources/{id}/` (course manager; `DRAFT` only)
+  - **Payload**: `{ "content": { ... } }`. The content is re-validated; invalid content returns `400 VALIDATION_ERROR` with `details.content` listing each problem.
+- `POST /api/v1/resources/{id}/publish/` (course manager; `DRAFT` only)
+  - Re-validates and sets `PUBLISHED`. An MCQ set already converted into a quiz cannot be published (`ALREADY_CONVERTED`), because that would reveal the quiz answers.
+- `POST /api/v1/resources/{id}/convert-to-quiz/` (course manager; `MCQ` + `DRAFT` only)
+  - In one transaction, creates a regular `Quiz` (status `DRAFT`, same course/lesson) with `Question` / `QuestionOption` rows, ready to edit through the normal quiz tools. Returns `201` with the quiz in the student-safe `QuizDetailSerializer` shape (no correct answers). Fails with `400 NOT_MCQ`, `ALREADY_CONVERTED`, or `ALREADY_PUBLISHED`.
+- `GET /api/v1/courses/{id}/ai/revisions/` (enrolled student; paginated): the requester's own revision summaries.
+- `POST /api/v1/courses/{id}/ai/revisions/` (enrolled student, rate-limited per user)
+  - Builds a personalised revision summary from the student's **submitted** quiz attempts in the course. Accuracy is computed per topic (the quiz's lesson, or the quiz itself) and compared with the quiz pass mark. Missed questions are taken from the latest attempt. Only these aggregates and the weak topics' lesson material are sent to the provider (no names, e-mails, or IDs). Returns `400 NO_ATTEMPTS` if nothing has been submitted yet.
+
+**AI error responses** (standard error format)
+
+| Status | `code` | Meaning |
+|---|---|---|
+| 400 | `INSUFFICIENT_CONTENT` | Lesson has no transcript/reading material |
+| 429 | `RATE_LIMITED` | Per-user generation limit (`AI_GENERATE_RATE_LIMIT`) reached |
+| 502 | `AI_INVALID_OUTPUT` | Model output was malformed or failed validation after the allowed retries; nothing saved |
+| 502 | `AI_PROVIDER_ERROR` | Provider rejected or blocked the request |
+| 503 | `AI_RATE_LIMITED` | Provider is rate limiting; may include `Retry-After` |
+| 503 | `AI_QUOTA_EXHAUSTED` | Provider daily quota used up |
+| 503 | `AI_NOT_CONFIGURED` | Provider/key/model not configured on the server |
+| 504 | `AI_TIMEOUT` | Provider did not answer in time (after retries) |
 
 ## 8. Certificates
 - `GET /api/v1/courses/{id}/certificate/`

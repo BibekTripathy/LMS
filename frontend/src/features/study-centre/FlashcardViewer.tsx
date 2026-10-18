@@ -14,7 +14,7 @@ export const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   lessonTitle,
   onClose,
 }) => {
-  const [cards, setCards] = useState(content.flashcards || []);
+  const [cards, setCards] = useState(content.cards || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredCards, setMasteredCards] = useState<Record<number, boolean>>({});
