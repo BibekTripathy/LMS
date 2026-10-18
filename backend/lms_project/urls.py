@@ -13,5 +13,5 @@ urlpatterns = [
     path('api/v1/', include('enrollments.urls')),
     path('api/v1/', include('progress.urls')),
     path('api/v1/', include('assessments.urls')),
-    path('api/v1/ai/', include('ai_resources.urls')),
+    path('api/v1/', include('ai_study.urls')),
 ]
