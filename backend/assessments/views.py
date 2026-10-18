@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -53,7 +53,8 @@ class QuizStartView(APIView):
 
         attempt = start_quiz_attempt(request.user, quiz)
         serializer = QuizAttemptSerializer(attempt)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        code = status.HTTP_200_OK if getattr(attempt, 'resumed', False) else status.HTTP_201_CREATED
+        return Response(serializer.data, status=code)
 
 
 class AttemptDetailView(APIView):
@@ -124,10 +125,11 @@ class QuizSubmitView(APIView):
         quiz = get_object_or_404(Quiz, id=id)
         self.check_object_permissions(request, quiz)
 
-        attempt_id = request.data.get('attempt_id')
-        if not attempt_id:
+        try:
+            attempt_id = serializers.UUIDField().to_internal_value(request.data.get('attempt_id'))
+        except serializers.ValidationError:
             return Response(
-                {"error": "attempt_id is required in request payload"},
+                {"error": "attempt_id must be a valid UUID", "code": "VALIDATION_ERROR"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

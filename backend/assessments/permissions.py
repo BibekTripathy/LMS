@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from rest_framework.exceptions import NotFound
 from enrollments.models import Enrollment
 
 
@@ -29,6 +30,11 @@ class CanAccessQuiz(permissions.BasePermission):
 
         if course.instructor == user:
             return True
+
+        # Draft quizzes are invisible to everyone except the course instructor and admins.
+        quiz = obj if hasattr(obj, 'questions') else getattr(obj, 'quiz', None)
+        if quiz is not None and quiz.status == 'DRAFT':
+            raise NotFound('Quiz not found.')
 
         return Enrollment.objects.filter(
             student=user,

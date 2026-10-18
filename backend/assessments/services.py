@@ -1,4 +1,3 @@
-import json
 from decimal import Decimal
 from datetime import timedelta
 from django.db import transaction
@@ -40,7 +39,7 @@ def start_quiz_attempt(user, quiz):
 
     if quiz.status != 'PUBLISHED':
         # Allow instructor or admin to test draft quiz
-        if not (user.is_staff or user.is_superuser or quiz.course.instructor == user):
+        if not (getattr(user, 'role', '') == 'ADMIN' or user.is_staff or user.is_superuser or quiz.course.instructor == user):
             raise ValidationError("This quiz is currently not published.")
 
     # Check for existing in-progress attempt
@@ -57,6 +56,7 @@ def start_quiz_attempt(user, quiz):
             active_attempt.save(update_fields=['status'])
         else:
             # Resume existing unexpired attempt
+            active_attempt.resumed = True
             return active_attempt
 
     # Create new attempt
@@ -72,75 +72,75 @@ def start_quiz_attempt(user, quiz):
         started_at=started_at,
         deadline_at=deadline_at
     )
+    attempt.resumed = False
     return attempt
+
+
+def _parse_answer_items(answers_data):
+    """Validate the answers payload ({"answers": [...]} or a bare list) with AnswerInputItemSerializer."""
+    from .serializers import AnswerInputItemSerializer
+
+    if isinstance(answers_data, dict):
+        answers_data = answers_data.get('answers', [])
+    if not isinstance(answers_data, list):
+        raise ValidationError({'answers': 'Expected a list of answers.'})
+    serializer = AnswerInputItemSerializer(data=answers_data, many=True)
+    serializer.is_valid(raise_exception=True)
+    return serializer.validated_data
+
+
+def _expire_if_past_deadline(attempt):
+    """Persist EXPIRED (outside any grading transaction) and reject the operation."""
+    if attempt.status == 'IN_PROGRESS' and attempt.deadline_at and timezone.now() > attempt.deadline_at:
+        QuizAttempt.objects.filter(pk=attempt.pk, status='IN_PROGRESS').update(status='EXPIRED')
+        attempt.status = 'EXPIRED'
+    if attempt.status == 'EXPIRED':
+        raise ValidationError("The quiz deadline has expired.")
 
 
 def save_attempt_answers(user, attempt, answers_data):
     """
     Saves student answers for an active attempt.
     Validates deadline, attempt ownership, and option-question relationships.
+    The attempt row is locked so answers cannot change while it is being graded.
     """
-    if attempt.student != user:
+    if attempt.student_id != user.id:
         raise PermissionDenied("You do not have permission to modify this attempt.")
 
-    now = timezone.now()
-    if attempt.status == 'EXPIRED' or (attempt.deadline_at and now > attempt.deadline_at):
-        attempt.status = 'EXPIRED'
-        attempt.save(update_fields=['status'])
-        raise ValidationError("The quiz deadline has expired.")
+    items = _parse_answer_items(answers_data)
+    _expire_if_past_deadline(attempt)
 
-    if attempt.status != 'IN_PROGRESS':
-        raise ValidationError(f"Answers cannot be saved because attempt status is {attempt.status}.")
+    with transaction.atomic():
+        locked = QuizAttempt.objects.select_for_update().get(pk=attempt.pk)
+        if locked.status != 'IN_PROGRESS':
+            raise ValidationError(f"Answers cannot be saved because attempt status is {locked.status}.")
+        if locked.deadline_at and timezone.now() > locked.deadline_at:
+            raise ValidationError("The quiz deadline has expired.")
 
-    if isinstance(answers_data, str):
-        try:
-            answers_data = json.loads(answers_data)
-        except Exception:
-            pass
+        quiz_questions = {q.id: q for q in locked.quiz.questions.all()}
+        quiz_options = {opt.id: opt for opt in QuestionOption.objects.filter(question__quiz=locked.quiz)}
 
-    if isinstance(answers_data, dict):
-        answers_list = answers_data.get('answers', [])
-    elif isinstance(answers_data, list):
-        answers_list = answers_data
-    else:
-        answers_list = [answers_data]
+        saved_answers = []
+        for item in items:
+            question = quiz_questions.get(item['question_id'])
+            if not question:
+                raise ValidationError(f"Question {item['question_id']} does not belong to this quiz.")
 
-    # Preload questions and options for this quiz keyed by str ID
-    quiz_questions = {str(q.id): q for q in attempt.quiz.questions.all()}
-    quiz_options = {str(opt.id): opt for opt in QuestionOption.objects.filter(question__quiz=attempt.quiz)}
+            selected_option = None
+            option_id = item.get('selected_option_id')
+            if option_id:
+                selected_option = quiz_options.get(option_id)
+                if not selected_option:
+                    raise ValidationError(f"Option {option_id} does not exist.")
+                if selected_option.question_id != question.id:
+                    raise ValidationError(f"Option {option_id} does not belong to question {question.id}.")
 
-    saved_answers = []
-    for item in answers_list:
-        if not isinstance(item, dict):
-            continue
-
-        raw_q_id = item.get('question_id')
-        raw_opt_id = item.get('selected_option_id') or item.get('option_id') or item.get('choice_id')
-
-        if not raw_q_id:
-            continue
-
-        str_q_id = str(raw_q_id)
-        question = quiz_questions.get(str_q_id)
-        if not question:
-            raise ValidationError(f"Question {str_q_id} does not belong to this quiz.")
-
-        selected_option = None
-        if raw_opt_id:
-            str_opt_id = str(raw_opt_id)
-            selected_option = quiz_options.get(str_opt_id)
-            if not selected_option:
-                raise ValidationError(f"Option {str_opt_id} does not exist.")
-
-            if str(selected_option.question_id) != str_q_id:
-                raise ValidationError(f"Option {str_opt_id} does not belong to question {str_q_id}.")
-
-        ans, _ = Answer.objects.update_or_create(
-            attempt=attempt,
-            question=question,
-            defaults={'selected_option': selected_option}
-        )
-        saved_answers.append(ans)
+            ans, _ = Answer.objects.update_or_create(
+                attempt=locked,
+                question=question,
+                defaults={'selected_option': selected_option}
+            )
+            saved_answers.append(ans)
 
     return saved_answers
 
@@ -150,15 +150,11 @@ def submit_and_grade_attempt(user, attempt, answers_data=None):
     Server-side grading within an atomic transaction.
     Safely rejects duplicate or expired submissions.
     """
-    if attempt.student != user:
+    if attempt.student_id != user.id:
         raise PermissionDenied("You do not have permission to submit this attempt.")
 
-    # 1. Check expiration before transaction so the status update persists
-    now = timezone.now()
-    if attempt.status == 'EXPIRED' or (attempt.deadline_at and now > attempt.deadline_at):
-        attempt.status = 'EXPIRED'
-        attempt.save(update_fields=['status'])
-        raise ValidationError("The quiz deadline has expired.")
+    # 1. Check expiration before the transaction so the EXPIRED status persists
+    _expire_if_past_deadline(attempt)
 
     if attempt.status == 'SUBMITTED':
         raise ValidationError("This attempt has already been submitted.")
@@ -174,9 +170,9 @@ def submit_and_grade_attempt(user, attempt, answers_data=None):
             raise ValidationError("This attempt has already been submitted.")
 
         now_in_tx = timezone.now()
-        if locked_attempt.status == 'EXPIRED' or (locked_attempt.deadline_at and now_in_tx > locked_attempt.deadline_at):
-            locked_attempt.status = 'EXPIRED'
-            locked_attempt.save(update_fields=['status'])
+        if locked_attempt.status != 'IN_PROGRESS':
+            raise ValidationError(f"Attempt cannot be submitted because status is {locked_attempt.status}.")
+        if locked_attempt.deadline_at and now_in_tx > locked_attempt.deadline_at:
             raise ValidationError("The quiz deadline has expired.")
 
         # Save answers if provided in submission payload

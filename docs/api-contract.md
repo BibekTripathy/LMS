@@ -83,16 +83,16 @@ List endpoints use offset/limit or page number pagination.
 ## 6. Quizzes
 - `GET /api/v1/quizzes/{id}/`
   - Returns quiz details and questions. **Does not return correct answers or explanations.**
-  - **Authorization**: Requires valid `Enrollment`.
+  - **Authorization**: Requires valid `Enrollment`. `DRAFT` quizzes return `404` to everyone except the course instructor and admins. New quizzes default to `DRAFT`.
 - `POST /api/v1/quizzes/{id}/start/`
-  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS` with deadline. Returns attempt details.
+  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS` with deadline. Returns attempt details: `201` for a new attempt, `200` when an unexpired in-progress attempt is resumed.
   - **Authorization**: Requires valid `Enrollment`.
 - `GET /api/v1/attempts/{id}/`
-  - Returns current attempt state and saved answers for the student.
+  - Returns current attempt state and saved answers for the student. Correct options, explanations, and per-answer `is_correct` / `marks_awarded` appear **only once the attempt is `SUBMITTED`** (never for `IN_PROGRESS` or `EXPIRED`).
   - **Authorization**: Student owner of attempt.
 - `PUT /api/v1/attempts/{id}/answers/`
   - **Payload**: `{ "answers": [ {"question_id": "...", "selected_option_id": "..."} ] }`
-  - Saves in-progress draft answers. Enforces deadline and option ownership.
+  - Saves in-progress draft answers. Enforces deadline and option ownership; malformed items (non-UUID ids, non-list `answers`) return `400`.
   - **Authorization**: Student owner of attempt.
 - `POST /api/v1/attempts/{id}/submit/`
   - **Payload** (optional): `{ "answers": [ ... ] }`
@@ -100,7 +100,7 @@ List endpoints use offset/limit or page number pagination.
   - **Authorization**: Student owner of attempt.
 - `POST /api/v1/quizzes/{id}/submit/`
   - **Payload**: `{ "attempt_id": "...", "answers": [ ... ] }`
-  - Alternate endpoint for submitting and grading an attempt.
+  - Alternate endpoint for submitting and grading an attempt. A missing or non-UUID `attempt_id` returns `400`.
 - `GET /api/v1/quizzes/{id}/results/me/`
   - Returns student's historical attempts, best score, highest percentage, and pass/fail summary.
   - **Authorization**: Requires valid `Enrollment`.
