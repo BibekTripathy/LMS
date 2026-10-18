@@ -53,8 +53,9 @@ def update_lesson_progress(user, lesson, last_position_seconds=None, completed=N
             raise ValidationError({'last_position_seconds': 'Playback position cannot be negative.'})
         progress.last_position_seconds = last_position_seconds
 
-    if completed is not None:
-        progress.completed = completed
+    # Completion is one-way: a client cannot un-complete a lesson once it is done.
+    if completed:
+        progress.completed = True
 
     progress.full_clean()
     progress.save()
@@ -82,9 +83,14 @@ def calculate_course_progress(user, course):
     progresses = LessonProgress.objects.filter(enrollment=enrollment, lesson__in=lessons)
     progress_by_lesson_id = {p.lesson_id: p for p in progresses}
 
-    completed_lessons = sum(1 for p in progresses if p.completed)
-    progress_percentage = round((completed_lessons / total_lessons * 100), 2) if total_lessons > 0 else 0.0
-    is_completed = (total_lessons > 0 and completed_lessons == total_lessons)
+    completed_ids = {p.lesson_id for p in progresses if p.completed}
+    completed_lessons = len(completed_ids)
+
+    # Optional lessons do not block completion; if none are marked required, all count.
+    required_ids = {l.id for l in lessons if l.is_required} or {l.id for l in lessons}
+    completed_required = len(required_ids & completed_ids)
+    progress_percentage = round((completed_required / len(required_ids) * 100), 2) if required_ids else 0.0
+    is_completed = bool(required_ids) and completed_required == len(required_ids)
 
     latest_progress = progresses.order_by('-updated_at').first()
     first_lesson = lessons.first()
@@ -107,6 +113,8 @@ def calculate_course_progress(user, course):
         'course_title': course.title,
         'total_lessons': total_lessons,
         'completed_lessons': completed_lessons,
+        'required_lessons': len(required_ids),
+        'completed_required_lessons': completed_required,
         'progress_percentage': progress_percentage,
         'is_completed': is_completed,
         'last_accessed_lesson_id': last_accessed_lesson_id,

@@ -312,3 +312,27 @@ class TestModelIntegrity:
         progress = LessonProgress(enrollment=enrollment1, lesson=other_lesson, last_position_seconds=10)
         with pytest.raises(ValidationError):
             progress.clean()
+
+
+@pytest.mark.django_db
+class TestCompletionRules:
+    def test_completion_cannot_be_reverted_by_client(self, api_client, student1, enrollment1, lesson1):
+        api_client.force_authenticate(user=student1)
+        api_client.post(f'/api/v1/lessons/{lesson1.id}/complete/')
+        res = api_client.patch(f'/api/v1/lessons/{lesson1.id}/progress/', {'completed': False, 'last_position_seconds': 10}, format='json')
+        assert res.status_code == status.HTTP_200_OK
+        assert res.data['completed'] is True
+        assert res.data['last_position_seconds'] == 10
+
+    def test_optional_lessons_do_not_block_course_completion(self, api_client, student1, enrollment1, course, lesson1, lesson2):
+        lesson2.is_required = False
+        lesson2.save()
+        api_client.force_authenticate(user=student1)
+        api_client.post(f'/api/v1/lessons/{lesson1.id}/complete/')
+        res = api_client.get(f'/api/v1/courses/{course.id}/progress/')
+        assert res.data['total_lessons'] == 2
+        assert res.data['completed_lessons'] == 1
+        assert res.data['required_lessons'] == 1
+        assert res.data['completed_required_lessons'] == 1
+        assert res.data['progress_percentage'] == 100.0
+        assert res.data['is_completed'] is True

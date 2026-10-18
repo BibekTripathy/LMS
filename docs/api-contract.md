@@ -70,13 +70,13 @@ List endpoints use offset/limit or page number pagination.
   - **Authorization**: Requires a valid `Enrollment`.
 - `PATCH /api/v1/lessons/{id}/progress/`
   - **Payload**: `{ "last_position_seconds": 120, "completed": false }` (or aliases `"timestamp"`, `"is_completed"`).
-  - Updates the student's playback position and completion status in PostgreSQL.
+  - Updates the student's playback position and completion status in PostgreSQL. Completion is one-way: `completed: false` never un-completes a lesson.
   - **Authorization**: Requires a valid `Enrollment`. Validates playback position on the backend.
 - `POST /api/v1/lessons/{id}/complete/`
   - Marks the lesson completed for the student.
   - **Authorization**: Requires a valid `Enrollment`.
 - `GET /api/v1/courses/{id}/progress/`
-  - Returns overall course completion statistics: `total_lessons`, `completed_lessons`, `progress_percentage`, `is_completed`, and lesson breakdown.
+  - Returns overall course completion statistics: `total_lessons`, `completed_lessons`, `required_lessons`, `completed_required_lessons`, `progress_percentage`, `is_completed`, and lesson breakdown. `progress_percentage` and `is_completed` count only lessons with `is_required = true` (all lessons if none are required).
   - **Authorization**: Requires a valid `Enrollment`.
 
 
