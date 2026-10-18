@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'users',
     'courses',
     'enrollments',
+    'progress',
     'ai_resources',
 ]
 
