@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { courseApi } from '../../api/courses';
-import type { Course } from '../../types';
+import { getErrorMessage } from '../../lib/errors';
+import { useCourseMutations, useMyCourses } from './hooks';
 import {
   BookOpen,
   PlusCircle,
@@ -17,65 +17,24 @@ import {
 } from 'lucide-react';
 
 export const InstructorDashboard: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const coursesQuery = useMyCourses();
+  const { publish, archive, remove } = useCourseMutations();
+  const courses = coursesQuery.data ?? [];
+  const loading = coursesQuery.isLoading;
+  const error = coursesQuery.isError ? getErrorMessage(coursesQuery.error, 'Failed to load courses.') : null;
 
-  const loadCourses = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await courseApi.getCourses({ my_courses: true });
-      setCourses(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load courses.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const pendingId = [publish, archive, remove].find((m) => m.isPending)?.variables ?? null;
+  const actionLoading = typeof pendingId === 'string' ? pendingId : null;
 
-  useEffect(() => {
-    loadCourses();
-  }, []);
+  const onError = (label: string) => (err: Error) => alert(`Failed to ${label} course: ${getErrorMessage(err)}`);
 
-  const handlePublish = async (courseId: string) => {
-    setActionLoading(courseId);
-    try {
-      await courseApi.publishCourse(courseId);
-      await loadCourses();
-    } catch (err: any) {
-      alert('Failed to publish course: ' + (err.response?.data?.detail || err.message));
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleArchive = async (courseId: string) => {
-    setActionLoading(courseId);
-    try {
-      await courseApi.archiveCourse(courseId);
-      await loadCourses();
-    } catch (err: any) {
-      alert('Failed to archive course: ' + (err.response?.data?.detail || err.message));
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDelete = async (courseId: string) => {
+  const handlePublish = (courseId: string) => publish.mutate(courseId, { onError: onError('publish') });
+  const handleArchive = (courseId: string) => archive.mutate(courseId, { onError: onError('archive') });
+  const handleDelete = (courseId: string) => {
     if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       return;
     }
-    setActionLoading(courseId);
-    try {
-      await courseApi.deleteCourse(courseId);
-      setCourses((prev) => prev.filter((c) => c.id !== courseId));
-    } catch (err: any) {
-      alert('Failed to delete course: ' + (err.response?.data?.detail || err.message));
-    } finally {
-      setActionLoading(null);
-    }
+    remove.mutate(courseId, { onError: onError('delete') });
   };
 
   const totalLessons = courses.reduce((acc, c) => acc + (c.lessons_count || 0), 0);

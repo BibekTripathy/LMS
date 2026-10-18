@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth';
 import { Brain, Lock, Mail, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { getErrorMessage } from '../../lib/errors';
+
+/** Matches the local demo accounts created in README §5; never used in production builds. */
+const DEMO_PASSWORD = 'DemoPass123!';
 
 interface AuthPageProps {
   initialMode?: 'login' | 'register';
@@ -37,13 +41,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
         await register({ email, password, first_name: firstName, last_name: lastName });
         navigate(from, { replace: true });
       }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.error ||
-        err.message ||
-        'Authentication failed. Please check your credentials.';
-      setError(msg);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Authentication failed. Please check your credentials.'));
     } finally {
       setSubmitting(false);
     }
@@ -51,7 +50,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
 
   const fillDemoAccount = (demoEmail: string) => {
     setEmail(demoEmail);
-    setPassword('password123');
+    setPassword(DEMO_PASSWORD);
     setIsLogin(true);
     setError(null);
   };
@@ -80,7 +79,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
           </p>
         </div>
 
-        {/* Demo Fast-Login Pills */}
+        {/* Demo Fast-Login Pills: local development builds only (accounts from the README) */}
+        {import.meta.env.DEV && (
         <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs">
           <span className="font-semibold text-slate-500 block mb-1.5 uppercase tracking-wider text-[10px]">
             Quick Demo Sign-In
@@ -88,20 +88,21 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => fillDemoAccount('prof@example.com')}
+              onClick={() => fillDemoAccount('instructor@demo.local')}
               className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded font-medium hover:bg-indigo-100 transition"
             >
-              Instructor (prof@example.com)
+              Instructor (instructor@demo.local)
             </button>
             <button
               type="button"
-              onClick={() => fillDemoAccount('s1@example.com')}
+              onClick={() => fillDemoAccount('student@demo.local')}
               className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded font-medium hover:bg-emerald-100 transition"
             >
-              Student (s1@example.com)
+              Student (student@demo.local)
             </button>
           </div>
         </div>
+        )}
 
         {error && (
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm flex items-start gap-3">

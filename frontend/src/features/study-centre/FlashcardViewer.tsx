@@ -8,6 +8,7 @@ interface FlashcardViewerProps {
   onClose?: () => void;
 }
 
+/** Render with `key={resource.id}` so switching resources starts a fresh deck. */
 export const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   content,
   lessonTitle,
@@ -17,13 +18,6 @@ export const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredCards, setMasteredCards] = useState<Record<number, boolean>>({});
-
-  useEffect(() => {
-    setCards(content.flashcards || []);
-    setCurrentIndex(0);
-    setIsFlipped(false);
-    setMasteredCards({});
-  }, [content]);
 
   const handleNext = useCallback(() => {
     setIsFlipped(false);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { courseApi } from '../../api/courses';
+import { getErrorMessage } from '../../lib/errors';
+import { useCourseMutations } from './hooks';
 import type { Lesson } from '../../types';
 import { Video, FileText, Sparkles, X, Check, AlertCircle, Play } from 'lucide-react';
 
@@ -23,19 +24,19 @@ export const LessonEditorModal: React.FC<LessonEditorModalProps> = ({
   const [transcript, setTranscript] = useState(lesson?.transcript || '');
   const [content, setContent] = useState(lesson?.content || lesson?.reading_content || '');
   const [isRequired, setIsRequired] = useState(lesson?.is_required !== false);
-  const [saving, setSaving] = useState(false);
+  const { saveLesson } = useCourseMutations();
+  const saving = saveLesson.isPending;
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Please provide a lesson title.');
       return;
     }
 
-    setSaving(true);
     setError(null);
-    try {
+    {
       const payload = {
         title,
         video_url: videoUrl || null,
@@ -45,17 +46,13 @@ export const LessonEditorModal: React.FC<LessonEditorModalProps> = ({
         is_required: isRequired,
       };
 
-      let result: Lesson;
-      if (lesson) {
-        result = await courseApi.updateLesson(lesson.id, payload);
-      } else {
-        result = await courseApi.createLesson(moduleId, payload);
-      }
-      onSaved(result);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to save lesson.');
-    } finally {
-      setSaving(false);
+      saveLesson.mutate(
+        { moduleId, lessonId: lesson?.id, data: payload },
+        {
+          onSuccess: (result) => onSaved(result),
+          onError: (err) => setError(getErrorMessage(err, 'Failed to save lesson.')),
+        }
+      );
     }
   };
 

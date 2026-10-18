@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { quizApi } from '../../api/quizzes';
+import { getErrorMessage } from '../../lib/errors';
+import { useQuizAuthoring } from './hooks';
 import type { Question, QuestionInput, QuestionOptionInput } from '../../types';
 import { X, Check, Plus, Trash2, HelpCircle, AlertCircle } from 'lucide-react';
 
@@ -34,7 +35,8 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
           { text: '', is_correct: false },
         ]
   );
-  const [saving, setSaving] = useState(false);
+  const { saveQuestion } = useQuizAuthoring(undefined);
+  const saving = saveQuestion.isPending;
   const [error, setError] = useState<string | null>(null);
 
   const handleOptionTextChange = (index: number, text: string) => {
@@ -70,7 +72,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
     setOptions(filtered);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) {
       setError('Please provide a question prompt.');
@@ -89,34 +91,20 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
       return;
     }
 
-    setSaving(true);
     setError(null);
-    try {
-      const payload: QuestionInput = {
-        prompt,
-        marks,
-        explanation,
-        options: filledOptions,
-      };
-
-      let result: Question;
-      if (question) {
-        result = await quizApi.updateQuestion(question.id, payload);
-      } else {
-        result = await quizApi.createQuestion(quizId, payload);
+    const payload: QuestionInput = {
+      prompt,
+      marks,
+      explanation,
+      options: filledOptions,
+    };
+    saveQuestion.mutate(
+      { quizId, questionId: question?.id, data: payload },
+      {
+        onSuccess: (result) => onSaved(result),
+        onError: (err) => setError(getErrorMessage(err, 'Failed to save question.')),
       }
-      onSaved(result);
-    } catch (err: unknown) {
-      const errorMsg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-          : err instanceof Error
-          ? err.message
-          : 'Failed to save question.';
-      setError(errorMsg || 'Failed to save question.');
-    } finally {
-      setSaving(false);
-    }
+    );
   };
 
   return (

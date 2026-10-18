@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { quizApi } from '../../api/quizzes';
-import type { QuizResultsMe, QuizAttempt } from '../../types';
+import { getErrorMessage } from '../../lib/errors';
+import { useAttempt, useMyQuizResults } from './hooks';
 import {
   CheckCircle,
   XCircle,
@@ -18,43 +18,19 @@ export const QuizResult: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [resultsSummary, setResultsSummary] = useState<QuizResultsMe | null>(null);
-  const [latestAttempt, setLatestAttempt] = useState<QuizAttempt | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const resultsQuery = useMyQuizResults(id);
+  const resultsSummary = resultsQuery.data ?? null;
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      if (!id) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const summary = await quizApi.getMyResults(id);
-        setResultsSummary(summary);
+  // Review the most recent *submitted* attempt; in-progress attempts have nothing to grade yet.
+  const latestSubmittedId = [...(resultsSummary?.attempts ?? [])]
+    .filter((a) => a.status === 'SUBMITTED')
+    .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())[0]?.id;
+  const attemptQuery = useAttempt(latestSubmittedId);
+  const latestAttempt = attemptQuery.data ?? null;
 
-        if (summary.attempts && summary.attempts.length > 0) {
-          const sorted = [...summary.attempts].sort(
-            (a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
-          );
-          const latestId = sorted[0].id;
-          const fullAttempt = await quizApi.getAttempt(latestId);
-          setLatestAttempt(fullAttempt);
-        }
-      } catch (err: unknown) {
-        const message =
-          err && typeof err === 'object' && 'response' in err
-            ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-            : err instanceof Error
-            ? err.message
-            : 'Failed to load quiz results.';
-        setError(message || 'Failed to load quiz results.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
-  }, [id]);
+  const loading = resultsQuery.isLoading || (!!latestSubmittedId && attemptQuery.isLoading);
+  const loadError = resultsQuery.error ?? attemptQuery.error;
+  const error = loadError ? getErrorMessage(loadError, 'Failed to load quiz results.') : null;
 
   if (loading) {
     return (

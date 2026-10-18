@@ -1,51 +1,46 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/auth';
-import type { User, LoginPayload, RegisterPayload } from '../types';
+import type { LoginPayload, RegisterPayload } from '../types';
+import { AuthContext } from './auth';
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
-  logout: () => Promise<void>;
-  isInstructor: boolean;
-  isStudent: boolean;
-  isAdmin: boolean;
-  refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const ME_KEY = ['auth', 'me'] as const;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const queryClient = useQueryClient();
+  // Tracks whether we hold a token; the profile itself comes from GET /auth/me/.
+  const [hasToken, setHasToken] = useState(() => !!localStorage.getItem('access_token'));
 
-  const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-    try {
-      const currentUser = await authApi.getMe();
-      setUser(currentUser);
-    } catch {
-      setUser(null);
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const meQuery = useQuery({
+    queryKey: ME_KEY,
+    queryFn: async () => {
+      try {
+        return await authApi.getMe();
+      } catch (err) {
+        // An invalid/expired session: drop the tokens so we show the logged-out UI.
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        setHasToken(false);
+        throw err;
+      }
+    },
+    enabled: hasToken,
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
 
-  useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+  const user = hasToken ? meQuery.data ?? null : null;
+  const loading = hasToken && meQuery.isLoading;
+
+  const refreshUser = async () => {
+    setHasToken(!!localStorage.getItem('access_token'));
+    await queryClient.invalidateQueries({ queryKey: ME_KEY });
+  };
 
   const login = async (payload: LoginPayload) => {
     await authApi.login(payload);
-    await refreshUser();
+    setHasToken(true);
+    await queryClient.fetchQuery({ queryKey: ME_KEY, queryFn: authApi.getMe });
   };
 
   const register = async (payload: RegisterPayload) => {
@@ -56,7 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     await authApi.logout();
-    setUser(null);
+    setHasToken(false);
+    // Never show one user's cached data to the next user of this browser.
+    queryClient.clear();
   };
 
   const isInstructor = user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN';
@@ -80,12 +77,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

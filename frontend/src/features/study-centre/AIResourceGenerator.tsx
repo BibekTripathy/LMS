@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { courseApi } from '../../api/courses';
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getErrorMessage } from '../../lib/errors';
+import { useCourseDetail, useCourses, useLesson } from '../authoring/hooks';
 import { aiApi } from '../../api/ai';
 import type { Course, CourseDetail, Lesson, AIResource, AIResourceType } from '../../types';
 import { Sparkles, Brain, Layers, BookOpen, AlertCircle, Check, X } from 'lucide-react';
@@ -13,113 +15,52 @@ export const AIResourceGenerator: React.FC<AIResourceGeneratorProps> = ({
   onClose,
   onGenerated,
 }) => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
-  const [selectedCourseDetail, setSelectedCourseDetail] = useState<CourseDetail | null>(null);
-  const [selectedLessonId, setSelectedLessonId] = useState<string>('');
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const coursesQuery = useCourses();
+  const courses: Course[] = coursesQuery.data ?? [];
+  const [chosenCourseId, setSelectedCourseId] = useState<string>('');
+  const selectedCourseId = chosenCourseId || courses[0]?.id || '';
+
+  const courseDetailQuery = useCourseDetail(selectedCourseId || undefined);
+  const selectedCourseDetail: CourseDetail | null = courseDetailQuery.data ?? null;
+  const allLessons = selectedCourseDetail?.modules?.flatMap((m) => m.lessons ?? []) ?? [];
+  const [chosenLessonId, setSelectedLessonId] = useState<string>('');
+  const selectedLessonId = allLessons.some((l) => l.id === chosenLessonId) ? chosenLessonId : allLessons[0]?.id ?? '';
+
+  // Full lesson (with transcript) to show whether there is material to generate from
+  const selectedLesson: Lesson | null = useLesson(selectedLessonId || undefined).data ?? null;
   const [resourceType, setResourceType] = useState<AIResourceType>('FLASHCARDS');
 
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingCourseDetail, setLoadingCourseDetail] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const generate = useMutation({
+    mutationFn: (lessonId: string): Promise<AIResource> => {
+      if (resourceType === 'FLASHCARDS') return aiApi.generateFlashcards(lessonId);
+      if (resourceType === 'SUMMARY') return aiApi.generateSummary(lessonId);
+      return aiApi.generateMCQs(lessonId);
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['ai-resources'] });
+      onGenerated(created);
+    },
+  });
 
-  // Load courses
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const list = await courseApi.getCourses();
-        setCourses(list);
-        if (list.length > 0) {
-          setSelectedCourseId(list[0].id);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load courses.');
-      } finally {
-        setLoadingCourses(false);
-      }
-    };
-    fetchCourses();
-  }, []);
+  const loadingCourses = coursesQuery.isLoading;
+  const loadingCourseDetail = courseDetailQuery.isLoading;
+  const generating = generate.isPending;
+  const [formError, setError] = useState<string | null>(null);
+  const loadError = coursesQuery.error ?? courseDetailQuery.error;
+  const error =
+    formError ??
+    (generate.error ? getErrorMessage(generate.error, 'AI generation failed. Please try again.') : null) ??
+    (loadError ? getErrorMessage(loadError, 'Failed to load courses.') : null);
 
-  // When course changes, load its modules & lessons
-  useEffect(() => {
-    if (!selectedCourseId) return;
-    const fetchDetail = async () => {
-      setLoadingCourseDetail(true);
-      setError(null);
-      try {
-        const detail = await courseApi.getCourseById(selectedCourseId);
-        setSelectedCourseDetail(detail);
-
-        // Auto select first lesson if available
-        let firstLessonId = '';
-        if (detail.modules && detail.modules.length > 0) {
-          for (const m of detail.modules) {
-            if (m.lessons && m.lessons.length > 0) {
-              firstLessonId = m.lessons[0].id;
-              break;
-            }
-          }
-        }
-        setSelectedLessonId(firstLessonId);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load course details.');
-      } finally {
-        setLoadingCourseDetail(false);
-      }
-    };
-    fetchDetail();
-  }, [selectedCourseId]);
-
-  // When lesson changes, load full lesson to check transcript
-  useEffect(() => {
-    if (!selectedLessonId) {
-      setSelectedLesson(null);
-      return;
-    }
-    const fetchLesson = async () => {
-      try {
-        const l = await courseApi.getLessonById(selectedLessonId);
-        setSelectedLesson(l);
-      } catch {
-        setSelectedLesson(null);
-      }
-    };
-    fetchLesson();
-  }, [selectedLessonId]);
-
-  const handleGenerate = async (e: React.FormEvent) => {
+  const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLessonId) {
       setError('Please select a lesson to generate study resources.');
       return;
     }
-
-    setGenerating(true);
     setError(null);
-
-    try {
-      let created: AIResource;
-      if (resourceType === 'FLASHCARDS') {
-        created = await aiApi.generateFlashcards(selectedLessonId);
-      } else if (resourceType === 'SUMMARY') {
-        created = await aiApi.generateSummary(selectedLessonId);
-      } else {
-        created = await aiApi.generateMCQs(selectedLessonId);
-      }
-      onGenerated(created);
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.detail ||
-        err.message ||
-        'AI generation failed. Please ensure you are enrolled in this course.';
-      setError(msg);
-    } finally {
-      setGenerating(false);
-    }
+    generate.mutate(selectedLessonId);
   };
 
   const hasTranscript = !!(selectedLesson?.transcript && selectedLesson.transcript.trim().length > 0);

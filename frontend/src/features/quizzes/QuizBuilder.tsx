@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
-import { quizApi } from '../../api/quizzes';
-import { courseApi } from '../../api/courses';
+import { getErrorMessage } from '../../lib/errors';
+import { useCourseDetail } from '../authoring/hooks';
+import { quizKeys, useCourseQuizzes, useQuizAuthoring, useQuizManage } from './hooks';
 import { aiApi } from '../../api/ai';
-import type { Quiz, Question, CourseDetail, MCQContent } from '../../types';
+import type { Quiz, Question, QuizStatus, MCQContent } from '../../types';
 import { QuestionEditorModal } from './QuestionEditorModal';
 import {
   HelpCircle,
@@ -21,158 +23,117 @@ import {
 
 export const QuizBuilder: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
+  const courseQuery = useCourseDetail(courseId);
+  const quizzesQuery = useCourseQuizzes(courseId);
+  const authoring = useQuizAuthoring(courseId);
+  const queryClient = useQueryClient();
+  const course = courseQuery.data ?? null;
+  const quizzes: Quiz[] = quizzesQuery.data ?? [];
+
+  // The selected quiz defaults to the first one; it is derived, not synced in an effect.
+  const [selectedQuizId, setActiveQuizId] = useState<string | null>(null);
+  const activeQuizId = quizzes.some((q) => q.id === selectedQuizId) ? selectedQuizId : quizzes[0]?.id ?? null;
+  const activeQuizQuery = useQuizManage(activeQuizId);
+  const activeQuiz = activeQuizQuery.data ?? null;
 
   // Quiz Form Settings
   const [quizTitle, setQuizTitle] = useState('');
   const [quizDesc, setQuizDesc] = useState('');
   const [passPercentage, setPassPercentage] = useState<number>(70);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number>(30);
-  const [quizStatus, setQuizStatus] = useState<'DRAFT' | 'PUBLISHED'>('PUBLISHED');
+  const [quizStatus, setQuizStatus] = useState<QuizStatus>('DRAFT');
 
-  const [loading, setLoading] = useState(true);
-  const [savingQuiz, setSavingQuiz] = useState(false);
+  // Copy the loaded quiz into the form once per server version.
+  const loadedVersion = activeQuiz ? `${activeQuiz.id}:${activeQuiz.updated_at}` : null;
+  const [formVersion, setFormVersion] = useState<string | null>(null);
+  if (activeQuiz && loadedVersion !== formVersion) {
+    setFormVersion(loadedVersion);
+    setQuizTitle(activeQuiz.title);
+    setQuizDesc(activeQuiz.description || '');
+    setPassPercentage(activeQuiz.pass_percentage);
+    setTimeLimitMinutes(Math.round((activeQuiz.time_limit_seconds || 1800) / 60));
+    setQuizStatus(activeQuiz.status);
+  }
+
+  const loading = courseQuery.isLoading || quizzesQuery.isLoading;
+  const savingQuiz = authoring.updateQuiz.isPending;
   const [importingAI, setImportingAI] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setError] = useState<string | null>(null);
+  const loadError = courseQuery.error ?? quizzesQuery.error ?? activeQuizQuery.error;
+  const error = actionError ?? (loadError ? getErrorMessage(loadError, 'Failed to load quizzes for course.') : null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Question Modal
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
 
-  const loadData = async () => {
-    if (!courseId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const [c, qList] = await Promise.all([
-        courseApi.getCourseById(courseId),
-        quizApi.getCourseQuizzes(courseId),
-      ]);
-      setCourse(c);
-      setQuizzes(qList);
-
-      if (qList.length > 0) {
-        const firstQuizId = qList[0].id;
-        setActiveQuizId(firstQuizId);
-        loadActiveQuiz(firstQuizId);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to load quizzes for course.';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+  /** Kept for the sidebar/modal callers: selecting a quiz is enough, the query loads it. */
+  const loadActiveQuiz = (quizId: string) => {
+    queryClient.invalidateQueries({ queryKey: quizKeys.manage(quizId) });
   };
 
-  const loadActiveQuiz = async (quizId: string) => {
-    try {
-      const full = await quizApi.getQuizManage(quizId);
-      setActiveQuiz(full);
-      setQuizTitle(full.title);
-      setQuizDesc(full.description || '');
-      setPassPercentage(full.pass_percentage);
-      setTimeLimitMinutes(Math.round((full.time_limit_seconds || 1800) / 60));
-      setQuizStatus(full.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT');
-    } catch (err: unknown) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [courseId]);
-
-  const handleCreateNewQuiz = async () => {
+  const handleCreateNewQuiz = () => {
     if (!courseId) return;
     const title = prompt('Enter a title for the new quiz:', 'Course Assessment Quiz');
     if (!title) return;
 
-    try {
-      const created = await quizApi.createQuiz(courseId, {
+    authoring.createQuiz.mutate(
+      {
         title,
         description: 'Test your understanding of the course materials.',
         pass_percentage: 70,
         time_limit_seconds: 1800,
-        status: 'PUBLISHED',
-      });
-      setQuizzes((prev) => [...prev, created]);
-      setActiveQuizId(created.id);
-      loadActiveQuiz(created.id);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to create quiz.';
-      alert('Failed to create quiz: ' + msg);
-    }
+        status: 'DRAFT',
+      },
+      {
+        onSuccess: (created) => setActiveQuizId(created.id),
+        onError: (err) => alert('Failed to create quiz: ' + getErrorMessage(err)),
+      }
+    );
   };
 
-  const handleSaveQuizSettings = async (e: React.FormEvent) => {
+  const handleSaveQuizSettings = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeQuizId) return;
 
-    setSavingQuiz(true);
     setError(null);
     setSuccessMsg(null);
-
-    try {
-      const updated = await quizApi.updateQuiz(activeQuizId, {
-        title: quizTitle,
-        description: quizDesc,
-        pass_percentage: passPercentage,
-        time_limit_seconds: timeLimitMinutes * 60,
-        status: quizStatus,
-      });
-      setActiveQuiz((prev) => (prev ? { ...prev, ...updated } : updated));
-      setQuizzes((prev) =>
-        prev.map((q) => (q.id === activeQuizId ? { ...q, ...updated } : q))
-      );
-      setSuccessMsg('Quiz settings saved successfully!');
-      setTimeout(() => setSuccessMsg(null), 3000);
-    } catch (err: unknown) {
-      const msg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-          : err instanceof Error
-          ? err.message
-          : 'Failed to update quiz.';
-      setError(msg || 'Failed to update quiz.');
-    } finally {
-      setSavingQuiz(false);
-    }
+    authoring.updateQuiz.mutate(
+      {
+        quizId: activeQuizId,
+        data: {
+          title: quizTitle,
+          description: quizDesc,
+          pass_percentage: passPercentage,
+          time_limit_seconds: timeLimitMinutes * 60,
+          status: quizStatus,
+        },
+      },
+      {
+        onSuccess: () => {
+          setSuccessMsg('Quiz settings saved successfully!');
+          setTimeout(() => setSuccessMsg(null), 3000);
+        },
+        onError: (err) => setError(getErrorMessage(err, 'Failed to update quiz.')),
+      }
+    );
   };
 
-  const handleDeleteQuiz = async (quizId: string) => {
+  const handleDeleteQuiz = (quizId: string) => {
     if (!window.confirm('Delete this entire quiz and all questions?')) return;
-    try {
-      await quizApi.deleteQuiz(quizId);
-      const remaining = quizzes.filter((q) => q.id !== quizId);
-      setQuizzes(remaining);
-      if (remaining.length > 0) {
-        setActiveQuizId(remaining[0].id);
-        loadActiveQuiz(remaining[0].id);
-      } else {
-        setActiveQuizId(null);
-        setActiveQuiz(null);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete quiz.';
-      alert('Failed to delete quiz: ' + msg);
-    }
+    authoring.deleteQuiz.mutate(quizId, {
+      onSuccess: () => setActiveQuizId(null),
+      onError: (err) => alert('Failed to delete quiz: ' + getErrorMessage(err)),
+    });
   };
 
-  const handleDeleteQuestion = async (questionId: string) => {
+  const handleDeleteQuestion = (questionId: string) => {
     if (!window.confirm('Are you sure you want to delete this question?')) return;
-    try {
-      await quizApi.deleteQuestion(questionId);
-      if (activeQuizId) {
-        loadActiveQuiz(activeQuizId);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete question.';
-      alert('Failed to delete question: ' + msg);
-    }
+    if (!activeQuizId) return;
+    authoring.deleteQuestion.mutate(
+      { quizId: activeQuizId, questionId },
+      { onError: (err) => alert('Failed to delete question: ' + getErrorMessage(err)) }
+    );
   };
 
   const handleImportAIMCQs = async () => {
@@ -200,21 +161,22 @@ export const QuizBuilder: React.FC = () => {
             is_correct: idx === mcq.correct_index,
           }));
 
-          await quizApi.createQuestion(activeQuizId, {
-            prompt: mcq.question,
-            marks: 1,
-            explanation: mcq.explanation,
-            options: formattedOptions,
+          await authoring.saveQuestion.mutateAsync({
+            quizId: activeQuizId,
+            data: {
+              prompt: mcq.question,
+              marks: 1,
+              explanation: mcq.explanation,
+              options: formattedOptions,
+            },
           });
           importedCount++;
         }
       }
 
-      await loadActiveQuiz(activeQuizId);
       alert(`Successfully imported ${importedCount} questions from AI Study Centre!`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to import AI MCQs.';
-      alert('Failed to import AI MCQs: ' + msg);
+    } catch (err) {
+      alert('Failed to import AI MCQs: ' + getErrorMessage(err));
     } finally {
       setImportingAI(false);
     }
@@ -414,7 +376,7 @@ export const QuizBuilder: React.FC = () => {
                       </label>
                       <select
                         value={quizStatus}
-                        onChange={(e) => setQuizStatus(e.target.value as any)}
+                        onChange={(e) => setQuizStatus(e.target.value as QuizStatus)}
                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="PUBLISHED">Published (Available to students)</option>

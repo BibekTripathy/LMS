@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getErrorMessage } from '../../lib/errors';
+import { useQueryClient } from '@tanstack/react-query';
 import { courseApi } from '../../api/courses';
+import { courseKeys, useCourseDetail, useCourseMutations } from './hooks';
 import type { Module, Lesson, CourseDifficulty } from '../../types';
 import { LessonEditorModal } from './LessonEditorModal';
 import {
@@ -30,11 +33,15 @@ export const CourseEditor: React.FC = () => {
   const [difficulty, setDifficulty] = useState<CourseDifficulty>('BEGINNER');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
 
-  // Modules & lessons state
-  const [modules, setModules] = useState<Module[]>([]);
-  const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Modules & lessons come straight from the course query
+  const courseQuery = useCourseDetail(isNew ? undefined : id);
+  const mutations = useCourseMutations(isNew ? undefined : id);
+  const queryClient = useQueryClient();
+  const modules: Module[] = courseQuery.data?.modules ?? [];
+  const loading = !isNew && courseQuery.isLoading;
+  const saving = mutations.create.isPending || mutations.update.isPending;
+  const [actionError, setError] = useState<string | null>(null);
+  const error = actionError ?? (courseQuery.isError ? getErrorMessage(courseQuery.error, 'Failed to load course details.') : null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Module creation modal / inline state
@@ -49,36 +56,27 @@ export const CourseEditor: React.FC = () => {
     lesson: Lesson | null;
   } | null>(null);
 
-  const loadCourseData = async () => {
-    if (isNew) return;
-    setLoading(true);
-    try {
-      const data = await courseApi.getCourseById(id!);
-      setTitle(data.title);
-      setDescription(data.description || '');
-      setCategory(data.category || '');
-      setDifficulty(data.difficulty || 'BEGINNER');
-      setThumbnailUrl(data.thumbnail_url || '');
-      setModules(data.modules || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load course details.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Copy loaded course data into the form once per server version (adjusting state
+  // during render instead of in an effect avoids an extra render pass).
+  const loadedVersion = courseQuery.data ? `${courseQuery.data.id}:${courseQuery.data.updated_at ?? ''}` : null;
+  const [formVersion, setFormVersion] = useState<string | null>(null);
+  if (courseQuery.data && loadedVersion !== formVersion) {
+    const data = courseQuery.data;
+    setFormVersion(loadedVersion);
+    setTitle(data.title);
+    setDescription(data.description || '');
+    setCategory(data.category || '');
+    setDifficulty(data.difficulty || 'BEGINNER');
+    setThumbnailUrl(data.thumbnail_url || '');
+  }
 
-  useEffect(() => {
-    loadCourseData();
-  }, [id]);
-
-  const handleSaveCourse = async (e: React.FormEvent) => {
+  const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Please provide a course title.');
       return;
     }
 
-    setSaving(true);
     setError(null);
     setSuccessMsg(null);
 
@@ -90,71 +88,68 @@ export const CourseEditor: React.FC = () => {
       thumbnail_url: thumbnailUrl || null,
     };
 
-    try {
-      if (isNew) {
-        const created = await courseApi.createCourse(payload);
-        setSuccessMsg('Course created successfully!');
-        navigate(`/instructor/courses/${created.id}/edit`, { replace: true });
-      } else {
-        const updated = await courseApi.updateCourse(id!, payload);
-        setTitle(updated.title);
-        setSuccessMsg('Course settings updated!');
-        setTimeout(() => setSuccessMsg(null), 3000);
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to save course.');
-    } finally {
-      setSaving(false);
+    if (isNew) {
+      mutations.create.mutate(payload, {
+        onSuccess: (created) => navigate(`/instructor/courses/${created.id}/edit`, { replace: true }),
+        onError: (err) => setError(getErrorMessage(err, 'Failed to save course.')),
+      });
+    } else {
+      mutations.update.mutate(payload, {
+        onSuccess: () => {
+          setSuccessMsg('Course settings updated!');
+          setTimeout(() => setSuccessMsg(null), 3000);
+        },
+        onError: (err) => setError(getErrorMessage(err, 'Failed to save course.')),
+      });
     }
   };
 
-  const handleCreateModule = async (e: React.FormEvent) => {
+  const handleCreateModule = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newModuleTitle.trim() || !id) return;
 
-    try {
-      const created = await courseApi.createModule(id, {
-        title: newModuleTitle,
-        description: newModuleDesc,
-      });
-      setModules((prev) => [...prev, { ...created, lessons: [] }]);
-      setNewModuleTitle('');
-      setNewModuleDesc('');
-      setAddingModule(false);
-    } catch (err: any) {
-      alert('Failed to add module: ' + (err.response?.data?.detail || err.message));
-    }
+    mutations.createModule.mutate(
+      { title: newModuleTitle, description: newModuleDesc },
+      {
+        onSuccess: () => {
+          setNewModuleTitle('');
+          setNewModuleDesc('');
+          setAddingModule(false);
+        },
+        onError: (err) => alert('Failed to add module: ' + getErrorMessage(err)),
+      }
+    );
   };
 
-  const handleDeleteModule = async (moduleId: string) => {
+  const handleDeleteModule = (moduleId: string) => {
     if (!window.confirm('Delete this module and all its lessons?')) return;
-    try {
-      await courseApi.deleteModule(moduleId);
-      setModules((prev) => prev.filter((m) => m.id !== moduleId));
-    } catch (err: any) {
-      alert('Failed to delete module: ' + err.message);
-    }
+    mutations.deleteModule.mutate(moduleId, {
+      onError: (err) => alert('Failed to delete module: ' + getErrorMessage(err)),
+    });
   };
 
-  const handleDeleteLesson = async (lessonId: string, moduleId: string) => {
+  const handleDeleteLesson = (lessonId: string) => {
     if (!window.confirm('Are you sure you want to delete this lesson?')) return;
+    mutations.deleteLesson.mutate(lessonId, {
+      onError: (err) => alert('Failed to delete lesson: ' + getErrorMessage(err)),
+    });
+  };
+
+  const openLessonEditor = async (mod: Module, lessonId: string) => {
     try {
-      await courseApi.deleteLesson(lessonId);
-      setModules((prev) =>
-        prev.map((m) =>
-          m.id === moduleId
-            ? { ...m, lessons: m.lessons.filter((l) => l.id !== lessonId) }
-            : m
-        )
-      );
-    } catch (err: any) {
-      alert('Failed to delete lesson: ' + err.message);
+      // Full lesson (transcript, reading content) is fetched through the query cache.
+      const fullLesson = await queryClient.fetchQuery({
+        queryKey: courseKeys.lesson(lessonId),
+        queryFn: () => courseApi.getLessonById(lessonId),
+      });
+      setActiveLessonModal({ moduleId: mod.id, moduleTitle: mod.title, lesson: fullLesson });
+    } catch (err) {
+      alert('Failed to load lesson details: ' + getErrorMessage(err));
     }
   };
 
   const handleLessonSaved = () => {
-    // Reload full course to get consistent state
-    loadCourseData();
+    // The lesson mutation already refreshed the course query.
     setActiveLessonModal(null);
   };
 
@@ -474,18 +469,7 @@ export const CourseEditor: React.FC = () => {
                             <div className="flex items-center gap-1.5">
                               <button
                                 type="button"
-                                onClick={async () => {
-                                  try {
-                                    const fullLesson = await courseApi.getLessonById(les.id);
-                                    setActiveLessonModal({
-                                      moduleId: mod.id,
-                                      moduleTitle: mod.title,
-                                      lesson: fullLesson,
-                                    });
-                                  } catch (err: any) {
-                                    alert('Failed to load lesson details: ' + err.message);
-                                  }
-                                }}
+                                onClick={() => openLessonEditor(mod, les.id)}
                                 className="p-1 text-slate-500 hover:text-indigo-600 rounded"
                                 title="Edit Lesson"
                               >
@@ -493,7 +477,7 @@ export const CourseEditor: React.FC = () => {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteLesson(les.id, mod.id)}
+                                onClick={() => handleDeleteLesson(les.id)}
                                 className="p-1 text-slate-400 hover:text-rose-600 rounded"
                                 title="Delete Lesson"
                               >

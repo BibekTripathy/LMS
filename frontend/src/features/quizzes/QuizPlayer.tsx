@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { quizApi } from '../../api/quizzes';
-import type { Quiz, QuizAttempt, Question } from '../../types';
+import type { Question } from '../../types';
+import { getErrorMessage } from '../../lib/errors';
+import { useAttempt, useAttemptMutations, useQuiz } from './hooks';
 import {
   Clock,
   CheckCircle,
@@ -16,136 +19,85 @@ export const QuizPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const quizQuery = useQuiz(id);
+  // Starting is idempotent on the server (an unexpired attempt is resumed), so it is
+  // modelled as a query keyed by quiz: it runs once per visit and never retries.
+  const startQuery = useQuery({
+    queryKey: ['quizzes', 'start', id],
+    queryFn: () => quizApi.startQuiz(id!),
+    enabled: !!id,
+    staleTime: Infinity,
+    gcTime: 0,
+    retry: false,
+  });
+  const attemptQuery = useAttempt(startQuery.data?.id);
+  const { save, submit } = useAttemptMutations(id);
+
+  const quiz = quizQuery.data ?? null;
+  const attempt = attemptQuery.data ?? startQuery.data ?? null;
+  const questions: Question[] = attemptQuery.data?.questions ?? quiz?.questions ?? [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Timer interval ref
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loading = quizQuery.isLoading || startQuery.isLoading || attemptQuery.isLoading;
+  const submitting = submit.isPending;
+  const loadError = quizQuery.error ?? startQuery.error ?? attemptQuery.error;
+  const error = submitError ?? (loadError ? getErrorMessage(loadError, 'Failed to start quiz.') : null);
 
-  const submitQuiz = useCallback(async () => {
-    if (!attempt || submitting) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      const answersPayload = Object.entries(selectedAnswers).map(
-        ([question_id, selected_option_id]) => ({
-          question_id,
-          selected_option_id,
-        })
-      );
-      await quizApi.submitAttempt(attempt.id, answersPayload);
-      navigate(`/quizzes/${id}/results`, { replace: true });
-    } catch (err: unknown) {
-      const msg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { error?: string; detail?: string } } }).response?.data?.error ||
-            (err as { response?: { data?: { error?: string; detail?: string } } }).response?.data?.detail
-          : err instanceof Error
-          ? err.message
-          : 'Failed to submit quiz.';
-      setError(msg || 'Failed to submit quiz.');
-      setSubmitting(false);
-    }
-  }, [attempt, submitting, selectedAnswers, id, navigate]);
+  // Pre-fill answers already saved on the server, once per attempt.
+  const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
+  if (attemptQuery.data && prefilledFor !== attemptQuery.data.id) {
+    setPrefilledFor(attemptQuery.data.id);
+    const prefill: Record<string, string> = {};
+    (attemptQuery.data.answers ?? []).forEach((ans) => {
+      const optId = ans.selected_option_id || ans.choice_id || ans.selected_choice_id;
+      if (optId) prefill[ans.question_id] = optId;
+    });
+    setSelectedAnswers(prefill);
+  }
 
-  useEffect(() => {
-    const initQuiz = async () => {
-      if (!id) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const [quizData, attemptData] = await Promise.all([
-          quizApi.getQuizById(id),
-          quizApi.startQuiz(id),
-        ]);
-
-        setQuiz(quizData);
-        setAttempt(attemptData);
-
-        const loadedQuestions = quizData.questions || attemptData.questions || [];
-        setQuestions(loadedQuestions);
-
-        // Pre-fill any answers already saved in active attempt
-        if (attemptData.answers && attemptData.answers.length > 0) {
-          const prefill: Record<string, string> = {};
-          attemptData.answers.forEach((ans) => {
-            const optId = ans.selected_option_id || ans.choice_id || ans.selected_choice_id;
-            if (optId) prefill[ans.question_id] = optId;
-          });
-          setSelectedAnswers(prefill);
-        }
-
-        // Initialize Countdown timer
-        if (attemptData.deadline_at) {
-          const deadlineMs = new Date(attemptData.deadline_at).getTime();
-          const nowMs = Date.now();
-          const diffSeconds = Math.max(0, Math.floor((deadlineMs - nowMs) / 1000));
-          setTimeLeftSeconds(diffSeconds);
-        } else if (quizData.time_limit_seconds && quizData.time_limit_seconds > 0) {
-          setTimeLeftSeconds(quizData.time_limit_seconds);
-        }
-      } catch (err: unknown) {
-        const msg =
-          err && typeof err === 'object' && 'response' in err
-            ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-            : err instanceof Error
-            ? err.message
-            : 'Failed to start quiz.';
-        setError(msg || 'Failed to start quiz.');
-      } finally {
-        setLoading(false);
+  const submitQuiz = useCallback(() => {
+    if (!attempt || submit.isPending) return;
+    setSubmitError(null);
+    const answersPayload = Object.entries(selectedAnswers).map(([question_id, selected_option_id]) => ({
+      question_id,
+      selected_option_id,
+    }));
+    submit.mutate(
+      { attemptId: attempt.id, answers: answersPayload },
+      {
+        onSuccess: () => navigate(`/quizzes/${id}/results`, { replace: true }),
+        onError: (err) => setSubmitError(getErrorMessage(err, 'Failed to submit quiz.')),
       }
-    };
+    );
+  }, [attempt, submit, selectedAnswers, id, navigate]);
 
-    initQuiz();
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [id]);
-
-  // Countdown clock tick
+  // The countdown is derived from the server deadline; the server stays authoritative.
+  const deadlineMs = attempt?.deadline_at ? new Date(attempt.deadline_at).getTime() : null;
+  const [nowMs, setNowMs] = useState(() => Date.now());
   useEffect(() => {
-    if (timeLeftSeconds === null || timeLeftSeconds <= 0) return;
+    if (deadlineMs === null) return;
+    const timer = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [deadlineMs]);
+  const timeLeftSeconds = deadlineMs === null ? null : Math.max(0, Math.floor((deadlineMs - nowMs) / 1000));
 
-    timerRef.current = setInterval(() => {
-      setTimeLeftSeconds((prev) => {
-        if (prev === null || prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          // Auto submit when time runs out!
-          submitQuiz();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+  // Auto-submit once when time runs out.
+  const autoSubmitted = useRef(false);
+  useEffect(() => {
+    if (timeLeftSeconds === 0 && !autoSubmitted.current) {
+      autoSubmitted.current = true;
+      submitQuiz();
+    }
   }, [timeLeftSeconds, submitQuiz]);
 
-  const handleSelectOption = async (questionId: string, optionId: string) => {
-    const updated = { ...selectedAnswers, [questionId]: optionId };
-    setSelectedAnswers(updated);
-
-    // Save answer in background to server
+  const handleSelectOption = (questionId: string, optionId: string) => {
+    setSelectedAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+    // Save in the background; local state is kept if the network drops.
     if (attempt) {
-      try {
-        await quizApi.saveAnswers(attempt.id, [
-          { question_id: questionId, selected_option_id: optionId },
-        ]);
-      } catch {
-        // Silently preserve local state if network drops
-      }
+      save.mutate({ attemptId: attempt.id, answers: [{ question_id: questionId, selected_option_id: optionId }] });
     }
   };
 
