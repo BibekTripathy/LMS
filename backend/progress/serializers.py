@@ -59,6 +59,8 @@ class CourseProgressSerializer(serializers.Serializer):
     course_title = serializers.CharField()
     total_lessons = serializers.IntegerField()
     completed_lessons = serializers.IntegerField()
+    required_lessons = serializers.IntegerField()
+    completed_required_lessons = serializers.IntegerField()
     progress_percentage = serializers.FloatField()
     is_completed = serializers.BooleanField()
     last_accessed_lesson_id = serializers.UUIDField(allow_null=True)
