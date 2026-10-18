@@ -106,6 +106,18 @@ List endpoints use offset/limit or page number pagination.
   - **Authorization**: Requires valid `Enrollment`.
 
 
+### Quiz authoring (course instructor or admin)
+- `GET /api/v1/courses/{id}/quizzes/`
+  - Course instructor/admin: every quiz, including correct options and explanations (authoring view). Actively enrolled student: `PUBLISHED` quizzes only, without answers. Anyone else gets `403`.
+- `POST /api/v1/courses/{id}/quizzes/`
+  - **Payload**: `{ "title", "description", "lesson"?, "time_limit_seconds"?, "pass_percentage"? (0-100), "status"? }`. `course` comes from the URL; `lesson` must belong to it. New quizzes default to `DRAFT`.
+- `GET | PATCH | DELETE /api/v1/quizzes/{id}/manage/`
+  - `course` is read-only. `DELETE` returns `204`, or `400 HAS_ATTEMPTS` if students have attempted the quiz (archive it with `PATCH {"status": "ARCHIVED"}` instead).
+- `POST /api/v1/quizzes/{id}/questions/`
+  - **Payload**: `{ "prompt", "marks"?, "explanation"?, "position"?, "options": [ { "text", "is_correct" } ] }`. Requires 2-6 options with unique text and exactly one `is_correct`. `position` defaults to the next free slot; a taken position returns `400`.
+- `PATCH | DELETE /api/v1/questions/{id}/`
+  - Options are updated in place (send an option's `id` to keep it). Once students have answered a question, its options cannot change (`400`) and it cannot be deleted (`400 HAS_ANSWERS`); prompt/explanation/marks can still be edited.
+
 ## 7. AI Study Resources
 *Note: All AI endpoints require the user to be enrolled in the lesson's course.*
 - `POST /api/v1/ai/generate-flashcards/`

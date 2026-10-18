@@ -168,13 +168,25 @@ class QuizResultsMeSerializer(serializers.Serializer):
 class QuestionOptionCreateSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(required=False)
     order = serializers.IntegerField(source='position', required=False)
+    text = serializers.CharField(max_length=500, allow_blank=False, trim_whitespace=True)
 
     class Meta:
         model = QuestionOption
         fields = ['id', 'text', 'is_correct', 'position', 'order']
 
 
+MIN_OPTIONS = 2
+MAX_OPTIONS = 6
+
+
 class QuestionCreateSerializer(serializers.ModelSerializer):
+    """
+    Instructor question authoring.
+
+    Options are validated (2-6, unique text, exactly one correct) and updated in
+    place. Once students have answered a question its options are frozen, because
+    Answer.selected_option would otherwise lose the recorded choice.
+    """
     id = serializers.UUIDField(required=False)
     text = serializers.CharField(source='prompt', required=False)
     order = serializers.IntegerField(source='position', required=False)
@@ -183,13 +195,44 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ['id', 'prompt', 'text', 'question_type', 'marks', 'explanation', 'position', 'order', 'options']
+        extra_kwargs = {'prompt': {'required': False}}
+
+    def validate_options(self, options):
+        if not MIN_OPTIONS <= len(options) <= MAX_OPTIONS:
+            raise serializers.ValidationError(f'A question needs between {MIN_OPTIONS} and {MAX_OPTIONS} options.')
+        texts = [o['text'].casefold() for o in options]
+        if len(set(texts)) != len(texts):
+            raise serializers.ValidationError('Option texts must be unique.')
+        if sum(1 for o in options if o.get('is_correct')) != 1:
+            raise serializers.ValidationError('Exactly one option must be marked correct.')
+        return options
+
+    def validate_position(self, position):
+        quiz = self.context.get('quiz') or getattr(self.instance, 'quiz', None)
+        if quiz is not None:
+            clash = quiz.questions.filter(position=position)
+            if self.instance is not None:
+                clash = clash.exclude(pk=self.instance.pk)
+            if clash.exists():
+                raise serializers.ValidationError('Another question in this quiz already uses this position.')
+        return position
+
+    def validate(self, attrs):
+        if self.instance is None:
+            if not attrs.get('prompt'):
+                raise serializers.ValidationError({'prompt': 'This field is required.'})
+            if 'options' not in attrs:
+                raise serializers.ValidationError({'options': 'This field is required.'})
+        elif 'options' in attrs and self.instance.student_answers.exists():
+            raise serializers.ValidationError(
+                {'options': 'Students have already answered this question, so its options can no longer be changed.'}
+            )
+        return attrs
 
     def create(self, validated_data):
-        options_data = validated_data.pop('options', [])
+        options_data = validated_data.pop('options')
         question = Question.objects.create(**validated_data)
-        for i, opt in enumerate(options_data):
-            opt.setdefault('position', i + 1)
-            QuestionOption.objects.create(question=question, **opt)
+        self._write_options(question, options_data)
         return question
 
     def update(self, instance, validated_data):
@@ -197,13 +240,24 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
         if options_data is not None:
-            instance.options.all().delete()
-            for i, opt in enumerate(options_data):
-                opt.setdefault('position', i + 1)
-                QuestionOption.objects.create(question=instance, **opt)
+            self._write_options(instance, options_data)
         return instance
+
+    def _write_options(self, question, options_data):
+        existing = {o.id: o for o in question.options.all()}
+        keep_ids = {o['id'] for o in options_data if o.get('id') in existing}
+        # Remove dropped options, then park the kept ones at temporary positions so the
+        # (question, position) unique constraint cannot collide while renumbering.
+        question.options.exclude(id__in=keep_ids).delete()
+        for offset, option_id in enumerate(keep_ids, start=1):
+            QuestionOption.objects.filter(id=option_id).update(position=10_000 + offset)
+        for position, data in enumerate(options_data, start=1):
+            fields = {'text': data['text'], 'is_correct': bool(data.get('is_correct')), 'position': position}
+            if data.get('id') in keep_ids:
+                QuestionOption.objects.filter(id=data['id']).update(**fields)
+            else:
+                QuestionOption.objects.create(question=question, **fields)
 
 
 class QuizCreateSerializer(serializers.ModelSerializer):
@@ -220,5 +274,12 @@ class QuizCreateSerializer(serializers.ModelSerializer):
             'status', 'total_marks', 'total_questions', 'questions',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'total_marks', 'total_questions', 'created_at', 'updated_at']
+        # course comes from the URL on create and can never be moved to another course.
+        read_only_fields = ['id', 'course', 'total_marks', 'total_questions', 'created_at', 'updated_at']
+        extra_kwargs = {'pass_percentage': {'max_value': 100}}
 
+    def validate_lesson(self, lesson):
+        course = self.context.get('course') or getattr(self.instance, 'course', None)
+        if lesson and course and lesson.module.course_id != course.id:
+            raise serializers.ValidationError('The lesson does not belong to this course.')
+        return lesson
