@@ -354,4 +354,40 @@ export interface Certificate {
   certificate_url?: string;
 }
 
+// Student Learning & Course Progress Types
+export interface LessonProgress {
+  id: string;
+  enrollment_id: string;
+  lesson_id: string;
+  last_position_seconds: number;
+  timestamp: number;
+  completed: boolean;
+  is_completed: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CourseProgressLesson {
+  lesson_id: string;
+  title: string;
+  order: number;
+  is_required: boolean;
+  completed: boolean;
+  last_position_seconds: number;
+}
+
+export interface CourseProgress {
+  course_id: string;
+  course_title: string;
+  total_lessons: number;
+  completed_lessons: number;
+  required_lessons: number;
+  completed_required_lessons: number;
+  progress_percentage: number;
+  is_completed: boolean;
+  last_accessed_lesson_id: string | null;
+  lessons?: CourseProgressLesson[];
+}
+
+
 
