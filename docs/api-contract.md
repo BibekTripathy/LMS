@@ -173,5 +173,13 @@ The AI provider is called only by the backend (`ai_study` app). Every generated 
 | 504 | `AI_TIMEOUT` | Provider did not answer in time (after retries) |
 
 ## 8. Certificates
+- `GET /api/v1/certificates/me/`
+  - Returns a list of certificates earned by the authenticated student.
+  - **Authorization**: `STUDENT` or authenticated user.
+- `GET /api/v1/certificates/verify/{code}/`
+  - Public verification endpoint returning limited certificate verification information (`valid`, `verification_code`, `student_name`, `course_title`, `instructor_name`, `issued_at`). Does not leak sensitive personal data.
+  - **Authorization**: Public (`AllowAny`).
 - `GET /api/v1/courses/{id}/certificate/`
-  - Returns the certificate details (including `verification_code`) if the student has passed all quizzes (highest score used) and completed all lessons.
+  - Returns (or generates) the certificate details (including `verification_code`) if the student has passed all quizzes (highest score used) and completed all lessons.
+  - Returns `400 CRITERIA_NOT_MET` if course completion requirements are incomplete.
+  - **Authorization**: Enrolled student or course instructor/admin.
