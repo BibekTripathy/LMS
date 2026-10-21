@@ -66,7 +66,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
           </div>
           <div className="mt-2 font-notebook text-4xl font-bold text-frappe-blue">NoteBox</div>
           <h2 className="mt-2 text-2xl font-bold text-latte-text dark:text-frappe-text tracking-tight">
-            {isLogin ? 'Welcome back' : '📝 Create your account'}
+            {isLogin ? 'Welcome back' : ' Create your account'}
           </h2>
           <p className="mt-2 text-sm text-latte-subtext1 dark:text-frappe-subtext1">
             {isLogin ? "Don't have an account? " : 'Already have an account? '}
