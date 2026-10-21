@@ -6,80 +6,87 @@
 
 /* ─── Base / Root ─────────────────────────────────────────────────────────── */
 :root {
-  --nb-line-color: rgba(198, 208, 245, 0.12);
-  --nb-margin-color: rgba(234, 153, 156, 0.3);
+  --nb-line-color: rgba(76, 79, 105, 0.13);
+  --nb-margin-color: rgba(210, 15, 57, 0.18);
 }
 
 body {
   @apply bg-latte-base text-latte-text font-sans transition-colors duration-300;
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 27px,
-    var(--nb-line-color) 28px
-  );
+  /* Light mode: crisp ruled notebook lines + red margin line */
+  background-image:
+    linear-gradient(90deg, transparent 55px, var(--nb-margin-color) 55px, var(--nb-margin-color) 57px, transparent 57px),
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      var(--nb-line-color) 28px
+    );
   background-attachment: local;
 }
 
 .dark body {
   background-color: #303446;
   color: #c6d0f5;
+  /* Dark mode: subtle lines only, no margin */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(198, 208, 245, 0.07) 28px
+  );
 }
 
 /* ─── Notebook Paper Background ───────────────────────────────────────────── */
 .notebook-bg {
   background-color: #eff1f5;
-  background-image:
-    repeating-linear-gradient(
-      transparent,
-      transparent 27px,
-      rgba(76, 79, 105, 0.1) 28px
-    );
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(76, 79, 105, 0.1) 28px
+  );
 }
 
 .dark .notebook-bg {
   background-color: #303446;
-  background-image:
-    repeating-linear-gradient(
-      transparent,
-      transparent 27px,
-      rgba(198, 208, 245, 0.08) 28px
-    );
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(198, 208, 245, 0.07) 28px
+  );
 }
 
-/* ─── Sticky Note Colors ──────────────────────────────────────────────────── */
+/* ─── Sticky Notes: light, airy pastels for both modes ───────────────────── */
 .sticky-yellow {
-  background: #f9e4a0;
+  background: #fefae8;
   border-top: 3px solid #e5c890;
 }
 .dark .sticky-yellow {
-  background: #3d3617;
+  background: #3f3618;
   border-top: 3px solid #e5c890;
 }
 
 .sticky-blue {
-  background: #c8dff8;
+  background: #edf4fe;
   border-top: 3px solid #8caaee;
 }
 .dark .sticky-blue {
-  background: #1a2640;
+  background: #1d2d46;
   border-top: 3px solid #8caaee;
 }
 
 .sticky-green {
-  background: #c9e8d1;
+  background: #edfaf2;
   border-top: 3px solid #a6d189;
 }
 .dark .sticky-green {
-  background: #1c2e1e;
+  background: #1e3223;
   border-top: 3px solid #a6d189;
 }
 
 .sticky-pink {
-  background: #f7d6e8;
+  background: #fdf0f9;
   border-top: 3px solid #f4b8e4;
 }
 .dark .sticky-pink {
-  background: #311c2c;
+  background: #381d33;
   border-top: 3px solid #f4b8e4;
 }
 

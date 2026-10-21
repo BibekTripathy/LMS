@@ -90,7 +90,7 @@ export const StudentDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="font-notebook text-2xl sm:text-3xl font-bold text-latte-text dark:text-frappe-text">
-              📖 Your Enrolled Courses
+              Your Enrolled Courses
             </h2>
             <p className="text-xs sm:text-sm text-latte-subtext1 dark:text-frappe-subtext1">
               Resume any lesson or track your completion progress.

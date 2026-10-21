@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { BookOpen, Sparkles, BarChart3 } from 'lucide-react';
 import { createQueryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/auth';
@@ -32,15 +33,14 @@ const Home = () => {
   const { user } = useAuth();
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-8">
-      {/* Decorative notebook header */}
-      <div className="relative inline-block">
+      {/* NoteBox wordmark */}
+      <div className="inline-block">
         <span className="font-notebook text-6xl sm:text-7xl font-bold text-latte-blue dark:text-frappe-lavender drop-shadow-sm">
           NoteBox
         </span>
-        <span className="absolute -top-2 -right-6 text-2xl rotate-12">📓</span>
       </div>
       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-        📝 Your interactive learning notebook
+        Your interactive learning notebook
       </div>
       <h1 className="text-3xl sm:text-4xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-snug">
         Learn smarter with structured courses,<br />
@@ -77,19 +77,19 @@ const Home = () => {
       {/* Sticky note feature cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-left">
         <div className="sticky-yellow rounded-xl p-5 shadow-sm rotate-[-0.5deg]">
-          <div className="text-2xl mb-2">📚</div>
-          <h3 className="font-notebook text-lg font-bold text-latte-text">Structured Courses</h3>
-          <p className="text-sm text-latte-subtext1 mt-1">Organised modules and lessons to keep your learning on track.</p>
+          <BookOpen className="w-5 h-5 mb-3 text-latte-yellow dark:text-frappe-yellow" />
+          <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text">Structured Courses</h3>
+          <p className="text-sm text-latte-subtext0 dark:text-frappe-subtext0 mt-1">Organised modules and lessons to keep your learning on track.</p>
         </div>
         <div className="sticky-blue rounded-xl p-5 shadow-sm rotate-[0.3deg]">
-          <div className="text-2xl mb-2">🤖</div>
+          <Sparkles className="w-5 h-5 mb-3 text-latte-blue dark:text-frappe-blue" />
           <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text">AI Study Tools</h3>
-          <p className="text-sm text-latte-subtext1 dark:text-frappe-subtext1 mt-1">Flashcards, summaries and MCQ quizzes generated just for you.</p>
+          <p className="text-sm text-latte-subtext0 dark:text-frappe-subtext0 mt-1">Flashcards, summaries and MCQ quizzes generated just for you.</p>
         </div>
         <div className="sticky-green rounded-xl p-5 shadow-sm rotate-[-0.2deg]">
-          <div className="text-2xl mb-2">📊</div>
-          <h3 className="font-notebook text-lg font-bold text-latte-text">Track Progress</h3>
-          <p className="text-sm text-latte-subtext1 mt-1">Visual analytics to see how far you&apos;ve come — and what&apos;s next.</p>
+          <BarChart3 className="w-5 h-5 mb-3 text-latte-green dark:text-frappe-green" />
+          <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text">Track Progress</h3>
+          <p className="text-sm text-latte-subtext0 dark:text-frappe-subtext0 mt-1">Visual analytics to see how far you&apos;ve come — and what&apos;s next.</p>
         </div>
       </div>
     </div>
