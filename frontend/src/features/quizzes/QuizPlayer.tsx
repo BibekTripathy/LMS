@@ -58,19 +58,30 @@ export const QuizPlayer: React.FC = () => {
     setSelectedAnswers(prefill);
   }
 
+  // Background answer saves; submission waits for the latest one so a save can never
+  // reach the server after grading (it would be rejected as the attempt is SUBMITTED).
+  const pendingSave = useRef<Promise<unknown>>(Promise.resolve());
+  const submitStarted = useRef(false);
+
   const submitQuiz = useCallback(() => {
-    if (!attempt || submit.isPending) return;
+    if (!attempt || submit.isPending || submitStarted.current) return;
+    submitStarted.current = true;
     setSubmitError(null);
     const answersPayload = Object.entries(selectedAnswers).map(([question_id, selected_option_id]) => ({
       question_id,
       selected_option_id,
     }));
-    submit.mutate(
-      { attemptId: attempt.id, answers: answersPayload },
-      {
-        onSuccess: () => navigate(`/quizzes/${id}/results`, { replace: true }),
-        onError: (err) => setSubmitError(getErrorMessage(err, 'Failed to submit quiz.')),
-      }
+    pendingSave.current.finally(() =>
+      submit.mutate(
+        { attemptId: attempt.id, answers: answersPayload },
+        {
+          onSuccess: () => navigate(`/quizzes/${id}/results`, { replace: true }),
+          onError: (err) => {
+            submitStarted.current = false;
+            setSubmitError(getErrorMessage(err, 'Failed to submit quiz.'));
+          },
+        }
+      )
     );
   }, [attempt, submit, selectedAnswers, id, navigate]);
 
@@ -96,8 +107,10 @@ export const QuizPlayer: React.FC = () => {
   const handleSelectOption = (questionId: string, optionId: string) => {
     setSelectedAnswers((prev) => ({ ...prev, [questionId]: optionId }));
     // Save in the background; local state is kept if the network drops.
-    if (attempt) {
-      save.mutate({ attemptId: attempt.id, answers: [{ question_id: questionId, selected_option_id: optionId }] });
+    if (attempt && !submitStarted.current) {
+      pendingSave.current = save
+        .mutateAsync({ attemptId: attempt.id, answers: [{ question_id: questionId, selected_option_id: optionId }] })
+        .catch(() => undefined);
     }
   };
 
