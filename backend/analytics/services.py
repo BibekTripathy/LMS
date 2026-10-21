@@ -173,7 +173,11 @@ def get_course_analytics(course):
     )
 
     modules_count = Module.objects.filter(course=course).count()
-    lessons = Lesson.objects.filter(module__course=course).select_related('module')
+    lessons = (
+        Lesson.objects.filter(module__course=course)
+        .select_related('module')
+        .order_by('module__order', 'order', 'created_at')
+    )
     total_lessons = lessons.count()
 
     progress_records = LessonProgress.objects.filter(enrollment__course=course)

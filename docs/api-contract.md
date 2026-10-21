@@ -10,6 +10,7 @@ All API endpoints are prefixed with `/api/v1/`. The backend is implemented using
 - `POST /api/v1/auth/register/`
   - **Payload**: `{ "email": "...", "password": "...", "first_name": "...", "last_name": "..." }`
   - **Note**: Always creates a `STUDENT` user. `role` fields in the payload are ignored.
+  - **Validation**: `400` for a missing/invalid email or an email already registered (case-insensitive); `400 WEAK_PASSWORD` when the password fails Django's `AUTH_PASSWORD_VALIDATORS` (min length 8, not common, not all digits, not similar to the email/name).
 - `POST /api/v1/auth/login/`
   - **Payload**: `{ "email": "...", "password": "..." }`
   - **Response**: `{ "access": "<token>", "refresh": "<token>" }`

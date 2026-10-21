@@ -32,6 +32,20 @@ class TestAuthFlow:
         user = User.objects.get(email="student@example.com")
         assert user.role == "STUDENT"
         
+    @pytest.mark.parametrize('password', ['short1', 'password', '12345678901', 'reg-test@example.com'])
+    def test_registration_rejects_weak_passwords(self, api_client, password):
+        response = api_client.post(reverse('register'), {"email": "reg-test@example.com", "password": password})
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json()['code'] == 'WEAK_PASSWORD'
+        assert not User.objects.filter(email="reg-test@example.com").exists()
+
+    def test_registration_rejects_invalid_and_duplicate_emails(self, api_client):
+        bad = api_client.post(reverse('register'), {"email": "not-an-email", "password": "Sturdy-Pass-2026"})
+        assert bad.status_code == status.HTTP_400_BAD_REQUEST
+        User.objects.create_user(email="taken@example.com", password="Sturdy-Pass-2026")
+        dup = api_client.post(reverse('register'), {"email": "TAKEN@example.com", "password": "Sturdy-Pass-2026"})
+        assert dup.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_login_and_jwt_generation(self, api_client):
         user = User.objects.create_user(email="test@example.com", password="password")
         url = reverse('login')

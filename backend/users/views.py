@@ -1,3 +1,6 @@
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,17 +12,31 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
+        email = (request.data.get('email') or '').strip()
+        password = request.data.get('password') or ''
         first_name = request.data.get('first_name', '')
         last_name = request.data.get('last_name', '')
-        
+
         if not email or not password:
             return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if User.objects.filter(email=email).exists():
+
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response({"error": "Enter a valid email address."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email__iexact=email).exists():
             return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # Same rules as AUTH_PASSWORD_VALIDATORS (length, common, numeric, similarity to the user's details)
+        try:
+            validate_password(password, user=User(email=email, first_name=first_name, last_name=last_name))
+        except DjangoValidationError as exc:
+            return Response(
+                {"error": " ".join(exc.messages), "code": "WEAK_PASSWORD"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         user = User.objects.create_user(
             email=email,
             password=password,

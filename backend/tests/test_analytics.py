@@ -351,6 +351,13 @@ class TestCourseAnalytics:
         assert l1_data['completed_count'] == 2
         assert l1_data['completion_rate'] == 100.0
 
+    def test_course_analytics_lessons_follow_module_order(self, api_client, instructor, course, module, lessons):
+        later = Module.objects.create(course=course, title="Module 2", order=2)
+        Lesson.objects.create(module=later, title="M2 first lesson", order=1)
+        api_client.force_authenticate(user=instructor)
+        titles = [l['title'] for l in api_client.get(f'/api/v1/courses/{course.id}/analytics/').data['lessons_breakdown']]
+        assert titles == ["Lesson 1: Paxos", "Lesson 2: Raft", "M2 first lesson"]
+
     def test_course_analytics_permissions(
         self, api_client, instructor, other_instructor, student1, admin_user, course
     ):
