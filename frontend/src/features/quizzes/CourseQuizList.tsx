@@ -15,17 +15,17 @@ const QuizRow: React.FC<{ quiz: Quiz; compact: boolean }> = ({ quiz, compact }) 
 
   return (
     <li
-      className={`rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${compact ? 'p-3' : 'p-4'}`}
+      className={`rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#131418] shadow-xs ${compact ? 'p-3.5' : 'p-5'}`}
       data-testid={`course-quiz-${quiz.id}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{quiz.title}</p>
-          <p className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-2">
+          <p className="text-sm font-bold text-[#121316] dark:text-[#F3F4F6] truncate">{quiz.title}</p>
+          <p className="text-[11px] text-[#868E96] flex flex-wrap items-center gap-x-2.5 mt-0.5">
             <span>{quiz.total_questions} questions</span>
             <span>Pass {quiz.pass_percentage}%</span>
             {minutes > 0 && (
-              <span className="inline-flex items-center gap-0.5">
+              <span className="inline-flex items-center gap-1">
                 <Clock className="w-3 h-3" /> {minutes} min
               </span>
             )}
@@ -34,8 +34,8 @@ const QuizRow: React.FC<{ quiz: Quiz; compact: boolean }> = ({ quiz, compact }) 
         </div>
         {attempted && best !== null && best !== undefined && (
           <span
-            className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-              results?.has_passed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+            className={`text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-full flex-shrink-0 ${
+              results?.has_passed ? 'bg-[#059669]/10 text-[#059669]' : 'bg-[#D97706]/10 text-[#D97706]'
             }`}
           >
             Best {best}%
@@ -43,21 +43,21 @@ const QuizRow: React.FC<{ quiz: Quiz; compact: boolean }> = ({ quiz, compact }) 
         )}
       </div>
 
-      <div className="mt-2.5 flex flex-wrap gap-2 text-xs font-semibold">
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
         {canStart ? (
           <Link
             to={`/quizzes/${quiz.id}`}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white active:scale-[0.98] transition shadow-xs"
           >
             <PlayCircle className="w-3.5 h-3.5" /> {attempted ? 'Retake' : 'Take quiz'}
           </Link>
         ) : (
-          <span className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">No attempts left</span>
+          <span className="px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#868E96]">No attempts left</span>
         )}
         {attempted && (
           <Link
             to={`/quizzes/${quiz.id}/results`}
-            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+            className="px-3.5 py-1.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[#121316] dark:text-[#F3F4F6] transition"
           >
             Results
           </Link>
@@ -65,7 +65,7 @@ const QuizRow: React.FC<{ quiz: Quiz; compact: boolean }> = ({ quiz, compact }) 
         {quiz.leaderboard_enabled && (
           <Link
             to={`/quizzes/${quiz.id}/leaderboard`}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-amber-700 hover:bg-amber-50 dark:text-amber-300"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[#D97706] hover:bg-[#D97706]/10 transition"
           >
             <Trophy className="w-3.5 h-3.5" /> Leaderboard
           </Link>
@@ -83,19 +83,19 @@ export const CourseQuizList: React.FC<{ courseId: string; compact?: boolean }> =
   return (
     <section className="space-y-3" aria-label="Course assessments">
       <h3
-        className={`font-bold text-slate-900 dark:text-white flex items-center gap-2 ${
-          compact ? 'text-xs uppercase tracking-wider text-slate-500' : 'text-2xl'
+        className={`font-bold text-[#121316] dark:text-[#F3F4F6] flex items-center gap-2 ${
+          compact ? 'text-xs uppercase tracking-wider text-[#868E96] font-mono' : 'text-xl'
         }`}
       >
-        {!compact && <ClipboardList className="w-6 h-6 text-indigo-500" />}
+        {!compact && <ClipboardList className="w-5 h-5 text-[#0066FF]" />}
         Assessments
       </h3>
       {quizzesQuery.isLoading ? (
-        <p className="text-xs text-slate-500">Loading quizzes…</p>
+        <p className="text-xs text-[#868E96]">Loading quizzes…</p>
       ) : quizzesQuery.error ? (
-        <p className="text-xs text-rose-600">{getErrorMessage(quizzesQuery.error, 'Could not load quizzes.')}</p>
+        <p className="text-xs text-[#DC2626]">{getErrorMessage(quizzesQuery.error, 'Could not load quizzes.')}</p>
       ) : quizzes.length === 0 ? (
-        <p className="text-xs text-slate-500">No quizzes in this course yet.</p>
+        <p className="text-xs text-[#868E96]">No quizzes in this course yet.</p>
       ) : (
         <ul className={compact ? 'space-y-2' : 'grid sm:grid-cols-2 gap-3'}>
           {quizzes.map((quiz) => (

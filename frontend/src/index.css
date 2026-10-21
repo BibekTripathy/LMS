@@ -1,104 +1,103 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Apple HIG Base / Canvas ─────────────────────────────────────────────── */
+/* ─── Modern Institutional LMS Design System ─────────────────────────────── */
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, -system-ui, sans-serif;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   color-scheme: light dark;
 }
 
 body {
-  @apply bg-[#F5F5F7] text-[#1D1D1F] dark:bg-[#000000] dark:text-[#F5F5F7] font-sans antialiased selection:bg-[#0071E3]/20 selection:text-[#0071E3];
+  @apply bg-[#FBFBFC] text-[#121316] dark:bg-[#0A0B0D] dark:text-[#F3F4F6] font-sans antialiased selection:bg-[#0066FF]/20 selection:text-[#0066FF];
   min-height: 100vh;
 }
 
-/* ─── Apple Optical Typography Utilities ─────────────────────────────────── */
-.apple-title-hero {
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+/* ─── Typography Utilities ────────────────────────────────────────────────── */
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-.apple-title-large {
+.heading-display {
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.heading-section {
   letter-spacing: -0.025em;
-  line-height: 1.15;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.apple-headline {
+.heading-card {
   letter-spacing: -0.015em;
-  line-height: 1.25;
-}
-
-.apple-body {
-  letter-spacing: -0.005em;
-  line-height: 1.5;
-}
-
-.apple-caption {
-  letter-spacing: 0.015em;
+  font-weight: 600;
   line-height: 1.35;
 }
 
-/* ─── Apple Frosted Glass / Translucency ──────────────────────────────────── */
-.apple-glass {
-  background: rgba(255, 255, 255, 0.78);
+/* ─── Modern Glassmorphic Nav & Headers ───────────────────────────────────── */
+.lms-glass {
+  background: rgba(251, 251, 252, 0.82);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.dark .apple-glass {
-  background: rgba(22, 22, 24, 0.82);
+.dark .lms-glass {
+  background: rgba(14, 15, 18, 0.85);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ─── Apple Card Surfaces ─────────────────────────────────────────────────── */
+/* ─── Architectural Card Surfaces ─────────────────────────────────────────── */
+.lms-card {
+  @apply bg-white dark:bg-[#131418] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-2xl;
+}
+
+.lms-card-elevated {
+  @apply lms-card transition-all duration-200 ease-out hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] hover:border-black/[0.14] dark:hover:border-white/[0.16];
+}
+
+/* ─── Interactive Buttons ─────────────────────────────────────────────────── */
+.btn-primary {
+  @apply inline-flex items-center justify-center font-semibold text-white bg-[#0066FF] hover:bg-[#0052CC] active:bg-[#0040A8] active:scale-[0.98] transition-all duration-150 ease-out rounded-xl shadow-xs disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center font-medium bg-black/[0.04] hover:bg-black/[0.08] text-[#121316] dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-[#F3F4F6] active:scale-[0.98] transition-all duration-150 ease-out rounded-xl border border-black/[0.08] dark:border-white/[0.1];
+}
+
+/* Backward compatibility for apple tokens */
+.apple-glass {
+  @apply lms-glass;
+}
 .apple-card {
-  @apply bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] rounded-2xl;
+  @apply lms-card;
 }
-
-.apple-card-interactive {
-  @apply apple-card transition-all duration-200 ease-out hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 active:scale-[0.99];
-}
-
-/* ─── Apple Physical Button Feedback ──────────────────────────────────────── */
 .apple-btn-primary {
-  @apply inline-flex items-center justify-center font-semibold text-white bg-[#0071E3] hover:bg-[#0077ED] active:bg-[#0062C4] active:scale-[0.98] transition-all duration-150 ease-out rounded-full shadow-sm shadow-[#0071E3]/20 disabled:opacity-50 disabled:pointer-events-none;
+  @apply btn-primary;
 }
-
 .apple-btn-secondary {
-  @apply inline-flex items-center justify-center font-medium bg-black/[0.04] hover:bg-black/[0.08] text-[#1D1D1F] dark:bg-white/[0.08] dark:hover:bg-white/[0.12] dark:text-[#F5F5F7] active:scale-[0.98] transition-all duration-150 ease-out rounded-full border border-black/[0.04] dark:border-white/[0.08];
+  @apply btn-secondary;
 }
 
-/* ─── Accessibility: Reduced Motion & Transparency ────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* ─── 3D Card Flip Utilities ─────────────────────────────────────────────── */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  .apple-glass {
-    background: #FFFFFF !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .dark .apple-glass {
-    background: #161618 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-}
-
-/* ─── Clean Scrollbar ─────────────────────────────────────────────────────── */
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -111,11 +110,11 @@ body {
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25);
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.3);
 }

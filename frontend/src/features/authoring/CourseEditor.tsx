@@ -16,7 +16,7 @@ import {
   CheckCircle,
   Trash2,
   Edit,
-  Sparkles,
+  BarChart2,
   HelpCircle,
   AlertCircle,
 } from 'lucide-react';
@@ -56,8 +56,7 @@ export const CourseEditor: React.FC = () => {
     lesson: Lesson | null;
   } | null>(null);
 
-  // Copy loaded course data into the form once per server version (adjusting state
-  // during render instead of in an effect avoids an extra render pass).
+  // Copy loaded course data into the form once per server version
   const loadedVersion = courseQuery.data ? `${courseQuery.data.id}:${courseQuery.data.updated_at ?? ''}` : null;
   const [formVersion, setFormVersion] = useState<string | null>(null);
   if (courseQuery.data && loadedVersion !== formVersion) {
@@ -70,13 +69,8 @@ export const CourseEditor: React.FC = () => {
     setThumbnailUrl(data.thumbnail_url || '');
   }
 
-  const handleSaveCourse = (e: React.FormEvent) => {
+  const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setError('Please provide a course title.');
-      return;
-    }
-
     setError(null);
     setSuccessMsg(null);
 
@@ -90,16 +84,18 @@ export const CourseEditor: React.FC = () => {
 
     if (isNew) {
       mutations.create.mutate(payload, {
-        onSuccess: (created) => navigate(`/instructor/courses/${created.id}/edit`, { replace: true }),
-        onError: (err) => setError(getErrorMessage(err, 'Failed to save course.')),
+        onSuccess: (newCourse) => {
+          navigate(`/instructor/courses/${newCourse.id}/edit`, { replace: true });
+        },
+        onError: (err) => setError(getErrorMessage(err, 'Failed to create course.')),
       });
     } else {
       mutations.update.mutate(payload, {
         onSuccess: () => {
-          setSuccessMsg('Course settings updated!');
-          setTimeout(() => setSuccessMsg(null), 3000);
+          setSuccessMsg('Course details successfully saved.');
+          setTimeout(() => setSuccessMsg(null), 3500);
         },
-        onError: (err) => setError(getErrorMessage(err, 'Failed to save course.')),
+        onError: (err) => setError(getErrorMessage(err, 'Failed to update course.')),
       });
     }
   };
@@ -122,7 +118,7 @@ export const CourseEditor: React.FC = () => {
   };
 
   const handleDeleteModule = (moduleId: string) => {
-    if (!window.confirm('Delete this module and all its lessons?')) return;
+    if (!window.confirm('Delete this entire module and all lessons in it?')) return;
     mutations.deleteModule.mutate(moduleId, {
       onError: (err) => alert('Failed to delete module: ' + getErrorMessage(err)),
     });
@@ -135,37 +131,40 @@ export const CourseEditor: React.FC = () => {
     });
   };
 
+  const handleLessonSaved = () => {
+    setActiveLessonModal(null);
+  };
+
   const openLessonEditor = async (mod: Module, lessonId: string) => {
     try {
-      // Full lesson (transcript, reading content) is fetched through the query cache.
       const fullLesson = await queryClient.fetchQuery({
         queryKey: courseKeys.lesson(lessonId),
         queryFn: () => courseApi.getLessonById(lessonId),
       });
-      setActiveLessonModal({ moduleId: mod.id, moduleTitle: mod.title, lesson: fullLesson });
+      setActiveLessonModal({
+        moduleId: mod.id,
+        moduleTitle: mod.title,
+        lesson: fullLesson,
+      });
     } catch (err) {
       alert('Failed to load lesson details: ' + getErrorMessage(err));
     }
   };
 
-  const handleLessonSaved = () => {
-    // The lesson mutation already refreshed the course query.
-    setActiveLessonModal(null);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-500 font-mono">Loading course details...</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Header */}
+      {/* Top Bar Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             to="/instructor"
             className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -176,7 +175,7 @@ export const CourseEditor: React.FC = () => {
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {isNew ? 'Create New Course' : `Edit Course: ${title || 'Untitled'}`}
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 mt-0.5">
               {isNew ? 'Fill in core course details to begin authoring' : 'Manage curriculum, lessons, and course publication'}
             </p>
           </div>
@@ -186,17 +185,17 @@ export const CourseEditor: React.FC = () => {
           <div className="flex items-center gap-3">
             <Link
               to={`/instructor/courses/${id}/quizzes`}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 rounded-xl transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 dark:hover:bg-brand-900/60 rounded-xl border border-brand-200/60 dark:border-brand-900/60 transition"
             >
-              <HelpCircle className="w-4 h-4 text-indigo-500" />
+              <HelpCircle className="w-4 h-4 text-brand-500" />
               Manage Quizzes
             </Link>
 
             <Link
               to={`/instructor/courses/${id}/analytics`}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 rounded-xl transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 rounded-xl border border-slate-200 dark:border-slate-700 transition"
             >
-              <Sparkles className="w-4 h-4 text-purple-500" />
+              <BarChart2 className="w-4 h-4 text-slate-500" />
               Course Analytics
             </Link>
           </div>
@@ -204,14 +203,14 @@ export const CourseEditor: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-700 dark:text-rose-300 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2">
           <CheckCircle className="w-5 h-5 flex-shrink-0" />
           <span>{successMsg}</span>
         </div>
@@ -220,9 +219,9 @@ export const CourseEditor: React.FC = () => {
       {/* Main Grid: Left is Course Metadata Form, Right is Curriculum Structure */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Course Details Form */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
+        <div className="lg:col-span-5 lms-card p-6 space-y-5">
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-indigo-500" />
+            <BookOpen className="w-4 h-4 text-brand-500" />
             Course Settings
           </h2>
 
@@ -236,8 +235,8 @@ export const CourseEditor: React.FC = () => {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Master React & Modern Web Architecture"
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                placeholder="e.g. Relational Database Architecture"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               />
             </div>
 
@@ -249,8 +248,8 @@ export const CourseEditor: React.FC = () => {
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g. Computer Science, Web Development"
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                placeholder="e.g. Database Systems, Web Architecture"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               />
             </div>
 
@@ -261,7 +260,7 @@ export const CourseEditor: React.FC = () => {
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as CourseDifficulty)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="BEGINNER">Beginner</option>
                 <option value="INTERMEDIATE">Intermediate</option>
@@ -278,27 +277,27 @@ export const CourseEditor: React.FC = () => {
                 value={thumbnailUrl}
                 onChange={(e) => setThumbnailUrl(e.target.value)}
                 placeholder="https://images.unsplash.com/photo-..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                Description & Syllabus Overview
+                Description &amp; Syllabus Overview
               </label>
               <textarea
                 rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Detailed explanation of what students will learn, prerequisites, and expected outcomes..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="btn-primary w-full justify-center"
             >
               <Save className="w-4 h-4" />
               <span>{isNew ? 'Create Course & Continue' : 'Save Course Settings'}</span>
@@ -308,11 +307,11 @@ export const CourseEditor: React.FC = () => {
 
         {/* Curriculum Hierarchy (Modules & Lessons) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+          <div className="lms-card p-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-purple-500" />
+                  <Layers className="w-4 h-4 text-brand-500" />
                   Curriculum Builder
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -324,7 +323,7 @@ export const CourseEditor: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setAddingModule(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 font-semibold text-xs rounded-lg transition"
+                  className="btn-secondary text-xs py-1.5 px-3"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   Add Module
@@ -338,7 +337,7 @@ export const CourseEditor: React.FC = () => {
               </div>
             ) : modules.length === 0 && !addingModule ? (
               <div className="py-12 text-center space-y-3">
-                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center mx-auto">
                   <Layers className="w-6 h-6" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -354,37 +353,37 @@ export const CourseEditor: React.FC = () => {
                 {addingModule && (
                   <form
                     onSubmit={handleCreateModule}
-                    className="p-4 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl space-y-3 animate-in fade-in"
+                    className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3 animate-in fade-in"
                   >
-                    <h3 className="text-xs font-bold text-purple-900 dark:text-purple-200 uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider font-mono">
                       New Module
                     </h3>
                     <input
                       type="text"
                       required
-                      placeholder="Module Title (e.g. Chapter 1: Core Concepts)"
+                      placeholder="Module Title (e.g. Chapter 1: Relational Algebra & Calculus)"
                       value={newModuleTitle}
                       onChange={(e) => setNewModuleTitle(e.target.value)}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     <input
                       type="text"
                       placeholder="Short description (optional)"
                       value={newModuleDesc}
                       onChange={(e) => setNewModuleDesc(e.target.value)}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => setAddingModule(false)}
-                        className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+                        className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg shadow-sm"
+                        className="btn-primary text-xs py-1.5 px-3"
                       >
                         Add Module
                       </button>
@@ -396,12 +395,12 @@ export const CourseEditor: React.FC = () => {
                 {modules.map((mod, index) => (
                   <div
                     key={mod.id}
-                    className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/40 dark:bg-slate-800/30"
+                    className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-850/50"
                   >
-                    <div className="p-4 bg-slate-100/70 dark:bg-slate-800/70 flex items-center justify-between border-b border-slate-200 dark:border-slate-700/60">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
                             MODULE {index + 1}
                           </span>
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white">{mod.title}</h3>
@@ -421,7 +420,7 @@ export const CourseEditor: React.FC = () => {
                               lesson: null,
                             })
                           }
-                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300 rounded-md transition"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 dark:hover:bg-brand-900/60 rounded-lg border border-brand-200/60 dark:border-brand-900/60 transition"
                         >
                           <PlusCircle className="w-3 h-3" />
                           Add Lesson
@@ -443,7 +442,7 @@ export const CourseEditor: React.FC = () => {
                         mod.lessons.map((les, lesIndex) => (
                           <div
                             key={les.id}
-                            className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs hover:border-indigo-300 transition"
+                            className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 text-xs hover:border-brand-300 dark:hover:border-brand-800 transition"
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-[11px] font-mono text-slate-400">
@@ -455,7 +454,7 @@ export const CourseEditor: React.FC = () => {
                                 </h4>
                                 <div className="flex items-center gap-2.5 text-[10px] text-slate-400 mt-0.5">
                                   {les.video_url && (
-                                    <span className="flex items-center gap-0.5 text-indigo-600 dark:text-indigo-400 font-medium">
+                                    <span className="flex items-center gap-0.5 text-brand-600 dark:text-brand-400 font-medium">
                                       <Video className="w-3 h-3" /> Video Attached
                                     </span>
                                   )}
@@ -470,7 +469,7 @@ export const CourseEditor: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => openLessonEditor(mod, les.id)}
-                                className="p-1 text-slate-500 hover:text-indigo-600 rounded"
+                                className="p-1 text-slate-500 hover:text-brand-600 rounded"
                                 title="Edit Lesson"
                               >
                                 <Edit className="w-3.5 h-3.5" />

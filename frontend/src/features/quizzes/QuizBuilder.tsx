@@ -13,7 +13,7 @@ import {
   Trash2,
   ArrowLeft,
   Clock,
-  Sparkles,
+  BookOpen,
   CheckCircle2,
   AlertCircle,
   Save,
@@ -100,50 +100,56 @@ export const QuizBuilder: React.FC = () => {
 
     setError(null);
     setSuccessMsg(null);
+
+    const parsedAttempts = maxAttempts.trim() === '' ? null : parseInt(maxAttempts, 10);
+    const payload = {
+      title: quizTitle,
+      description: quizDesc,
+      pass_percentage: passPercentage,
+      time_limit_seconds: timeLimitMinutes * 60,
+      max_attempts: parsedAttempts && parsedAttempts > 0 ? parsedAttempts : null,
+      leaderboard_enabled: leaderboardEnabled,
+      status: quizStatus,
+    };
+
     authoring.updateQuiz.mutate(
-      {
-        quizId: activeQuizId,
-        data: {
-          title: quizTitle,
-          description: quizDesc,
-          pass_percentage: passPercentage,
-          time_limit_seconds: timeLimitMinutes * 60,
-          max_attempts: maxAttempts ? parseInt(maxAttempts, 10) : null,
-          leaderboard_enabled: leaderboardEnabled,
-          status: quizStatus,
-        },
-      },
+      { quizId: activeQuizId, data: payload },
       {
         onSuccess: () => {
-          setSuccessMsg('Quiz settings saved successfully!');
+          setSuccessMsg('Quiz settings saved successfully.');
           setTimeout(() => setSuccessMsg(null), 3000);
         },
-        onError: (err) => setError(getErrorMessage(err, 'Failed to update quiz.')),
+        onError: (err) => setError(getErrorMessage(err, 'Failed to save quiz settings.')),
       }
     );
   };
 
   const handleDeleteQuiz = (quizId: string) => {
-    if (!window.confirm('Delete this entire quiz and all questions?')) return;
+    if (!window.confirm('Are you sure you want to delete this entire quiz?')) return;
     authoring.deleteQuiz.mutate(quizId, {
-      onSuccess: () => setActiveQuizId(null),
+      onSuccess: () => {
+        setActiveQuizId(null);
+      },
       onError: (err) => alert('Failed to delete quiz: ' + getErrorMessage(err)),
     });
   };
 
   const handleDeleteQuestion = (questionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this question?')) return;
-    if (!activeQuizId) return;
+    if (!window.confirm('Delete this question?')) return;
     authoring.deleteQuestion.mutate(
-      { quizId: activeQuizId, questionId },
-      { onError: (err) => alert('Failed to delete question: ' + getErrorMessage(err)) }
+      { quizId: activeQuizId!, questionId },
+      {
+        onSuccess: () => loadActiveQuiz(activeQuizId!),
+        onError: (err) => alert('Failed to delete question: ' + getErrorMessage(err)),
+      }
     );
   };
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-500 font-mono">Loading assessment studio...</p>
       </div>
     );
   }
@@ -161,10 +167,10 @@ export const QuizBuilder: React.FC = () => {
           </Link>
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <HelpCircle className="w-6 h-6 text-indigo-500" />
-              <span>Quiz & Assessment Studio</span>
+              <HelpCircle className="w-6 h-6 text-brand-600 dark:text-brand-400" />
+              <span>Quiz &amp; Assessment Studio</span>
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 font-mono mt-0.5">
               Course: <span className="font-semibold text-slate-700 dark:text-slate-300">{course?.title}</span>
             </p>
           </div>
@@ -172,7 +178,7 @@ export const QuizBuilder: React.FC = () => {
 
         <button
           onClick={handleCreateNewQuiz}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition self-start md:self-auto"
+          className="btn-primary self-start md:self-auto"
         >
           <PlusCircle className="w-4 h-4" />
           Create New Quiz
@@ -180,33 +186,33 @@ export const QuizBuilder: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-700 dark:text-rose-300 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {quizzes.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4">
-          <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
-            <HelpCircle className="w-8 h-8" />
+        <div className="lms-card p-12 text-center space-y-4">
+          <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
+            <HelpCircle className="w-7 h-7" />
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">No quizzes in this course</h3>
             <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
-              Create your first quiz or import AI-generated questions from lesson transcripts.
+              Create your first quiz or convert practice questions from the Study Centre into a graded assessment.
             </p>
           </div>
           <button
             onClick={handleCreateNewQuiz}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl shadow-md transition"
+            className="btn-primary"
           >
             <PlusCircle className="w-4 h-4" />
             Create Quiz Now
@@ -216,7 +222,7 @@ export const QuizBuilder: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Quizzes Sidebar Tabs */}
           <div className="lg:col-span-3 space-y-3">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block px-1">
+            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider block px-1">
               Course Quizzes ({quizzes.length})
             </span>
             <div className="space-y-1.5">
@@ -229,20 +235,22 @@ export const QuizBuilder: React.FC = () => {
                   }}
                   className={`w-full text-left p-3.5 rounded-xl border transition flex items-center justify-between ${
                     activeQuizId === q.id
-                      ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200 shadow-sm'
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                      ? 'bg-brand-50/70 dark:bg-brand-950/40 border-brand-300 dark:border-brand-800 text-brand-950 dark:text-brand-200 shadow-sm'
+                      : 'bg-white dark:bg-slate-850/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   <div className="truncate pr-2">
                     <p className="font-bold text-sm truncate">{q.title}</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">
                       {q.total_questions || (q.questions?.length || 0)} Questions • Pass: {q.pass_percentage}%
                       {q.max_attempts ? ` • ${q.max_attempts} attempt${q.max_attempts === 1 ? '' : 's'}` : ''}
                     </p>
                   </div>
                   <span
-                    className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase ${
-                      q.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                      q.status === 'PUBLISHED'
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                     }`}
                   >
                     {q.status}
@@ -257,16 +265,16 @@ export const QuizBuilder: React.FC = () => {
             {activeQuiz ? (
               <>
                 {/* Quiz Configuration Panel */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+                <div className="lms-card p-6 space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                     <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Edit className="w-4 h-4 text-indigo-500" />
+                      <Edit className="w-4 h-4 text-brand-500" />
                       Quiz Settings
                     </h2>
                     <button
                       type="button"
                       onClick={() => handleDeleteQuiz(activeQuiz.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
                       title="Delete entire quiz"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -283,7 +291,7 @@ export const QuizBuilder: React.FC = () => {
                         required
                         value={quizTitle}
                         onChange={(e) => setQuizTitle(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -295,7 +303,7 @@ export const QuizBuilder: React.FC = () => {
                         rows={2}
                         value={quizDesc}
                         onChange={(e) => setQuizDesc(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
 
@@ -309,7 +317,7 @@ export const QuizBuilder: React.FC = () => {
                         max="100"
                         value={passPercentage}
                         onChange={(e) => setPassPercentage(parseInt(e.target.value) || 70)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
                       />
                     </div>
 
@@ -324,9 +332,9 @@ export const QuizBuilder: React.FC = () => {
                         max="240"
                         value={timeLimitMinutes}
                         onChange={(e) => setTimeLimitMinutes(parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
                       />
-                      <span className="text-[10px] text-slate-400">0 minutes indicates untimed quiz.</span>
+                      <span className="text-[10px] text-slate-400 font-mono">0 minutes indicates untimed quiz.</span>
                     </div>
 
                     <div>
@@ -343,9 +351,9 @@ export const QuizBuilder: React.FC = () => {
                         placeholder="Unlimited"
                         value={maxAttempts}
                         onChange={(e) => setMaxAttempts(e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
                       />
-                      <span className="text-[10px] text-slate-400">Leave empty for unlimited retakes.</span>
+                      <span className="text-[10px] text-slate-400 font-mono">Leave empty for unlimited retakes.</span>
                     </div>
 
                     <div className="flex items-center">
@@ -354,7 +362,7 @@ export const QuizBuilder: React.FC = () => {
                           type="checkbox"
                           checked={leaderboardEnabled}
                           onChange={(e) => setLeaderboardEnabled(e.target.checked)}
-                          className="w-4 h-4 accent-indigo-600"
+                          className="w-4 h-4 accent-brand-600 rounded"
                         />
                         Show leaderboard to students
                       </label>
@@ -367,7 +375,7 @@ export const QuizBuilder: React.FC = () => {
                       <select
                         value={quizStatus}
                         onChange={(e) => setQuizStatus(e.target.value as QuizStatus)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       >
                         <option value="PUBLISHED">Published (Available to students)</option>
                         <option value="DRAFT">Draft (Hidden)</option>
@@ -378,7 +386,7 @@ export const QuizBuilder: React.FC = () => {
                       <button
                         type="submit"
                         disabled={savingQuiz}
-                        className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                        className="btn-primary w-full justify-center text-xs py-2"
                       >
                         <Save className="w-3.5 h-3.5" />
                         Save Settings
@@ -388,12 +396,12 @@ export const QuizBuilder: React.FC = () => {
                 </div>
 
                 {/* Question Manager Section */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+                <div className="lms-card p-6 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                     <div>
                       <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>Questions</span>
-                        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400">
+                        <span className="text-xs font-mono px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           {activeQuiz.questions?.length || 0} questions
                         </span>
                       </h2>
@@ -402,11 +410,11 @@ export const QuizBuilder: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Link
                         to="/study-centre"
-                        title="Generate MCQs from a lesson, review them, then use “Convert to graded quiz”"
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 rounded-lg transition"
+                        title="Review study centre resources and convert questions to graded quiz"
+                        className="btn-secondary text-xs py-1.5 px-3"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                        Create from AI Study
+                        <BookOpen className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                        Study Centre Drafts
                       </Link>
 
                       <button
@@ -415,7 +423,7 @@ export const QuizBuilder: React.FC = () => {
                           setEditingQuestion(null);
                           setShowQuestionModal(true);
                         }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition"
+                        className="btn-primary text-xs py-1.5 px-3"
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
                         Add Question
@@ -426,25 +434,25 @@ export const QuizBuilder: React.FC = () => {
                   {/* Question Cards List */}
                   {(!activeQuiz.questions || activeQuiz.questions.length === 0) ? (
                     <div className="py-8 text-center text-slate-400 text-xs">
-                      No questions in this quiz yet. Click 'Add Question' or import from the AI Study Centre.
+                      No questions in this quiz yet. Click 'Add Question' or import from the Study Centre.
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {activeQuiz.questions.map((q, idx) => (
                         <div
                           key={q.id}
-                          className="p-4 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 hover:border-indigo-300 transition"
+                          className="p-4 bg-slate-50/50 dark:bg-slate-850/50 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 hover:border-brand-300 dark:hover:border-brand-800 transition"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2.5">
-                              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="w-6 h-6 rounded-md bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 font-mono font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5 border border-brand-200 dark:border-brand-800">
                                 {idx + 1}
                               </span>
                               <div>
                                 <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
                                   {q.prompt || q.text}
                                 </h4>
-                                <span className="text-[10px] text-slate-400 font-medium">
+                                <span className="text-[10px] text-slate-400 font-mono font-medium">
                                   {q.marks || 1} mark(s)
                                 </span>
                               </div>
@@ -456,7 +464,7 @@ export const QuizBuilder: React.FC = () => {
                                   setEditingQuestion(q);
                                   setShowQuestionModal(true);
                                 }}
-                                className="p-1.5 text-slate-400 hover:text-indigo-600 rounded transition"
+                                className="p-1.5 text-slate-400 hover:text-brand-600 rounded transition"
                                 title="Edit Question"
                               >
                                 <Edit className="w-4 h-4" />
@@ -494,7 +502,7 @@ export const QuizBuilder: React.FC = () => {
                           </div>
 
                           {q.explanation && (
-                            <p className="text-[11px] text-slate-500 italic pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                            <p className="text-[11px] text-slate-500 italic pt-1 border-t border-slate-200/50 dark:border-slate-800">
                               Explanation: {q.explanation}
                             </p>
                           )}
@@ -505,7 +513,7 @@ export const QuizBuilder: React.FC = () => {
                 </div>
               </>
             ) : (
-              <div className="p-8 text-center text-slate-400">Select a quiz from the left to configure.</div>
+              <div className="p-8 text-center text-slate-400 font-mono text-xs">Select a quiz from the left to configure.</div>
             )}
           </div>
         </div>

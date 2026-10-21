@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getErrorMessage } from '../../lib/errors';
 import { useQuizAuthoring } from './hooks';
 import type { Question, QuestionInput, QuestionOptionInput } from '../../types';
-import { X, Check, Plus, Trash2, HelpCircle, AlertCircle } from 'lucide-react';
+import { HelpCircle, Plus, Trash2, X, Check, AlertCircle } from 'lucide-react';
 
 interface QuestionEditorModalProps {
   quizId: string;
@@ -108,11 +108,11 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="lms-card max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-indigo-500" />
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-brand-500" />
             <span>{question ? 'Edit Question' : 'Add MCQ Question'}</span>
           </h3>
           <button
@@ -124,7 +124,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
         </div>
 
         {error && (
-          <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+          <div className="mx-6 mt-4 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -140,8 +140,8 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
               required
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. Which algorithm computes the gradient of weights using calculus chain rule?"
-              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              placeholder="e.g. Which normal form ensures every non-trivial functional dependency has a superkey on the LHS?"
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
             />
           </div>
 
@@ -156,7 +156,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                 max="50"
                 value={marks}
                 onChange={(e) => setMarks(parseInt(e.target.value) || 1)}
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono"
               />
             </div>
             <div>
@@ -167,7 +167,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                 type="text"
                 disabled
                 value="Multiple Choice (Single Answer)"
-                className="w-full px-3.5 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-500 cursor-not-allowed"
+                className="w-full px-3.5 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-500 cursor-not-allowed font-mono"
               />
             </div>
           </div>
@@ -181,7 +181,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddOption}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Choice
               </button>
@@ -193,8 +193,8 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                   key={idx}
                   className={`flex items-center gap-2.5 p-2 rounded-xl border transition ${
                     opt.is_correct
-                      ? 'border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20'
-                      : 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30'
+                      ? 'border-emerald-500/50 bg-emerald-50/40 dark:bg-emerald-950/20'
+                      : 'border-slate-200 dark:border-slate-750 bg-slate-50/40 dark:bg-slate-850/40'
                   }`}
                 >
                   <input
@@ -237,7 +237,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
               value={explanation}
               onChange={(e) => setExplanation(e.target.value)}
               placeholder="Explain why this choice is correct and clarify common misconceptions..."
-              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
             />
           </div>
 
@@ -245,14 +245,14 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
+              className="btn-primary"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
