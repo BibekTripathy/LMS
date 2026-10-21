@@ -21,7 +21,6 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { getErrorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/auth';
-import { CoursePlaceholderImage } from '../../components/ui/CoursePlaceholderImage';
 
 export const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -109,7 +108,7 @@ export const CourseDetails: React.FC = () => {
       <div>
         <Link
           to="/courses"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-latte-subtext1 dark:text-frappe-subtext1 hover:text-frappe-blue transition"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-indigo-600 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Catalogue
@@ -165,7 +164,7 @@ export const CourseDetails: React.FC = () => {
         {/* Enrollment / Action Card */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-            <div className="relative h-44 rounded-xl overflow-hidden bg-latte-surface0 dark:bg-frappe-surface1 flex items-center justify-center">
+            <div className="relative h-44 rounded-xl overflow-hidden bg-gradient-to-tr from-indigo-900 via-indigo-700 to-purple-800 flex items-center justify-center">
               {course.thumbnail_url ? (
                 <img
                   src={course.thumbnail_url}
@@ -173,7 +172,7 @@ export const CourseDetails: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <CoursePlaceholderImage category={course.category} accentColor="#8caaee" className="w-full h-full object-cover" />
+                <BookOpen className="w-16 h-16 text-white/30" />
               )}
             </div>
 

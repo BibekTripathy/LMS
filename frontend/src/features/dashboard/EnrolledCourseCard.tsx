@@ -1,11 +1,10 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { PlayCircle, CheckCircle2, User as UserIcon } from 'lucide-react';
+import { PlayCircle, CheckCircle2, BookOpen, User as UserIcon } from 'lucide-react';
 
 import type { Enrollment } from '../../types';
 import { useCourseProgress } from '../enrollments/hooks';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { CoursePlaceholderImage } from '../../components/ui/CoursePlaceholderImage';
 
 export interface EnrolledCourseCardProps {
   enrollment: Enrollment;
@@ -13,12 +12,12 @@ export interface EnrolledCourseCardProps {
 
 // Accent palette cycling — one per card, Catppuccin Frappé hues
 const BANNER_ACCENTS = [
-  { border: 'border-t-frappe-blue',   hex: '#8caaee' },
-  { border: 'border-t-frappe-mauve',  hex: '#ca9ee6' },
-  { border: 'border-t-frappe-teal',   hex: '#81c8be' },
-  { border: 'border-t-frappe-green',  hex: '#a6d189' },
-  { border: 'border-t-frappe-peach',  hex: '#ef9f76' },
-  { border: 'border-t-frappe-yellow', hex: '#e5c890' },
+  { bg: 'bg-frappe-blue/20 dark:bg-frappe-blue/30',    icon: 'text-frappe-blue',    border: 'border-t-frappe-blue' },
+  { bg: 'bg-frappe-mauve/20 dark:bg-frappe-mauve/30',  icon: 'text-frappe-mauve',   border: 'border-t-frappe-mauve' },
+  { bg: 'bg-frappe-teal/20 dark:bg-frappe-teal/30',    icon: 'text-frappe-teal',    border: 'border-t-frappe-teal' },
+  { bg: 'bg-frappe-green/20 dark:bg-frappe-green/30',  icon: 'text-frappe-green',   border: 'border-t-frappe-green' },
+  { bg: 'bg-frappe-peach/20 dark:bg-frappe-peach/30',  icon: 'text-frappe-peach',   border: 'border-t-frappe-peach' },
+  { bg: 'bg-frappe-yellow/20 dark:bg-frappe-yellow/30',icon: 'text-frappe-yellow',  border: 'border-t-frappe-yellow' },
 ];
 
 export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollment }) => {
@@ -50,7 +49,7 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
     <div className={`bg-latte-mantle dark:bg-frappe-surface0 rounded-xl border-t-4 ${accent.border} border border-latte-surface0 dark:border-frappe-surface1 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden`}>
 
       {/* Thumbnail banner */}
-      <div className="relative h-36 overflow-hidden flex items-center justify-center bg-latte-surface0 dark:bg-frappe-surface1">
+      <div className={`relative h-36 ${accent.bg} flex items-center justify-center overflow-hidden`}>
         {course?.thumbnail_url ? (
           <img
             src={course.thumbnail_url}
@@ -58,11 +57,7 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
             className="w-full h-full object-cover"
           />
         ) : (
-          <CoursePlaceholderImage
-            category={course?.category}
-            accentColor={accent.hex}
-            className="w-full h-full object-cover"
-          />
+          <BookOpen className={`w-12 h-12 ${accent.icon} opacity-40`} />
         )}
 
         {/* Category pill */}
