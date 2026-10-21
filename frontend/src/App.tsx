@@ -19,6 +19,11 @@ import { CourseDetails } from './features/courses/CourseDetails';
 import { StudentDashboard } from './features/dashboard/StudentDashboard';
 import { LearningWorkspace } from './features/learning/LearningWorkspace';
 import { StudentAnalyticsView } from './features/analytics/StudentAnalyticsView';
+import { CourseAnalyticsPage } from './features/analytics/CourseAnalyticsPage';
+import { AdminAnalyticsPage } from './features/analytics/AdminAnalyticsPage';
+import { QuizLeaderboardPage } from './features/analytics/QuizLeaderboardPage';
+import { CertificatesPage } from './features/certificates/CertificatesPage';
+import { VerifyCertificatePage } from './features/certificates/VerifyCertificatePage';
 import type { UserRole } from './types';
 
 const INSTRUCTOR_ROLES: UserRole[] = ['INSTRUCTOR', 'ADMIN'];
@@ -67,6 +72,9 @@ const instructorOnly = (element: React.ReactNode) => (
   <ProtectedRoute allowedRoles={INSTRUCTOR_ROLES}>{element}</ProtectedRoute>
 );
 const signedIn = (element: React.ReactNode) => <ProtectedRoute>{element}</ProtectedRoute>;
+const adminOnly = (element: React.ReactNode) => (
+  <ProtectedRoute allowedRoles={['ADMIN']}>{element}</ProtectedRoute>
+);
 
 /** Route table. Frontend guards are for usability only; the API enforces every permission. */
 export const AppRoutes: React.FC = () => (
@@ -92,16 +100,23 @@ export const AppRoutes: React.FC = () => (
         <Route path="/instructor/courses/:courseId/quizzes" element={instructorOnly(<QuizBuilder />)} />
         <Route
           path="/instructor/courses/:id/analytics"
-          element={instructorOnly(<NotBuiltYet title="Course analytics" owner="analytics module" />)}
+          element={instructorOnly(<CourseAnalyticsPage />)}
         />
 
         {/* Quizzes & AI Study Centre */}
         <Route path="/quizzes/:id" element={signedIn(<QuizPlayer />)} />
         <Route path="/quizzes/:id/results" element={signedIn(<QuizResult />)} />
+        <Route path="/quizzes/:id/leaderboard" element={signedIn(<QuizLeaderboardPage />)} />
         <Route path="/study-centre" element={signedIn(<StudyCentrePage />)} />
 
         {/* Analytics & Profile */}
         <Route path="/analytics" element={signedIn(<StudentAnalyticsView />)} />
+        <Route path="/admin/analytics" element={adminOnly(<AdminAnalyticsPage />)} />
+
+        {/* Certificates (verification is public) */}
+        <Route path="/certificates" element={signedIn(<CertificatesPage />)} />
+        <Route path="/verify" element={<VerifyCertificatePage />} />
+        <Route path="/verify/:code" element={<VerifyCertificatePage />} />
         <Route path="/profile" element={signedIn(<StudentAnalyticsView />)} />
 
         <Route path="*" element={<NotBuiltYet title="Page not found" owner="unknown route" />} />

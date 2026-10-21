@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { quizApi } from '../../api/quizzes';
 import type { Question } from '../../types';
-import { getErrorMessage } from '../../lib/errors';
+import { getErrorCode, getErrorMessage } from '../../lib/errors';
 import { useAttempt, useAttemptMutations, useQuiz } from './hooks';
 import {
   Clock,
@@ -128,12 +128,21 @@ export const QuizPlayer: React.FC = () => {
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Unable to Start Quiz</h2>
         <p className="text-sm text-slate-500">{error || 'Quiz not found.'}</p>
-        <Link
-          to="/courses"
-          className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
-        >
-          Return to Courses
-        </Link>
+        {getErrorCode(startQuery.error) === 'MAX_ATTEMPTS_REACHED' ? (
+          <Link
+            to={`/quizzes/${id}/results`}
+            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
+          >
+            View Your Results
+          </Link>
+        ) : (
+          <Link
+            to="/courses"
+            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
+          >
+            Return to Courses
+          </Link>
+        )}
       </div>
     );
   }

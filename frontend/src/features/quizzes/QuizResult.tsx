@@ -12,6 +12,7 @@ import {
   AlertCircle,
   HelpCircle,
   Award,
+  Trophy,
 } from 'lucide-react';
 
 export const QuizResult: React.FC = () => {
@@ -64,6 +65,12 @@ export const QuizResult: React.FC = () => {
   }
 
   const passed = latestAttempt?.passed ?? resultsSummary.has_passed;
+  const remaining = resultsSummary.attempts_remaining ?? null;
+  const canRetake = remaining === null || remaining > 0;
+  const retakePolicy =
+    remaining === null
+      ? 'Unlimited retakes permitted.'
+      : `${remaining} of ${resultsSummary.max_attempts} attempt${resultsSummary.max_attempts === 1 ? '' : 's'} remaining.`;
   const scorePercent = latestAttempt?.percentage ?? resultsSummary.highest_percentage ?? 0;
 
   return (
@@ -88,12 +95,26 @@ export const QuizResult: React.FC = () => {
           </Link>
 
           <Link
-            to={`/quizzes/${id}`}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md transition"
+            to={`/quizzes/${id}/leaderboard`}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 text-xs font-semibold rounded-xl transition"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Retake Quiz
+            <Trophy className="w-3.5 h-3.5" />
+            Leaderboard
           </Link>
+
+          {canRetake ? (
+            <Link
+              to={`/quizzes/${id}`}
+              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md transition"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Retake Quiz
+            </Link>
+          ) : (
+            <span className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-semibold rounded-xl">
+              No attempts left
+            </span>
+          )}
         </div>
       </div>
 
@@ -128,7 +149,7 @@ export const QuizResult: React.FC = () => {
               {resultsSummary.quiz_title}
             </h1>
             <p className="text-xs text-slate-500">
-              Pass requirement: {resultsSummary.pass_percentage}% • Unlimited retakes permitted.
+              Pass requirement: {resultsSummary.pass_percentage}% • {retakePolicy}
             </p>
           </div>
         </div>

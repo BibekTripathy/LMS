@@ -40,6 +40,8 @@ export const QuizBuilder: React.FC = () => {
   const [quizDesc, setQuizDesc] = useState('');
   const [passPercentage, setPassPercentage] = useState<number>(70);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number>(30);
+  const [maxAttempts, setMaxAttempts] = useState<string>(''); // '' = unlimited
+  const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [quizStatus, setQuizStatus] = useState<QuizStatus>('DRAFT');
 
   // Copy the loaded quiz into the form once per server version.
@@ -51,6 +53,8 @@ export const QuizBuilder: React.FC = () => {
     setQuizDesc(activeQuiz.description || '');
     setPassPercentage(activeQuiz.pass_percentage);
     setTimeLimitMinutes(Math.round((activeQuiz.time_limit_seconds || 1800) / 60));
+    setMaxAttempts(activeQuiz.max_attempts ? String(activeQuiz.max_attempts) : '');
+    setLeaderboardEnabled(activeQuiz.leaderboard_enabled ?? true);
     setQuizStatus(activeQuiz.status);
   }
 
@@ -104,6 +108,8 @@ export const QuizBuilder: React.FC = () => {
           description: quizDesc,
           pass_percentage: passPercentage,
           time_limit_seconds: timeLimitMinutes * 60,
+          max_attempts: maxAttempts ? parseInt(maxAttempts, 10) : null,
+          leaderboard_enabled: leaderboardEnabled,
           status: quizStatus,
         },
       },
@@ -231,6 +237,7 @@ export const QuizBuilder: React.FC = () => {
                     <p className="font-bold text-sm truncate">{q.title}</p>
                     <p className="text-[11px] text-slate-400">
                       {q.total_questions || (q.questions?.length || 0)} Questions • Pass: {q.pass_percentage}%
+                      {q.max_attempts ? ` • ${q.max_attempts} attempt${q.max_attempts === 1 ? '' : 's'}` : ''}
                     </p>
                   </div>
                   <span
@@ -320,6 +327,37 @@ export const QuizBuilder: React.FC = () => {
                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                       <span className="text-[10px] text-slate-400">0 minutes indicates untimed quiz.</span>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="quiz-max-attempts"
+                        className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                      >
+                        Max Attempts per Student
+                      </label>
+                      <input
+                        id="quiz-max-attempts"
+                        type="number"
+                        min="1"
+                        placeholder="Unlimited"
+                        value={maxAttempts}
+                        onChange={(e) => setMaxAttempts(e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <span className="text-[10px] text-slate-400">Leave empty for unlimited retakes.</span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          checked={leaderboardEnabled}
+                          onChange={(e) => setLeaderboardEnabled(e.target.checked)}
+                          className="w-4 h-4 accent-indigo-600"
+                        />
+                        Show leaderboard to students
+                      </label>
                     </div>
 
                     <div>

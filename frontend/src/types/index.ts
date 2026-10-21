@@ -253,6 +253,11 @@ export interface Quiz {
   time_limit_seconds: number;
   pass_percentage: number;
   passing_score_percentage: number;
+  /** null = unlimited retakes. */
+  max_attempts: number | null;
+  /** Attempts the current student has left; null when unlimited. Only on GET /quizzes/{id}/. */
+  attempts_remaining?: number | null;
+  leaderboard_enabled: boolean;
   status: QuizStatus;
   total_marks: number;
   total_questions: number;
@@ -297,6 +302,8 @@ export interface QuizResultsMe {
   quiz_id: string;
   quiz_title: string;
   pass_percentage: number;
+  max_attempts: number | null;
+  attempts_remaining: number | null;
   total_attempts: number;
   best_score: number | null;
   highest_percentage: number | null;
@@ -304,27 +311,119 @@ export interface QuizResultsMe {
   attempts: QuizAttempt[];
 }
 
-// Analytics & Certificate Types
-export interface QuizAnalyticsSummary {
+// Analytics & Certificate Types (backend `analytics` and `certificates` apps)
+export interface CourseLessonStats {
+  lesson_id: string;
+  title: string;
+  module_id: string;
+  module_title: string;
+  order: number;
+  completed_count: number;
+  completion_rate: number;
+}
+
+export interface CourseQuizStats {
   quiz_id: string;
   title: string;
-  attempts_count: number;
+  status: QuizStatus;
+  pass_percentage: number;
+  total_attempts: number;
+  unique_students_attempted: number;
   average_score: number;
   pass_rate: number;
+  highest_score: number;
+}
+
+export interface CourseStudentStats {
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  enrolled_at: string;
+  status: string;
+  completed_lessons_count: number;
+  total_lessons_count: number;
+  progress_percentage: number;
+  is_completed: boolean;
+  quiz_attempts_count: number;
+  average_quiz_score: number;
+  quizzes_passed_count: number;
+  last_active: string | null;
 }
 
 export interface CourseAnalytics {
   course_id: string;
-  title: string;
-  total_students: number;
+  course_title: string;
+  status: CourseStatus;
+  total_enrollments: number;
+  active_enrollments: number;
+  completed_enrollments: number;
+  dropped_enrollments: number;
   completion_rate: number;
+  average_course_progress: number;
+  total_lessons: number;
+  total_quizzes: number;
+  total_quiz_attempts: number;
   average_quiz_score: number;
-  quizzes: QuizAnalyticsSummary[];
-  module_progress: {
-    module_id: string;
-    title: string;
-    completion_percentage: number;
-  }[];
+  quiz_pass_rate: number;
+  lessons_breakdown: CourseLessonStats[];
+  quizzes_breakdown: CourseQuizStats[];
+  students: CourseStudentStats[];
+}
+
+export interface AdminAnalytics {
+  users: { total_users: number; total_students: number; total_instructors: number; total_admins: number; active_users: number };
+  courses: {
+    total_courses: number;
+    published_courses: number;
+    draft_courses: number;
+    archived_courses: number;
+    total_modules: number;
+    total_lessons: number;
+  };
+  enrollments: {
+    total_enrollments: number;
+    active_enrollments: number;
+    completed_enrollments: number;
+    dropped_enrollments: number;
+    completion_rate: number;
+  };
+  progress: { total_progress_records: number; total_completed_lessons: number };
+  assessments: {
+    total_quizzes: number;
+    published_quizzes: number;
+    total_questions: number;
+    total_quiz_attempts: number;
+    submitted_quiz_attempts: number;
+    in_progress_quiz_attempts: number;
+    expired_quiz_attempts: number;
+    passed_quiz_attempts: number;
+    average_quiz_score: number;
+    overall_quiz_pass_rate: number;
+  };
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  student_id: string;
+  student_name: string;
+  /** Only returned to the course instructor and admins. */
+  student_email: string | null;
+  best_score: number;
+  highest_percentage: number;
+  total_attempts: number;
+  passed: boolean;
+  submitted_at: string;
+}
+
+export interface QuizLeaderboard {
+  quiz_id: string;
+  quiz_title: string;
+  course_id: string;
+  course_title: string;
+  pass_percentage: number;
+  total_participants: number;
+  leaderboard: LeaderboardEntry[];
+  my_entry: LeaderboardEntry | null;
 }
 
 export interface StudentAnalytics {
@@ -345,12 +444,37 @@ export interface StudentAnalytics {
 export interface Certificate {
   id: string;
   student: string;
-  student_name?: string;
+  student_name: string;
   course: string;
-  course_title?: string;
+  course_title: string;
+  instructor_name: string;
   verification_code: string;
   issued_at: string;
-  certificate_url?: string;
+  certificate_url?: string | null;
+}
+
+/** Public, limited view returned by GET /certificates/verify/{code}/. */
+export interface CertificateVerification {
+  valid: boolean;
+  verification_code: string;
+  course_title: string;
+  student_name: string;
+  instructor_name: string;
+  issued_at: string;
+}
+
+/** `details` of a 400 CRITERIA_NOT_MET from GET /courses/{id}/certificate/. */
+export interface CertificateCriteria {
+  reason?: string;
+  enrolled?: boolean;
+  total_lessons?: number;
+  completed_lessons?: number;
+  all_lessons_completed?: boolean;
+  total_quizzes?: number;
+  quizzes_passed?: number;
+  all_quizzes_passed?: boolean;
+  missing_quizzes?: { quiz_id: string; title: string; pass_percentage: number }[];
+  eligible: boolean;
 }
 
 // Student Learning & Course Progress Types
