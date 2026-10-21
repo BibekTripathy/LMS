@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'assessments',
     'ai_study',
     'analytics',
+    'certificates',
 ]
 
 AUTH_USER_MODEL = 'users.User'
