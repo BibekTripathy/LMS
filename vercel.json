@@ -7,7 +7,7 @@
     },
     "backend": {
       "root": "backend",
-      "buildCommand": "python manage.py migrate --noinput && python manage.py deploy_bootstrap"
+      "buildCommand": "DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" sh -c 'python manage.py migrate --noinput && python manage.py deploy_bootstrap'"
     }
   },
   "rewrites": [
