@@ -77,7 +77,8 @@ class QuizLeaderboardView(APIView):
     """
     GET /api/v1/quizzes/{id}/leaderboard/
     Calculates the leaderboard (best score per student) using PostgreSQL ranking queries.
-    Accessible to actively enrolled students, course instructor, and administrators.
+    Accessible to actively enrolled students (when enabled), the course instructor, and administrators.
+    Student emails are returned only to the course instructor and administrators.
     """
     permission_classes = [IsAuthenticated, CanAccessQuizLeaderboard]
 
@@ -93,6 +94,17 @@ class QuizLeaderboardView(APIView):
             except (ValueError, TypeError):
                 limit = None
 
-        data = get_quiz_leaderboard(quiz, requesting_user=request.user, limit=limit)
+        user = request.user
+        is_manager = (
+            getattr(user, 'role', '') == 'ADMIN' or user.is_staff or user.is_superuser
+            or quiz.course.instructor_id == user.id
+        )
+        if not quiz.leaderboard_enabled and not is_manager:
+            return Response(
+                {"error": "The leaderboard is turned off for this quiz.", "code": "LEADERBOARD_DISABLED"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        data = get_quiz_leaderboard(quiz, requesting_user=user, limit=limit, include_emails=is_manager)
         serializer = QuizLeaderboardSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)

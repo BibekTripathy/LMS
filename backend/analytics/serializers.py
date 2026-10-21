@@ -144,7 +144,7 @@ class LeaderboardEntrySerializer(serializers.Serializer):
     rank = serializers.IntegerField()
     student_id = serializers.UUIDField()
     student_name = serializers.CharField()
-    student_email = serializers.EmailField()
+    student_email = serializers.EmailField(allow_null=True)
     best_score = serializers.FloatField()
     score = serializers.FloatField()
     highest_percentage = serializers.FloatField()

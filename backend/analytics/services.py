@@ -414,10 +414,11 @@ def get_admin_analytics():
     }
 
 
-def get_quiz_leaderboard(quiz, requesting_user=None, limit=None):
+def get_quiz_leaderboard(quiz, requesting_user=None, limit=None, include_emails=False):
     """
     Computes a quiz leaderboard using PostgreSQL aggregation and ranking window queries.
     Identifies best score per student and ranks participants.
+    Emails are only included for course managers; students see names only.
     """
     leaderboard_qs = (
         QuizAttempt.objects.filter(quiz=quiz, status='SUBMITTED')
@@ -447,7 +448,7 @@ def get_quiz_leaderboard(quiz, requesting_user=None, limit=None):
     for row in leaderboard_qs:
         first_name = row['student__first_name'] or ''
         last_name = row['student__last_name'] or ''
-        name = f"{first_name} {last_name}".strip() or row['student__email']
+        name = f"{first_name} {last_name}".strip() or (row['student__email'] if include_emails else 'Learner')
         highest_pct = float(row['highest_percentage']) if row['highest_percentage'] is not None else 0.0
         best_score = float(row['best_score']) if row['best_score'] is not None else 0.0
         passed = highest_pct >= quiz.pass_percentage
@@ -456,7 +457,7 @@ def get_quiz_leaderboard(quiz, requesting_user=None, limit=None):
             'rank': row['rank'],
             'student_id': row['student_id'],
             'student_name': name,
-            'student_email': row['student__email'],
+            'student_email': row['student__email'] if include_emails else None,
             'best_score': best_score,
             'score': best_score,
             'highest_percentage': round(highest_pct, 2),

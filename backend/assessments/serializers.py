@@ -59,16 +59,25 @@ class QuizDetailSerializer(serializers.ModelSerializer):
     total_marks = serializers.IntegerField(read_only=True)
     total_questions = serializers.IntegerField(read_only=True)
     questions = QuestionSerializer(many=True, read_only=True)
+    attempts_remaining = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
         fields = [
             'id', 'course', 'lesson', 'title', 'description',
             'time_limit_seconds', 'pass_percentage', 'passing_score_percentage',
+            'max_attempts', 'attempts_remaining', 'leaderboard_enabled',
             'status', 'total_marks', 'total_questions', 'questions',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
+
+    def get_attempts_remaining(self, quiz):
+        """Attempts the requesting student has left; null when unlimited or no user in context."""
+        from .services import attempts_remaining
+
+        user = self.context.get('user')
+        return attempts_remaining(user, quiz) if user else None
 
 
 class AnswerInputItemSerializer(serializers.Serializer):
@@ -158,6 +167,8 @@ class QuizResultsMeSerializer(serializers.Serializer):
     quiz_id = serializers.UUIDField()
     quiz_title = serializers.CharField()
     pass_percentage = serializers.IntegerField()
+    max_attempts = serializers.IntegerField(allow_null=True)
+    attempts_remaining = serializers.IntegerField(allow_null=True)
     total_attempts = serializers.IntegerField()
     best_score = serializers.DecimalField(max_digits=6, decimal_places=2, allow_null=True)
     highest_percentage = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True)
@@ -271,12 +282,13 @@ class QuizCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'course', 'lesson', 'title', 'description',
             'time_limit_seconds', 'pass_percentage', 'passing_score_percentage',
+            'max_attempts', 'leaderboard_enabled',
             'status', 'total_marks', 'total_questions', 'questions',
             'created_at', 'updated_at'
         ]
         # course comes from the URL on create and can never be moved to another course.
         read_only_fields = ['id', 'course', 'total_marks', 'total_questions', 'created_at', 'updated_at']
-        extra_kwargs = {'pass_percentage': {'max_value': 100}}
+        extra_kwargs = {'pass_percentage': {'max_value': 100}, 'max_attempts': {'min_value': 1}}
 
     def validate_lesson(self, lesson):
         course = self.context.get('course') or getattr(self.instance, 'course', None)

@@ -27,7 +27,8 @@ The stack consists of:
 
 ## 4. Assessment and Progress Logic
 - **Quiz Policies (MVP)**:
-  - **Retakes**: Students are allowed unlimited quiz retakes.
+  - **Retakes**: Configurable per quiz with `max_attempts` (empty = unlimited, the default). Submitted and expired attempts count; resuming an in-progress attempt never does. Course instructors and admins are not limited.
+  - **Leaderboard**: Optional per quiz (`leaderboard_enabled`, default on). Students see names and scores only; emails are shown to the course instructor and admins.
   - **History**: Every attempt is kept as a separate historical record in the database.
   - **Completion**: The highest recorded score is used to determine course completion and certificate eligibility.
   - **Deadlines**: No default deadlines are imposed.
