@@ -13,6 +13,8 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useCourseDetail, useMyEnrollments } from './hooks';
+import { useCourseProgress } from '../enrollments/hooks';
+import { CourseQuizList } from '../quizzes/CourseQuizList';
 import { EnrollmentButton } from './EnrollmentButton';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -52,6 +54,11 @@ export const CourseDetails: React.FC = () => {
     }
     return false;
   }, [user, course, enrollmentsQuery.data, id]);
+
+  const progressQuery = useCourseProgress(isEnrolled ? id : undefined);
+  const completedLessonIds = new Set(
+    (progressQuery.data?.lessons ?? []).filter((l) => l.completed).map((l) => l.lesson_id)
+  );
 
   if (isLoading) {
     return (
@@ -279,7 +286,14 @@ export const CourseDetails: React.FC = () => {
                                 Required
                               </Badge>
                             )}
-                            {isEnrolled ? (
+                            {isEnrolled && completedLessonIds.has(lesson.id) ? (
+                              <Link
+                                to={`/courses/${course.id}/learn/${lesson.id}`}
+                                className="flex items-center gap-1 font-semibold text-emerald-600 hover:text-emerald-700"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" /> Review
+                              </Link>
+                            ) : isEnrolled ? (
                               <Link
                                 to={`/courses/${course.id}/learn/${lesson.id}`}
                                 className="font-semibold text-indigo-600 hover:text-indigo-700"
@@ -306,6 +320,12 @@ export const CourseDetails: React.FC = () => {
           </div>
         )}
       </div>
+
+      {isEnrolled && (
+        <div className="pt-4">
+          <CourseQuizList courseId={course.id} />
+        </div>
+      )}
     </div>
   );
 };

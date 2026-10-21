@@ -60,7 +60,7 @@ export const QuizLeaderboardPage: React.FC = () => {
             <Trophy className="w-6 h-6 text-amber-500" /> {data.quiz_title}
           </h1>
           <p className="text-sm text-slate-500">
-            {data.course_title} • Pass mark {data.pass_percentage}% • Ranked by best score
+            {data.course_title} • Pass mark {data.pass_percentage}% • Ranked by best score; ties go to the earlier submission
           </p>
         </div>
         <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">

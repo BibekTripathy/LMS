@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   AlertCircle,
+  Award,
 } from 'lucide-react';
 
 import {
@@ -18,6 +19,7 @@ import {
 } from './hooks';
 import { VideoPlayer } from './VideoPlayer';
 import { LessonSidebar } from './LessonSidebar';
+import { CourseQuizList } from '../quizzes/CourseQuizList';
 import { LessonNavigation } from './LessonNavigation';
 import { LessonCompletionButton } from './LessonCompletionButton';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -156,6 +158,20 @@ export const LearningWorkspace: React.FC = () => {
     );
   }
 
+  const sidebarFooter = (
+    <div className="space-y-4">
+      {courseProgress?.is_completed && (
+        <Link
+          to="/certificates"
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold"
+        >
+          <Award className="w-4 h-4" /> Course complete: claim your certificate
+        </Link>
+      )}
+      <CourseQuizList courseId={course.id} compact />
+    </div>
+  );
+
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Mobile Sidebar Backdrop & Drawer */}
@@ -184,6 +200,7 @@ export const LearningWorkspace: React.FC = () => {
                 setSidebarOpen(false);
               }}
               className="h-[calc(100%-49px)] border-r-0"
+              footer={sidebarFooter}
             />
           </div>
         </div>
@@ -196,6 +213,7 @@ export const LearningWorkspace: React.FC = () => {
           currentLessonId={activeLessonId}
           courseProgress={courseProgress}
           onSelectLesson={(id) => navigate(`/courses/${course.id}/learn/${id}`)}
+          footer={sidebarFooter}
         />
       </div>
 

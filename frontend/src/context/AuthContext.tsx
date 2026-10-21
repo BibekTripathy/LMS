@@ -40,13 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (payload: LoginPayload) => {
     await authApi.login(payload);
     setHasToken(true);
-    await queryClient.fetchQuery({ queryKey: ME_KEY, queryFn: authApi.getMe });
+    return queryClient.fetchQuery({ queryKey: ME_KEY, queryFn: authApi.getMe });
   };
 
   const register = async (payload: RegisterPayload) => {
     await authApi.register(payload);
     // After registration, automatically log in
-    await login({ email: payload.email, password: payload.password });
+    return login({ email: payload.email, password: payload.password });
   };
 
   const logout = async () => {

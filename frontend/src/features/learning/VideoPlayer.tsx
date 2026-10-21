@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { PlayCircle, Check, Loader2, VideoOff } from 'lucide-react';
 import { useUpdateLessonProgress } from './hooks';
+import { toEmbedUrl } from '../../lib/video';
 
 export interface VideoPlayerProps {
   lessonId: string;
@@ -128,17 +129,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
 
-  // Check if it's an external embed (e.g. youtube or vimeo)
-  const isEmbed =
-    videoUrl.includes('youtube.com') ||
-    videoUrl.includes('youtu.be') ||
-    videoUrl.includes('vimeo.com');
+  // YouTube/Vimeo page links are rewritten to their embeddable player URL
+  const embedUrl = toEmbedUrl(videoUrl);
 
-  if (isEmbed) {
+  if (embedUrl) {
     return (
       <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-lg border border-slate-800 relative">
         <iframe
-          src={videoUrl}
+          src={embedUrl}
           title="Lesson Video"
           className="w-full h-full border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

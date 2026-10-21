@@ -23,7 +23,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+  // Return to the protected page that sent the user here, otherwise to their role's home.
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+  const homeFor = (role: string) => (role === 'STUDENT' ? '/dashboard' : '/instructor');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +34,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
 
     try {
       if (isLogin) {
-        await login({ email, password });
-        navigate(from, { replace: true });
+        const signedIn = await login({ email, password });
+        navigate(from ?? homeFor(signedIn.role), { replace: true });
       } else {
         if (!firstName.trim()) {
           throw new Error('Please enter your first name.');
         }
-        await register({ email, password, first_name: firstName, last_name: lastName });
-        navigate(from, { replace: true });
+        const created = await register({ email, password, first_name: firstName, last_name: lastName });
+        navigate(from ?? homeFor(created.role), { replace: true });
       }
     } catch (err) {
       setError(getErrorMessage(err, 'Authentication failed. Please check your credentials.'));
