@@ -50,7 +50,7 @@ export const CourseCatalogue: React.FC = () => {
             NoteBox Course Catalogue
           </div>
           <h1 className="font-notebook text-3xl sm:text-5xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-tight">
-            📚 Find Your Next Chapter
+            Find Your Next Chapter
           </h1>
           <p className="text-latte-subtext1 dark:text-frappe-subtext1 text-sm sm:text-base leading-relaxed">
             Explore our library of expertly crafted courses. Use AI study tools to reinforce what you learn.

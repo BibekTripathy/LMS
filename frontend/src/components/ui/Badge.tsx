@@ -14,13 +14,14 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
 }) => {
   const variantClasses = {
-    default: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-    success: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-    warning: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-    danger: 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-    purple: 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-    slate: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-    info: 'bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+    // All variants now use Catppuccin Frappé tokens
+    default:  'bg-frappe-blue/10 text-frappe-blue border-frappe-blue/30 dark:bg-frappe-blue/20 dark:text-frappe-blue dark:border-frappe-blue/40',
+    success:  'bg-frappe-green/10 text-frappe-green border-frappe-green/30 dark:bg-frappe-green/20 dark:text-frappe-green dark:border-frappe-green/40',
+    warning:  'bg-frappe-yellow/10 text-latte-yellow border-frappe-yellow/30 dark:bg-frappe-yellow/15 dark:text-frappe-yellow dark:border-frappe-yellow/40',
+    danger:   'bg-frappe-red/10 text-frappe-red border-frappe-red/30 dark:bg-frappe-red/15 dark:text-frappe-red dark:border-frappe-red/40',
+    purple:   'bg-frappe-mauve/10 text-frappe-mauve border-frappe-mauve/30 dark:bg-frappe-mauve/15 dark:text-frappe-mauve dark:border-frappe-mauve/40',
+    slate:    'bg-latte-surface0 text-latte-subtext1 border-latte-surface1 dark:bg-frappe-surface1 dark:text-frappe-subtext1 dark:border-frappe-surface2',
+    info:     'bg-frappe-sky/10 text-frappe-sky border-frappe-sky/30 dark:bg-frappe-sky/15 dark:text-frappe-sky dark:border-frappe-sky/40',
   }[variant];
 
   const sizeClasses = {

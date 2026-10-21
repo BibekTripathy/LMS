@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Layers, User as UserIcon } from 'lucide-react';
+import { Layers, User as UserIcon, BookOpen } from 'lucide-react';
 import type { Course } from '../../types';
 import { Badge } from '../../components/ui/Badge';
+import { CoursePlaceholderImage } from '../../components/ui/CoursePlaceholderImage';
 
 export interface CourseCardProps {
   course: Course;
@@ -11,12 +12,12 @@ export interface CourseCardProps {
 
 // Catppuccin Frappé accent set — used for the top border + thumbnail bg
 const CARD_ACCENTS = [
-  { border: 'border-t-frappe-blue',   thumbBg: 'bg-frappe-blue/15 dark:bg-frappe-blue/20',   icon: 'text-frappe-blue'   },
-  { border: 'border-t-frappe-mauve',  thumbBg: 'bg-frappe-mauve/15 dark:bg-frappe-mauve/20',  icon: 'text-frappe-mauve'  },
-  { border: 'border-t-frappe-teal',   thumbBg: 'bg-frappe-teal/15 dark:bg-frappe-teal/20',    icon: 'text-frappe-teal'   },
-  { border: 'border-t-frappe-green',  thumbBg: 'bg-frappe-green/15 dark:bg-frappe-green/20',  icon: 'text-frappe-green'  },
-  { border: 'border-t-frappe-peach',  thumbBg: 'bg-frappe-peach/15 dark:bg-frappe-peach/20',  icon: 'text-frappe-peach'  },
-  { border: 'border-t-frappe-yellow', thumbBg: 'bg-frappe-yellow/15 dark:bg-frappe-yellow/20',icon: 'text-frappe-yellow' },
+  { border: 'border-t-frappe-blue',   hex: '#8caaee' },
+  { border: 'border-t-frappe-mauve',  hex: '#ca9ee6' },
+  { border: 'border-t-frappe-teal',   hex: '#81c8be' },
+  { border: 'border-t-frappe-green',  hex: '#a6d189' },
+  { border: 'border-t-frappe-peach',  hex: '#ef9f76' },
+  { border: 'border-t-frappe-yellow', hex: '#e5c890' },
 ];
 
 export const CourseCard: React.FC<CourseCardProps> = ({ course, isEnrolled }) => {
@@ -38,7 +39,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isEnrolled }) =>
     <div className={`group bg-latte-mantle dark:bg-frappe-surface0 rounded-xl border-t-4 ${accent.border} border border-latte-surface0 dark:border-frappe-surface1 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden`}>
 
       {/* Thumbnail */}
-      <div className={`relative h-40 w-full ${accent.thumbBg} overflow-hidden flex items-center justify-center`}>
+      <div className="relative h-40 w-full overflow-hidden flex items-center justify-center bg-latte-surface0 dark:bg-frappe-surface1">
         {course.thumbnail_url ? (
           <img
             src={course.thumbnail_url}
@@ -46,7 +47,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isEnrolled }) =>
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <BookOpen className={`w-14 h-14 ${accent.icon} opacity-40 group-hover:scale-105 transition-transform duration-300`} />
+          <CoursePlaceholderImage
+            category={course.category}
+            accentColor={accent.hex}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         )}
 
         {/* Category badge */}
@@ -61,7 +66,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, isEnrolled }) =>
         {/* Enrolled indicator */}
         {enrolled && (
           <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-frappe-green/20 text-frappe-green border border-frappe-green/40">
-            ✓ Enrolled
+            <span>Enrolled</span>
           </div>
         )}
       </div>

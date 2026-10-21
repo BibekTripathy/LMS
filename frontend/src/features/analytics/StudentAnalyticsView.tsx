@@ -31,7 +31,7 @@ export const StudentAnalyticsView: React.FC = () => {
       {/* Profile & Header Card */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-2xl font-black uppercase shadow-lg shadow-indigo-500/20">
+          <div className="w-16 h-16 rounded-2xl bg-frappe-blue text-white flex items-center justify-center text-2xl font-black uppercase shadow-md shadow-frappe-blue/20">
             {user?.first_name ? user.first_name[0] : user?.email ? user.email[0] : 'S'}
           </div>
 

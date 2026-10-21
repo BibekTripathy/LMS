@@ -120,9 +120,9 @@ export const StudentDashboard: React.FC = () => {
         ) : activeEnrollments.length === 0 ? (
           <EmptyState
             icon={Compass}
-            title="Your notebook is empty!"
-            description="Browse our catalogue and enroll in your first course to fill those pages."
-            actionText="Explore Courses"
+            title="You haven't enrolled in any courses yet"
+            description="Explore our interactive course catalogue and start your first learning module today."
+            actionText="Explore Course Catalogue"
             actionHref="/courses"
           />
         ) : (
