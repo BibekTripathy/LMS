@@ -10,8 +10,9 @@ export const instructor: User = { id: 'u2', email: 'i@x.test', first_name: 'I', 
 
 function authValue(user: User | null, loading = false): AuthContextType {
   const noop = async () => {};
+  const signIn = async () => user as User;
   return {
-    user, loading, login: noop, register: noop, logout: noop, refreshUser: noop,
+    user, loading, login: signIn, register: signIn, logout: noop, refreshUser: noop,
     isInstructor: user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN',
     isStudent: user?.role === 'STUDENT',
     isAdmin: user?.role === 'ADMIN',

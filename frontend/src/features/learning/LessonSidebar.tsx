@@ -18,6 +18,8 @@ export interface LessonSidebarProps {
   courseProgress?: CourseProgress;
   onSelectLesson?: (lessonId: string) => void;
   className?: string;
+  /** Rendered under the curriculum, e.g. the course's quizzes. */
+  footer?: React.ReactNode;
 }
 
 export const LessonSidebar: React.FC<LessonSidebarProps> = ({
@@ -26,6 +28,7 @@ export const LessonSidebar: React.FC<LessonSidebarProps> = ({
   courseProgress,
   onSelectLesson,
   className = '',
+  footer,
 }) => {
   const navigate = useNavigate();
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
@@ -179,6 +182,7 @@ export const LessonSidebar: React.FC<LessonSidebarProps> = ({
           );
         })}
       </div>
+      {footer && <div className="p-4 border-t border-slate-200 dark:border-slate-800">{footer}</div>}
     </aside>
   );
 };

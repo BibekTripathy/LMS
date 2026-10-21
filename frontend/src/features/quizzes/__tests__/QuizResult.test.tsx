@@ -34,6 +34,23 @@ describe('QuizResult', () => {
     expect(api.getAttempt).not.toHaveBeenCalledWith('a2');
   });
 
+  it('hides the retake button once no attempts are left', async () => {
+    api.getMyResults.mockResolvedValue({ ...summary, max_attempts: 2, attempts_remaining: 0 });
+    api.getAttempt.mockResolvedValue(submitted);
+    renderResult();
+    expect(await screen.findByText('No attempts left')).toBeInTheDocument();
+    expect(screen.queryByText('Retake Quiz')).not.toBeInTheDocument();
+    expect(screen.getByText(/0 of 2 attempts remaining/)).toBeInTheDocument();
+  });
+
+  it('offers a retake while attempts remain', async () => {
+    api.getMyResults.mockResolvedValue({ ...summary, max_attempts: 3, attempts_remaining: 1 });
+    api.getAttempt.mockResolvedValue(submitted);
+    renderResult();
+    expect(await screen.findByText('Retake Quiz')).toBeInTheDocument();
+    expect(screen.getByText(/1 of 3 attempts remaining/)).toBeInTheDocument();
+  });
+
   it('shows the error state', async () => {
     api.getMyResults.mockRejectedValue(apiError(403, 'You must be enrolled in this course to access this quiz.'));
     renderResult();

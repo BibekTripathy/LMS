@@ -4,8 +4,9 @@ import type { User, LoginPayload, RegisterPayload } from '../types';
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  /** Resolves with the signed-in user so callers can route by role. */
+  login: (payload: LoginPayload) => Promise<User>;
+  register: (payload: RegisterPayload) => Promise<User>;
   logout: () => Promise<void>;
   isInstructor: boolean;
   isStudent: boolean;

@@ -10,6 +10,7 @@ All API endpoints are prefixed with `/api/v1/`. The backend is implemented using
 - `POST /api/v1/auth/register/`
   - **Payload**: `{ "email": "...", "password": "...", "first_name": "...", "last_name": "..." }`
   - **Note**: Always creates a `STUDENT` user. `role` fields in the payload are ignored.
+  - **Validation**: `400` for a missing/invalid email or an email already registered (case-insensitive); `400 WEAK_PASSWORD` when the password fails Django's `AUTH_PASSWORD_VALIDATORS` (min length 8, not common, not all digits, not similar to the email/name).
 - `POST /api/v1/auth/login/`
   - **Payload**: `{ "email": "...", "password": "..." }`
   - **Response**: `{ "access": "<token>", "refresh": "<token>" }`
@@ -82,10 +83,10 @@ List endpoints use offset/limit or page number pagination.
 
 ## 6. Quizzes
 - `GET /api/v1/quizzes/{id}/`
-  - Returns quiz details and questions. **Does not return correct answers or explanations.**
+  - Returns quiz details and questions. **Does not return correct answers or explanations.** Includes `max_attempts`, `leaderboard_enabled` and `attempts_remaining` (attempts the requesting student has left; `null` when unlimited).
   - **Authorization**: Requires valid `Enrollment`. `DRAFT` quizzes return `404` to everyone except the course instructor and admins. New quizzes default to `DRAFT`.
 - `POST /api/v1/quizzes/{id}/start/`
-  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS` with deadline. Returns attempt details: `201` for a new attempt, `200` when an unexpired in-progress attempt is resumed.
+  - Initiates a new `QuizAttempt` and sets status to `IN_PROGRESS` with deadline. Returns attempt details: `201` for a new attempt, `200` when an unexpired in-progress attempt is resumed. Returns `400 MAX_ATTEMPTS_REACHED` when the student's submitted + expired attempts have reached `max_attempts` (resuming is always allowed; instructors/admins are exempt).
   - **Authorization**: Requires valid `Enrollment`.
 - `GET /api/v1/attempts/{id}/`
   - Returns current attempt state and saved answers for the student. Correct options, explanations, and per-answer `is_correct` / `marks_awarded` appear **only once the attempt is `SUBMITTED`** (never for `IN_PROGRESS` or `EXPIRED`).
@@ -102,19 +103,20 @@ List endpoints use offset/limit or page number pagination.
   - **Payload**: `{ "attempt_id": "...", "answers": [ ... ] }`
   - Alternate endpoint for submitting and grading an attempt. A missing or non-UUID `attempt_id` returns `400`.
 - `GET /api/v1/quizzes/{id}/results/me/`
-  - Returns student's historical attempts, best score, highest percentage, and pass/fail summary.
+  - Returns student's historical attempts, best score, highest percentage, pass/fail summary, `max_attempts` and `attempts_remaining`.
   - **Authorization**: Requires valid `Enrollment`.
 - `GET /api/v1/quizzes/{id}/leaderboard/`
   - Returns ranking leaderboard calculated using PostgreSQL ranking window queries (best score per student).
   - Optional query parameter: `?limit=10`.
-  - **Authorization**: Requires valid `Enrollment` in the quiz's course, or course instructor/admin ownership.
+  - **Authorization**: Requires valid `Enrollment` in the quiz's course, or course instructor/admin ownership. When `leaderboard_enabled` is false, students get `403 LEADERBOARD_DISABLED`.
+  - **Privacy**: `student_email` is `null` (and blank names show as `Learner`) unless the caller is the course instructor or an admin.
 
 
 ### Quiz authoring (course instructor or admin)
 - `GET /api/v1/courses/{id}/quizzes/`
   - Course instructor/admin: every quiz, including correct options and explanations (authoring view). Actively enrolled student: `PUBLISHED` quizzes only, without answers. Anyone else gets `403`.
 - `POST /api/v1/courses/{id}/quizzes/`
-  - **Payload**: `{ "title", "description", "lesson"?, "time_limit_seconds"?, "pass_percentage"? (0-100), "status"? }`. `course` comes from the URL; `lesson` must belong to it. New quizzes default to `DRAFT`.
+  - **Payload**: `{ "title", "description", "lesson"?, "time_limit_seconds"?, "pass_percentage"? (0-100), "max_attempts"? (>= 1 or null), "leaderboard_enabled"?, "status"? }`. `course` comes from the URL; `lesson` must belong to it. New quizzes default to `DRAFT`.
 - `GET | PATCH | DELETE /api/v1/quizzes/{id}/manage/`
   - `course` is read-only. `DELETE` returns `204`, or `400 HAS_ATTEMPTS` if students have attempted the quiz (archive it with `PATCH {"status": "ARCHIVED"}` instead).
 - `POST /api/v1/quizzes/{id}/questions/`

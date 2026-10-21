@@ -35,6 +35,15 @@ class Quiz(models.Model):
         default=70,
         help_text="Passing score percentage threshold (0-100)."
     )
+    max_attempts = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Maximum finished (submitted or expired) attempts per student. Empty means unlimited."
+    )
+    leaderboard_enabled = models.BooleanField(
+        default=True,
+        help_text="Whether enrolled students can see the quiz leaderboard."
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

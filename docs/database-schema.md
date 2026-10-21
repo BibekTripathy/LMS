@@ -68,6 +68,8 @@ The database uses PostgreSQL, managed via the Django ORM. Below is an outline of
 - `description`: Text
 - `time_limit_seconds`: Integer (default 1800, 0 for unlimited)
 - `pass_percentage`: Integer (default 70)
+- `max_attempts`: Positive integer, nullable (null = unlimited retakes)
+- `leaderboard_enabled`: Boolean (default True)
 - `status`: String (Choices: `DRAFT`, `PUBLISHED`, `ARCHIVED`)
 - `created_at`: DateTime
 - `updated_at`: DateTime

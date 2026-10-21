@@ -3,6 +3,7 @@ import { courseApi, type CourseFilterParams } from '../../api/courses';
 import { enrollmentApi } from '../../api/enrollments';
 
 import type { Course, CourseDetail, Enrollment } from '../../types';
+import { useAuth } from '../../context/auth';
 
 export const courseQueryKeys = {
   all: ['courses'] as const,
@@ -27,10 +28,13 @@ export function useCourseDetail(id: string | undefined) {
   });
 }
 
+/** The signed-in user's enrollments; never requested for anonymous visitors (it would 401). */
 export function useMyEnrollments() {
+  const { user } = useAuth();
   return useQuery<Enrollment[], Error>({
     queryKey: courseQueryKeys.enrollments,
     queryFn: () => enrollmentApi.getMyEnrollments(),
+    enabled: !!user,
   });
 }
 

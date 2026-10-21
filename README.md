@@ -10,7 +10,7 @@ An AI-assisted Learning Management System: React + TypeScript + Vite + Tailwind 
 
 ## Prerequisites
 - Python 3.12 (the version CI and the Dockerfile use; newer 3.x also works)
-- Node.js 20+
+- Node.js 22.12+ (required by Vite 8 / Vitest 5; CI uses Node 24)
 - PostgreSQL 15+ (SQLite is used automatically if `DB_NAME` is not set, which is handy for a quick look)
 
 ## 1. Configure environment

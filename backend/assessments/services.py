@@ -2,7 +2,8 @@ from decimal import Decimal
 from datetime import timedelta
 from django.db import transaction
 from django.utils import timezone
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework import status
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
 from enrollments.models import Enrollment
 from .models import Quiz, Question, QuestionOption, QuizAttempt, Answer
@@ -30,48 +31,90 @@ def check_quiz_enrollment(user, quiz):
     return True
 
 
+FINISHED_ATTEMPT_STATUSES = ('SUBMITTED', 'EXPIRED')
+
+
+class AttemptLimitReached(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = 'MAX_ATTEMPTS_REACHED'
+
+    def __init__(self, max_attempts):
+        super().__init__({
+            'error': f'You have used all {max_attempts} attempt(s) allowed for this quiz.',
+            'code': self.default_code,
+        })
+
+
+def _is_quiz_manager(user, quiz):
+    return (
+        getattr(user, 'role', '') == 'ADMIN' or user.is_staff or user.is_superuser
+        or quiz.course.instructor_id == user.id
+    )
+
+
+def count_finished_attempts(user, quiz):
+    return QuizAttempt.objects.filter(quiz=quiz, student=user, status__in=FINISHED_ATTEMPT_STATUSES).count()
+
+
+def attempts_remaining(user, quiz):
+    """None when the quiz allows unlimited attempts (or the user manages the quiz)."""
+    if quiz.max_attempts is None or _is_quiz_manager(user, quiz):
+        return None
+    return max(quiz.max_attempts - count_finished_attempts(user, quiz), 0)
+
+
 def start_quiz_attempt(user, quiz):
     """
     Starts a new quiz attempt for the student or resumes an unexpired in-progress attempt.
-    Enforces active enrollment, quiz publication, and sets authoritative deadline.
+    Enforces active enrollment, quiz publication, the retake limit, and sets authoritative deadline.
     """
     check_quiz_enrollment(user, quiz)
+    is_manager = _is_quiz_manager(user, quiz)
 
-    if quiz.status != 'PUBLISHED':
-        # Allow instructor or admin to test draft quiz
-        if not (getattr(user, 'role', '') == 'ADMIN' or user.is_staff or user.is_superuser or quiz.course.instructor == user):
-            raise ValidationError("This quiz is currently not published.")
+    if quiz.status != 'PUBLISHED' and not is_manager:
+        # Only the instructor or an admin may test a draft quiz
+        raise ValidationError("This quiz is currently not published.")
 
-    # Check for existing in-progress attempt
-    active_attempt = QuizAttempt.objects.filter(
-        quiz=quiz,
-        student=user,
-        status='IN_PROGRESS'
-    ).order_by('-started_at').first()
-
+    # Expire stale attempts first so the status persists even if the start is refused below.
     now = timezone.now()
-    if active_attempt:
-        if active_attempt.deadline_at and now > active_attempt.deadline_at:
-            active_attempt.status = 'EXPIRED'
-            active_attempt.save(update_fields=['status'])
-        else:
-            # Resume existing unexpired attempt
+    QuizAttempt.objects.filter(
+        quiz=quiz, student=user, status='IN_PROGRESS', deadline_at__lt=now
+    ).update(status='EXPIRED')
+
+    with transaction.atomic():
+        if not is_manager:
+            # Serialise concurrent starts by the same student so the retake limit cannot be exceeded.
+            Enrollment.objects.select_for_update().filter(
+                student=user, course=quiz.course, status='ACTIVE'
+            ).first()
+
+        active_attempt = QuizAttempt.objects.filter(
+            quiz=quiz,
+            student=user,
+            status='IN_PROGRESS'
+        ).order_by('-started_at').first()
+
+        if active_attempt:
+            # Resuming never counts against the retake limit
             active_attempt.resumed = True
             return active_attempt
 
-    # Create new attempt
-    started_at = now
-    deadline_at = None
-    if quiz.time_limit_seconds and quiz.time_limit_seconds > 0:
-        deadline_at = started_at + timedelta(seconds=quiz.time_limit_seconds)
+        if not is_manager and quiz.max_attempts is not None:
+            if count_finished_attempts(user, quiz) >= quiz.max_attempts:
+                raise AttemptLimitReached(quiz.max_attempts)
 
-    attempt = QuizAttempt.objects.create(
-        quiz=quiz,
-        student=user,
-        status='IN_PROGRESS',
-        started_at=started_at,
-        deadline_at=deadline_at
-    )
+        started_at = now
+        deadline_at = None
+        if quiz.time_limit_seconds and quiz.time_limit_seconds > 0:
+            deadline_at = started_at + timedelta(seconds=quiz.time_limit_seconds)
+
+        attempt = QuizAttempt.objects.create(
+            quiz=quiz,
+            student=user,
+            status='IN_PROGRESS',
+            started_at=started_at,
+            deadline_at=deadline_at
+        )
     attempt.resumed = False
     return attempt
 
@@ -249,6 +292,8 @@ def get_student_quiz_results(user, quiz):
         'quiz_id': quiz.id,
         'quiz_title': quiz.title,
         'pass_percentage': quiz.pass_percentage,
+        'max_attempts': quiz.max_attempts,
+        'attempts_remaining': attempts_remaining(user, quiz),
         'total_attempts': attempts.count(),
         'best_score': best_score,
         'highest_percentage': highest_percentage,

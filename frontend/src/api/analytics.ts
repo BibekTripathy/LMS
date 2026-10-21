@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { StudentAnalytics } from '../types';
+import type { AdminAnalytics, CourseAnalytics, QuizLeaderboard, StudentAnalytics } from '../types';
 
 /** Subset of `GET /analytics/student/` (backend `analytics` app) used by the student UI. */
 export interface StudentAnalyticsResponse {
@@ -38,5 +38,20 @@ export const analyticsApi = {
   getStudentAnalytics: async (): Promise<StudentAnalytics> => {
     const response = await apiClient.get<StudentAnalyticsResponse>('/analytics/student/');
     return toStudentAnalytics(response.data);
+  },
+
+  getCourseAnalytics: async (courseId: string): Promise<CourseAnalytics> => {
+    const response = await apiClient.get<CourseAnalytics>(`/courses/${courseId}/analytics/`);
+    return response.data;
+  },
+
+  getAdminAnalytics: async (): Promise<AdminAnalytics> => {
+    const response = await apiClient.get<AdminAnalytics>('/analytics/admin/');
+    return response.data;
+  },
+
+  getQuizLeaderboard: async (quizId: string): Promise<QuizLeaderboard> => {
+    const response = await apiClient.get<QuizLeaderboard>(`/quizzes/${quizId}/leaderboard/`);
+    return response.data;
   },
 };
