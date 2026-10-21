@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Award, BarChart3, ClipboardCheck, PlayCircle, Sparkles } from 'lucide-react';
 import { createQueryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/auth';
@@ -29,62 +28,69 @@ import type { UserRole } from './types';
 
 const INSTRUCTOR_ROLES: UserRole[] = ['INSTRUCTOR', 'ADMIN'];
 
-const HOME_FEATURES = [
-  { icon: PlayCircle, title: 'Learn at your pace', text: 'Video lessons, transcripts and reading material that remember where you stopped.' },
-  { icon: ClipboardCheck, title: 'Graded quizzes', text: 'Timed assessments marked on the server, with explanations after you submit.' },
-  { icon: Sparkles, title: 'AI study tools', text: 'Instructor-reviewed flashcards, summaries and a revision plan built from your results.' },
-  { icon: BarChart3, title: 'Track progress', text: 'See completion, quiz scores and recent activity for every course.' },
-  { icon: Award, title: 'Verifiable certificates', text: 'Finish a course to earn a certificate anyone can verify with its code.' },
-];
-
 const Home = () => {
   const { user } = useAuth();
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16 text-center space-y-6">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
-        AI-Powered Next-Gen LMS
+    <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-8">
+      {/* Decorative notebook header */}
+      <div className="relative inline-block">
+        <span className="font-notebook text-6xl sm:text-7xl font-bold text-latte-blue dark:text-frappe-lavender drop-shadow-sm">
+          NoteBox
+        </span>
+        <span className="absolute -top-2 -right-6 text-2xl rotate-12">📓</span>
       </div>
-      <h1 className="max-w-4xl mx-auto text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-        Master New Skills with Interactive Courses & AI Study Tools
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
+        📝 Your interactive learning notebook
+      </div>
+      <h1 className="text-3xl sm:text-4xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-snug">
+        Learn smarter with structured courses,<br />
+        <span className="text-latte-blue dark:text-frappe-blue">AI study tools</span> &amp; sticky-note simplicity
+
       </h1>
-      <p className="text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-        Learn with structured curriculum modules, track your video progress automatically, test your understanding with assessments, and reinforce knowledge with AI flashcards and summaries.
+      <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 max-w-2xl mx-auto leading-relaxed">
+        NoteBox turns complex topics into bite-sized lessons. Track your progress, quiz yourself with AI, and keep your learning organised — just like your favourite notebook.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
         {user ? (
           <Link
-            to={user.role === 'STUDENT' ? '/dashboard' : '/instructor'}
-            className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition"
+            to="/dashboard"
+            className="inline-block px-6 py-3 bg-frappe-blue hover:bg-frappe-sapphire text-white font-bold text-sm rounded-xl shadow-md transition"
           >
-            {user.role === 'STUDENT' ? 'Go to My Learning Hub' : 'Go to Instructor Studio'}
+            Open My Notebook
           </Link>
         ) : (
           <Link
             to="/login"
-            className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition"
+            className="inline-block px-6 py-3 bg-frappe-blue hover:bg-frappe-sapphire text-white font-bold text-sm rounded-xl shadow-md transition"
           >
-            Get Started
+            Get Started — It&apos;s Free
           </Link>
         )}
         <Link
           to="/courses"
-          className="inline-block px-6 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-sm rounded-xl shadow-sm transition"
+          className="inline-block px-6 py-3 bg-latte-surface0 dark:bg-frappe-surface0 hover:bg-latte-surface1 dark:hover:bg-frappe-surface1 text-latte-text dark:text-frappe-text border border-latte-surface1 dark:border-frappe-surface1 font-bold text-sm rounded-xl shadow-sm transition"
         >
-          Explore Course Catalogue
+          Browse Courses
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-10 text-left">
-        {HOME_FEATURES.map(({ icon: Icon, title, text }) => (
-          <div
-            key={title}
-            className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2"
-          >
-            <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{text}</p>
-          </div>
-        ))}
+      {/* Sticky note feature cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-left">
+        <div className="sticky-yellow rounded-xl p-5 shadow-sm rotate-[-0.5deg]">
+          <div className="text-2xl mb-2">📚</div>
+          <h3 className="font-notebook text-lg font-bold text-latte-text">Structured Courses</h3>
+          <p className="text-sm text-latte-subtext1 mt-1">Organised modules and lessons to keep your learning on track.</p>
+        </div>
+        <div className="sticky-blue rounded-xl p-5 shadow-sm rotate-[0.3deg]">
+          <div className="text-2xl mb-2">🤖</div>
+          <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text">AI Study Tools</h3>
+          <p className="text-sm text-latte-subtext1 dark:text-frappe-subtext1 mt-1">Flashcards, summaries and MCQ quizzes generated just for you.</p>
+        </div>
+        <div className="sticky-green rounded-xl p-5 shadow-sm rotate-[-0.2deg]">
+          <div className="text-2xl mb-2">📊</div>
+          <h3 className="font-notebook text-lg font-bold text-latte-text">Track Progress</h3>
+          <p className="text-sm text-latte-subtext1 mt-1">Visual analytics to see how far you&apos;ve come — and what&apos;s next.</p>
+        </div>
       </div>
     </div>
   );

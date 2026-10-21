@@ -25,89 +25,86 @@ export const StudentDashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Welcome & Motivational Banner */}
-      <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-10 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold backdrop-blur-md">
-            <GraduationCap className="w-4 h-4 text-indigo-200" />
+      {/* Welcome Banner — notebook paper style */}
+      <div className="relative rounded-2xl overflow-hidden border-2 border-latte-surface0 dark:border-frappe-surface1 bg-latte-mantle dark:bg-frappe-mantle shadow-sm p-6 sm:p-10">
+        {/* Red margin line */}
+        <div className="absolute left-16 top-0 bottom-0 w-px bg-frappe-red/30" />
+        {/* Notebook holes */}
+        <div className="absolute left-6 top-6 flex flex-col gap-6">
+          {[0,1,2].map(i => (
+            <div key={i} className="w-4 h-4 rounded-full border-2 border-latte-surface1 dark:border-frappe-surface1 bg-latte-base dark:bg-frappe-base" />
+          ))}
+        </div>
+        <div className="ml-14 relative z-10 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
+            <GraduationCap className="w-4 h-4 text-frappe-blue" />
             <span>Student Learning Hub</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Welcome back, {user?.first_name || user?.email?.split('@')[0] || 'Learner'}!
+          <h1 className="font-notebook text-3xl sm:text-5xl font-bold text-latte-text dark:text-frappe-text">
+            Welcome back, <span className="text-frappe-blue">{user?.first_name || user?.email?.split('@')[0] || 'Learner'}!</span>
           </h1>
-          <p className="text-indigo-100/90 text-sm sm:text-base">
-            Keep up the momentum. Pick up right where you left off or explore new courses to expand your mastery.
+          <p className="text-latte-subtext1 dark:text-frappe-subtext1 text-sm sm:text-base">
+            Pick up right where you left off, or explore new courses.
           </p>
         </div>
-
-        {/* Ambient background decoration */}
-        <div className="absolute right-0 bottom-0 translate-x-12 translate-y-12 w-64 h-64 bg-white/5 rounded-full blur-2xl" />
       </div>
 
-      {/* Overview Stat Cards */}
+      {/* Stat sticky notes */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-            <BookOpen className="w-6 h-6" />
+        <div className="sticky-yellow rounded-xl p-5 shadow-sm rotate-[-0.3deg] border border-latte-yellow/30 dark:border-frappe-yellow/30">
+          <div className="flex items-center gap-3 mb-3">
+            <BookOpen className="w-5 h-5 text-latte-yellow dark:text-frappe-yellow" />
+            <p className="text-xs font-bold uppercase tracking-wider text-latte-subtext0 dark:text-frappe-subtext0">Active Courses</p>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Enrolled</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              {isLoading ? '...' : activeEnrollments.length}
-            </h3>
-          </div>
+          <h3 className="font-notebook text-4xl font-bold text-latte-text">
+            {isLoading ? '...' : activeEnrollments.length}
+          </h3>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-6 h-6" />
+        <div className="sticky-green rounded-xl p-5 shadow-sm rotate-[0.2deg] border border-latte-green/30 dark:border-frappe-green/30">
+          <div className="flex items-center gap-3 mb-3">
+            <CheckCircle2 className="w-5 h-5 text-latte-green dark:text-frappe-green" />
+            <p className="text-xs font-bold uppercase tracking-wider text-latte-subtext0 dark:text-frappe-subtext0">Completed</p>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completed Courses</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-              {isLoading ? '...' : completedCount}
-            </h3>
-          </div>
+          <h3 className="font-notebook text-4xl font-bold text-latte-text">
+            {isLoading ? '...' : completedCount}
+          </h3>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-            <Sparkles className="w-6 h-6" />
+        <div className="sticky-blue rounded-xl p-5 shadow-sm rotate-[-0.1deg] border border-latte-blue/30 dark:border-frappe-blue/30">
+          <div className="flex items-center gap-3 mb-3">
+            <Sparkles className="w-5 h-5 text-frappe-blue" />
+            <p className="text-xs font-bold uppercase tracking-wider text-latte-subtext0 dark:text-frappe-subtext0">AI Resources</p>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">AI Study Resources</p>
-            <Link
-              to="/study-centre"
-              className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1 mt-1"
-            >
-              Access Study Centre →
-            </Link>
-          </div>
+          <Link
+            to="/study-centre"
+            className="text-xs font-bold text-frappe-blue hover:text-frappe-sapphire flex items-center gap-1 mt-2"
+          >
+            Open Study Centre →
+          </Link>
         </div>
       </div>
 
-      {/* Main Content: Enrolled Courses */}
+      {/* Enrolled Courses */}
       <div className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-              Your Enrolled Courses
+            <h2 className="font-notebook text-2xl sm:text-3xl font-bold text-latte-text dark:text-frappe-text">
+              📖 Your Enrolled Courses
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Track course completion progress and resume active video lessons anytime.
+            <p className="text-xs sm:text-sm text-latte-subtext1 dark:text-frappe-subtext1">
+              Resume any lesson or track your completion progress.
             </p>
           </div>
-
           <Link
             to="/courses"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-xl transition self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-latte-surface0 dark:bg-frappe-surface0 hover:bg-latte-surface1 dark:hover:bg-frappe-surface1 text-latte-blue dark:text-frappe-blue text-xs font-bold rounded-xl border border-latte-surface1 dark:border-frappe-surface1 transition self-start sm:self-auto"
           >
             <Compass className="w-4 h-4" />
             Browse More Courses
           </Link>
         </div>
 
-        {/* Content States */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -123,18 +120,15 @@ export const StudentDashboard: React.FC = () => {
         ) : activeEnrollments.length === 0 ? (
           <EmptyState
             icon={Compass}
-            title="You haven't enrolled in any courses yet"
-            description="Explore our interactive course catalogue and start your first learning module today."
-            actionText="Explore Course Catalogue"
+            title="Your notebook is empty!"
+            description="Browse our catalogue and enroll in your first course to fill those pages."
+            actionText="Explore Courses"
             actionHref="/courses"
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeEnrollments.map((enrollment) => (
-              <EnrolledCourseCard
-                key={enrollment.id}
-                enrollment={enrollment}
-              />
+              <EnrolledCourseCard key={enrollment.id} enrollment={enrollment} />
             ))}
           </div>
         )}

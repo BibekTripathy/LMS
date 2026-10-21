@@ -1,13 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom global styles */
+/* ─── Base / Root ─────────────────────────────────────────────────────────── */
 :root {
-  /* Keep native controls (inputs, autofill, scrollbars) light to match the app theme. */
-  color-scheme: light;
+  --nb-line-color: rgba(198, 208, 245, 0.12);
+  --nb-margin-color: rgba(234, 153, 156, 0.3);
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-latte-base text-latte-text font-sans transition-colors duration-300;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    var(--nb-line-color) 28px
+  );
+  background-attachment: local;
 }
+
+.dark body {
+  background-color: #303446;
+  color: #c6d0f5;
+}
+
+/* ─── Notebook Paper Background ───────────────────────────────────────────── */
+.notebook-bg {
+  background-color: #eff1f5;
+  background-image:
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      rgba(76, 79, 105, 0.1) 28px
+    );
+}
+
+.dark .notebook-bg {
+  background-color: #303446;
+  background-image:
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      rgba(198, 208, 245, 0.08) 28px
+    );
+}
+
+/* ─── Sticky Note Colors ──────────────────────────────────────────────────── */
+.sticky-yellow {
+  background: #f9e4a0;
+  border-top: 3px solid #e5c890;
+}
+.dark .sticky-yellow {
+  background: #3d3617;
+  border-top: 3px solid #e5c890;
+}
+
+.sticky-blue {
+  background: #c8dff8;
+  border-top: 3px solid #8caaee;
+}
+.dark .sticky-blue {
+  background: #1a2640;
+  border-top: 3px solid #8caaee;
+}
+
+.sticky-green {
+  background: #c9e8d1;
+  border-top: 3px solid #a6d189;
+}
+.dark .sticky-green {
+  background: #1c2e1e;
+  border-top: 3px solid #a6d189;
+}
+
+.sticky-pink {
+  background: #f7d6e8;
+  border-top: 3px solid #f4b8e4;
+}
+.dark .sticky-pink {
+  background: #311c2c;
+  border-top: 3px solid #f4b8e4;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-latte-surface0 dark:bg-frappe-surface1 rounded-full; }
