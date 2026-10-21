@@ -115,7 +115,7 @@ def get_student_analytics(user):
 
     # Recent quiz attempts: latest 10 submitted attempts
     recent_attempts_qs = (
-        submitted_attempts.select_related('quiz')
+        submitted_attempts.select_related('quiz__course')
         .order_by('-submitted_at')[:10]
     )
     recent_quiz_attempts = [
@@ -123,6 +123,7 @@ def get_student_analytics(user):
             'attempt_id': a.id,
             'quiz_id': a.quiz_id,
             'quiz_title': a.quiz.title,
+            'course_title': a.quiz.course.title,
             'score': float(a.score) if a.score is not None else 0.0,
             'marks_obtained': float(a.marks_obtained),
             'total_marks_possible': a.total_marks_possible,

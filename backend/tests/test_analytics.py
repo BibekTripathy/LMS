@@ -231,6 +231,7 @@ class TestStudentAnalytics:
         assert len(data['recent_activity']) == 2
         assert len(data['recent_quiz_attempts']) == 1
         assert data['recent_quiz_attempts'][0]['score'] == 10.0
+        assert data['recent_quiz_attempts'][0]['course_title'] == course.title
 
     def test_student_analytics_permissions(self, api_client, student1, instructor, admin_user):
         # Anonymous -> 401

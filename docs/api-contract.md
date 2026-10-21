@@ -179,7 +179,7 @@ The AI provider is called only by the backend (`ai_study` app). Every generated 
 ## 8. Analytics
 - `GET /api/v1/analytics/student/`
   - Computes student progress, course and lesson completion rates, and average assessment scores directly from persisted database records.
-  - Returns enrolled course breakdowns, overall completion rate, average assessment score, recent activity, and recent quiz attempts.
+  - Returns enrolled course breakdowns, overall completion rate, average assessment score, recent activity, and recent quiz attempts (each with `quiz_title`, `course_title`, `percentage`, `passed`, `submitted_at`).
   - **Authorization**: `STUDENT` or `ADMIN`. Instructors are strictly forbidden.
 - `GET /api/v1/courses/{id}/analytics/`
   - Computes course-level and student-level statistics for instructors and administrators.

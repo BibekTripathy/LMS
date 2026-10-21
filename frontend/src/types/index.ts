@@ -332,7 +332,6 @@ export interface StudentAnalytics {
   completed_courses: number;
   total_quizzes_taken: number;
   average_quiz_percentage: number;
-  study_resources_count: number;
   recent_attempts: {
     quiz_id: string;
     quiz_title: string;

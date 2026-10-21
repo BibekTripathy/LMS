@@ -14,7 +14,6 @@ const mockAnalytics: StudentAnalytics = {
   completed_courses: 2,
   total_quizzes_taken: 8,
   average_quiz_percentage: 88.5,
-  study_resources_count: 14,
   recent_attempts: [
     {
       quiz_id: 'q1',

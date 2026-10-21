@@ -30,6 +30,7 @@ class RecentQuizAttemptSerializer(serializers.Serializer):
     attempt_id = serializers.UUIDField()
     quiz_id = serializers.UUIDField()
     quiz_title = serializers.CharField()
+    course_title = serializers.CharField()
     score = serializers.FloatField()
     marks_obtained = serializers.FloatField()
     total_marks_possible = serializers.IntegerField()
