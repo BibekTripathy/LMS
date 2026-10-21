@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createQueryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/auth';
 import { Navbar } from './components/shared/Navbar';
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
 import { NotBuiltYet } from './components/shared/NotBuiltYet';
@@ -13,19 +14,54 @@ import { QuizBuilder } from './features/quizzes/QuizBuilder';
 import { QuizPlayer } from './features/quizzes/QuizPlayer';
 import { QuizResult } from './features/quizzes/QuizResult';
 import { StudyCentrePage } from './features/study-centre/StudyCentrePage';
+import { CourseCatalogue } from './features/courses/CourseCatalogue';
+import { CourseDetails } from './features/courses/CourseDetails';
+import { StudentDashboard } from './features/dashboard/StudentDashboard';
+import { LearningWorkspace } from './features/learning/LearningWorkspace';
+import { StudentAnalyticsView } from './features/analytics/StudentAnalyticsView';
 import type { UserRole } from './types';
 
 const INSTRUCTOR_ROLES: UserRole[] = ['INSTRUCTOR', 'ADMIN'];
 
-const Home = () => (
-  <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
-    <h1 className="text-3xl font-bold text-indigo-600">LMS Platform</h1>
-    <p className="text-gray-700">Learn with courses, quizzes and AI-generated study resources.</p>
-    <Link to="/login" className="inline-block px-5 py-2.5 bg-indigo-600 text-white font-medium text-sm rounded-xl">
-      Get started
-    </Link>
-  </div>
-);
+const Home = () => {
+  const { user } = useAuth();
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-6">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+        AI-Powered Next-Gen LMS
+      </div>
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        Master New Skills with Interactive Courses & AI Study Tools
+      </h1>
+      <p className="text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        Learn with structured curriculum modules, track your video progress automatically, test your understanding with assessments, and reinforce knowledge with AI flashcards and summaries.
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        {user ? (
+          <Link
+            to="/dashboard"
+            className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition"
+          >
+            Go to My Learning Hub
+          </Link>
+        ) : (
+          <Link
+            to="/login"
+            className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition"
+          >
+            Get Started
+          </Link>
+        )}
+        <Link
+          to="/courses"
+          className="inline-block px-6 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-sm rounded-xl shadow-sm transition"
+        >
+          Explore Course Catalogue
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 const instructorOnly = (element: React.ReactNode) => (
   <ProtectedRoute allowedRoles={INSTRUCTOR_ROLES}>{element}</ProtectedRoute>
@@ -42,6 +78,14 @@ export const AppRoutes: React.FC = () => (
         <Route path="/login" element={<AuthPage initialMode="login" />} />
         <Route path="/register" element={<AuthPage initialMode="register" />} />
 
+        {/* Student Experience & Courses Routes */}
+        <Route path="/courses" element={<CourseCatalogue />} />
+        <Route path="/courses/:id" element={<CourseDetails />} />
+        <Route path="/courses/:courseId/learn" element={signedIn(<LearningWorkspace />)} />
+        <Route path="/courses/:courseId/learn/:lessonId" element={signedIn(<LearningWorkspace />)} />
+        <Route path="/dashboard" element={signedIn(<StudentDashboard />)} />
+
+        {/* Instructor Authoring Studio */}
         <Route path="/instructor" element={instructorOnly(<InstructorDashboard />)} />
         <Route path="/instructor/courses/new" element={instructorOnly(<CourseEditor />)} />
         <Route path="/instructor/courses/:id/edit" element={instructorOnly(<CourseEditor />)} />
@@ -51,12 +95,15 @@ export const AppRoutes: React.FC = () => (
           element={instructorOnly(<NotBuiltYet title="Course analytics" owner="analytics module" />)}
         />
 
+        {/* Quizzes & AI Study Centre */}
         <Route path="/quizzes/:id" element={signedIn(<QuizPlayer />)} />
         <Route path="/quizzes/:id/results" element={signedIn(<QuizResult />)} />
         <Route path="/study-centre" element={signedIn(<StudyCentrePage />)} />
 
-        <Route path="/courses" element={<NotBuiltYet title="Course catalogue" owner="student experience" />} />
-        <Route path="/analytics" element={signedIn(<NotBuiltYet title="My analytics" owner="analytics module" />)} />
+        {/* Analytics & Profile */}
+        <Route path="/analytics" element={signedIn(<StudentAnalyticsView />)} />
+        <Route path="/profile" element={signedIn(<StudentAnalyticsView />)} />
+
         <Route path="*" element={<NotBuiltYet title="Page not found" owner="unknown route" />} />
       </Routes>
     </main>
