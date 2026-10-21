@@ -23,34 +23,34 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const sizeClasses = {
     sm: 'h-1.5',
-    md: 'h-2.5',
-    lg: 'h-4',
+    md: 'h-2',
+    lg: 'h-3',
   }[size];
 
   const variantClasses = {
-    indigo: 'bg-indigo-600',
-    emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500',
-    purple: 'bg-purple-600',
+    indigo: 'bg-[#0071E3]',
+    emerald: 'bg-[#34C759]',
+    amber: 'bg-[#FF9500]',
+    purple: 'bg-[#AF52DE]',
   }[variant];
 
   return (
     <div className={`w-full ${className}`}>
       {(label || showPercentage) && (
-        <div className="flex justify-between items-center mb-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex justify-between items-center mb-1.5 text-xs font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
           {label && <span>{label}</span>}
-          {showPercentage && <span className="font-semibold">{percentage}%</span>}
+          {showPercentage && <span className="font-semibold font-mono">{percentage}%</span>}
         </div>
       )}
       <div
-        className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden ${sizeClasses}`}
+        className={`w-full bg-black/[0.06] dark:bg-white/[0.12] rounded-full overflow-hidden ${sizeClasses}`}
         role="progressbar"
         aria-valuenow={percentage}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className={`${sizeClasses} ${variantClasses} rounded-full transition-all duration-500 ease-out`}
+          className={`${sizeClasses} ${variantClasses} rounded-full transition-all duration-300 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>

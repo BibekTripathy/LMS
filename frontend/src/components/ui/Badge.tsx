@@ -14,13 +14,13 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
 }) => {
   const variantClasses = {
-    default: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-    success: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-    warning: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-    danger: 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-    purple: 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-    slate: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-    info: 'bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+    default: 'bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] border-[#0071E3]/20',
+    success: 'bg-[#34C759]/10 text-[#248A3D] dark:text-[#34C759] border-[#34C759]/20',
+    warning: 'bg-[#FF9500]/10 text-[#B25000] dark:text-[#FF9F0A] border-[#FF9500]/20',
+    danger: 'bg-[#FF3B30]/10 text-[#D70015] dark:text-[#FF453A] border-[#FF3B30]/20',
+    purple: 'bg-[#AF52DE]/10 text-[#8944AB] dark:text-[#BF5AF2] border-[#AF52DE]/20',
+    slate: 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1D1D1F] dark:text-[#F5F5F7] border-black/[0.06] dark:border-white/[0.08]',
+    info: 'bg-[#32ADE6]/10 text-[#0071A4] dark:text-[#70D7FF] border-[#32ADE6]/20',
   }[variant];
 
   const sizeClasses = {

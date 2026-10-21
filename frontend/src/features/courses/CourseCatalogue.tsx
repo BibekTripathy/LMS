@@ -34,26 +34,18 @@ export const CourseCatalogue: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Hero Section — notebook style */}
-      <div className="relative rounded-2xl overflow-hidden border-2 border-latte-surface0 dark:border-frappe-surface1 bg-latte-mantle dark:bg-frappe-mantle p-8 sm:p-12 shadow-sm">
-        {/* notebook holes */}
-        <div className="absolute left-6 top-6 flex flex-col gap-6">
-          {[0,1,2].map(i => (
-            <div key={i} className="w-4 h-4 rounded-full border-2 border-latte-surface1 dark:border-frappe-surface1 bg-latte-base dark:bg-frappe-base" />
-          ))}
-        </div>
-        {/* margin line */}
-        <div className="absolute left-16 top-0 bottom-0 w-px bg-frappe-red/25" />
-        <div className="ml-14 relative z-10 max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-            <Sparkles className="w-3.5 h-3.5 text-frappe-mauve" />
-            NoteBox Course Catalogue
+      {/* Hero Header — Apple Surface */}
+      <div className="relative rounded-3xl overflow-hidden apple-card p-8 sm:p-12 bg-gradient-to-br from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#0D0D0E]">
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Cognify LMS Course Catalogue</span>
           </div>
-          <h1 className="font-notebook text-3xl sm:text-5xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-tight">
-            📚 Find Your Next Chapter
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] apple-title-large">
+            Explore Expert-Led Curricula
           </h1>
-          <p className="text-latte-subtext1 dark:text-frappe-subtext1 text-sm sm:text-base leading-relaxed">
-            Explore our library of expertly crafted courses. Use AI study tools to reinforce what you learn.
+          <p className="text-[#86868B] dark:text-[#98989D] text-sm sm:text-base leading-relaxed">
+            Gain mastery in modern software engineering, data systems, and artificial intelligence. Track your progress with automated AI study tools.
           </p>
         </div>
       </div>

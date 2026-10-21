@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { Sparkles, BookOpen, Award, ArrowRight, ShieldCheck } from 'lucide-react';
 import { createQueryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/auth';
@@ -31,65 +32,109 @@ const INSTRUCTOR_ROLES: UserRole[] = ['INSTRUCTOR', 'ADMIN'];
 const Home = () => {
   const { user } = useAuth();
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-8">
-      {/* Decorative notebook header */}
-      <div className="relative inline-block">
-        <span className="font-notebook text-6xl sm:text-7xl font-bold text-latte-blue dark:text-frappe-lavender drop-shadow-sm">
-          NoteBox
-        </span>
-        <span className="absolute -top-2 -right-6 text-2xl rotate-12">📓</span>
-      </div>
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-        📝 Your interactive learning notebook
-      </div>
-      <h1 className="text-3xl sm:text-4xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-snug">
-        Learn smarter with structured courses,<br />
-        <span className="text-latte-blue dark:text-frappe-blue">AI study tools</span> &amp; sticky-note simplicity
-
-      </h1>
-      <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 max-w-2xl mx-auto leading-relaxed">
-        NoteBox turns complex topics into bite-sized lessons. Track your progress, quiz yourself with AI, and keep your learning organised — just like your favourite notebook.
-      </p>
-      <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-        {user ? (
-          <Link
-            to="/dashboard"
-            className="inline-block px-6 py-3 bg-frappe-blue hover:bg-frappe-sapphire text-white font-bold text-sm rounded-xl shadow-md transition"
-          >
-            Open My Notebook
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            className="inline-block px-6 py-3 bg-frappe-blue hover:bg-frappe-sapphire text-white font-bold text-sm rounded-xl shadow-md transition"
-          >
-            Get Started — It&apos;s Free
-          </Link>
-        )}
-        <Link
-          to="/courses"
-          className="inline-block px-6 py-3 bg-latte-surface0 dark:bg-frappe-surface0 hover:bg-latte-surface1 dark:hover:bg-frappe-surface1 text-latte-text dark:text-frappe-text border border-latte-surface1 dark:border-frappe-surface1 font-bold text-sm rounded-xl shadow-sm transition"
-        >
-          Browse Courses
-        </Link>
-      </div>
-
-      {/* Sticky note feature cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-left">
-        <div className="sticky-yellow rounded-xl p-5 shadow-sm rotate-[-0.5deg]">
-          <div className="text-2xl mb-2">📚</div>
-          <h3 className="font-notebook text-lg font-bold text-latte-text">Structured Courses</h3>
-          <p className="text-sm text-latte-subtext1 mt-1">Organised modules and lessons to keep your learning on track.</p>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 space-y-20">
+      {/* Hero Section */}
+      <div className="text-center space-y-6 max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.04] dark:border-white/[0.08] text-xs font-semibold text-[#6E6E73] dark:text-[#98989D]">
+          <span className="w-2 h-2 rounded-full bg-[#34C759]" />
+          <span>Cognify LMS · Intelligent Learning Workspace</span>
         </div>
-        <div className="sticky-blue rounded-xl p-5 shadow-sm rotate-[0.3deg]">
-          <div className="text-2xl mb-2">🤖</div>
-          <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text">AI Study Tools</h3>
-          <p className="text-sm text-latte-subtext1 dark:text-frappe-subtext1 mt-1">Flashcards, summaries and MCQ quizzes generated just for you.</p>
+
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] apple-title-hero leading-[1.08]">
+          Master every concept with <span className="text-[#0071E3] dark:text-[#32ADE6]">precision</span> and clarity.
+        </h1>
+
+        <p className="text-base sm:text-lg text-[#6E6E73] dark:text-[#98989D] max-w-2xl mx-auto apple-body leading-relaxed">
+          Cognify combines structured course curricula with automated AI study tools, real-time analytics, and tamper-proof verification for a seamless learning journey.
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+          {user ? (
+            <Link
+              to="/dashboard"
+              className="apple-btn-primary px-6 py-3 text-sm font-semibold rounded-full gap-2 shadow-md"
+            >
+              Go to Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <Link
+              to="/register"
+              className="apple-btn-primary px-6 py-3 text-sm font-semibold rounded-full gap-2 shadow-md"
+            >
+              Get Started Free
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
+          <Link
+            to="/courses"
+            className="apple-btn-secondary px-6 py-3 text-sm font-medium rounded-full"
+          >
+            Explore Catalogue
+          </Link>
         </div>
-        <div className="sticky-green rounded-xl p-5 shadow-sm rotate-[-0.2deg]">
-          <div className="text-2xl mb-2">📊</div>
-          <h3 className="font-notebook text-lg font-bold text-latte-text">Track Progress</h3>
-          <p className="text-sm text-latte-subtext1 mt-1">Visual analytics to see how far you&apos;ve come — and what&apos;s next.</p>
+      </div>
+
+      {/* Feature Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="apple-card p-6 sm:p-8 space-y-4 hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
+          <div className="w-12 h-12 rounded-2xl bg-[#0071E3]/10 text-[#0071E3] flex items-center justify-center font-bold">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">Structured Courses</h3>
+            <p className="text-sm text-[#86868B] dark:text-[#98989D] leading-relaxed">
+              Curated modules, rich lesson notes, and synced video transcripts designed for deep conceptual understanding.
+            </p>
+          </div>
+        </div>
+
+        <div className="apple-card p-6 sm:p-8 space-y-4 hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
+          <div className="w-12 h-12 rounded-2xl bg-[#AF52DE]/10 text-[#AF52DE] flex items-center justify-center font-bold">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">AI Study Tools</h3>
+            <p className="text-sm text-[#86868B] dark:text-[#98989D] leading-relaxed">
+              Instant flashcards, concise summaries, and targeted MCQ practices generated on-demand from course content.
+            </p>
+          </div>
+        </div>
+
+        <div className="apple-card p-6 sm:p-8 space-y-4 hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
+          <div className="w-12 h-12 rounded-2xl bg-[#34C759]/10 text-[#34C759] flex items-center justify-center font-bold">
+            <Award className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">Verified Credentials</h3>
+            <p className="text-sm text-[#86868B] dark:text-[#98989D] leading-relaxed">
+              Real-time progress telemetry, interactive quizzes, and cryptographically verifiable certificates upon completion.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust & Platform Highlights */}
+      <div className="apple-card p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#111113]">
+        <div className="space-y-2 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2 text-xs font-semibold uppercase tracking-wider text-[#0071E3] dark:text-[#32ADE6]">
+            <ShieldCheck className="w-4 h-4" />
+            <span>Built For Academic & Industry Rigor</span>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
+            Ready to elevate your knowledge?
+          </h2>
+          <p className="text-sm text-[#86868B] dark:text-[#98989D] max-w-xl">
+            Join students and educators learning with high-signal video material, automated assessments, and interactive revision workflows.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/courses"
+            className="apple-btn-primary px-6 py-3 text-sm font-semibold rounded-full shadow-sm"
+          >
+            Browse Catalogue
+          </Link>
         </div>
       </div>
     </div>
@@ -106,7 +151,7 @@ const adminOnly = (element: React.ReactNode) => (
 
 /** Route table. Frontend guards are for usability only; the API enforces every permission. */
 export const AppRoutes: React.FC = () => (
-  <div className="min-h-screen flex flex-col">
+  <div className="min-h-screen flex flex-col bg-[#F5F5F7] dark:bg-[#000000]">
     <Navbar />
     <main className="flex-1">
       <Routes>
@@ -143,6 +188,7 @@ export const AppRoutes: React.FC = () => (
 
         {/* Certificates (verification is public) */}
         <Route path="/certificates" element={signedIn(<CertificatesPage />)} />
+        <Route path="/certificates/verify" element={<VerifyCertificatePage />} />
         <Route path="/verify" element={<VerifyCertificatePage />} />
         <Route path="/verify/:code" element={<VerifyCertificatePage />} />
         <Route path="/profile" element={signedIn(<StudentAnalyticsView />)} />
