@@ -4,7 +4,6 @@ import { PlayCircle, CheckCircle2, BookOpen, User as UserIcon } from 'lucide-rea
 
 import type { Enrollment } from '../../types';
 import { useCourseProgress } from '../enrollments/hooks';
-import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Skeleton } from '../../components/ui/Skeleton';
 
 export interface EnrolledCourseCardProps {
