@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+// Production builds call the API on the same origin (Vercel routes /api to the Django service);
+// local dev talks to the Django dev server unless VITE_API_URL overrides it.
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : '/api/v1');
 
 export const apiClient = axios.create({
   baseURL: API_URL,

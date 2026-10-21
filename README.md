@@ -103,5 +103,20 @@ AI tests never call a real provider. The Gemini adapter is exercised with `httpx
 
 CI (`.github/workflows/ci.yml`) runs the backend tests against PostgreSQL, plus frontend lint, type-check, tests and build, on every push and PR to `dev` and `main`.
 
+## 8. Deployment (Vercel)
+`vercel.json` deploys both parts as one Vercel project using Services: the Vite app serves `/`, and Django serves `/api`, `/admin` and `/static`, all on the same domain, so no CORS setup is needed. The production branch is `dev`: every push to `dev` redeploys the live site, and other branches and PRs get preview URLs.
+
+Project environment variables:
+
+| Variable | Notes |
+|---|---|
+| `SECRET_KEY` | Required. The deploy fails without it |
+| `DATABASE_URL` | Injected by the Neon (Vercel Marketplace) integration |
+| `AI_PROVIDER` / `GEMINI_API_KEY` | `mock` by default; set `gemini` and a key for real generation |
+| `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | Optional. An admin account is created once on deploy |
+| `SEED_DEMO_DATA=1` | Optional. Loads the demo dataset once. The demo password is public |
+
+Each backend build runs `python manage.py migrate` and then `python manage.py deploy_bootstrap`, which is idempotent. On Vercel, `DEBUG` defaults to `False`, and the Django admin's assets are served by WhiteNoise.
+
 ## Git workflow
 `main` is stable, `dev` is the integration branch, and feature branches (`feature/<name>-<topic>`) are cut from `dev` and merged back through reviewed PRs. Never commit `.env`, keys, or database files.

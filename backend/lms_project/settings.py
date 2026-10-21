@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from urllib.parse import parse_qs, unquote, urlparse
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.env'))
@@ -8,11 +10,18 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Vercel sets VERCEL=1 in builds and functions; deployed environments default to safe settings.
+ON_VERCEL = bool(os.getenv('VERCEL'))
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-dev')
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+if not SECRET_KEY:
+    if ON_VERCEL:
+        raise ImproperlyConfigured('SECRET_KEY must be set in the Vercel project environment.')
+    SECRET_KEY = 'django-insecure-default-key-for-dev'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False' if ON_VERCEL else 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -47,6 +56,7 @@ AUTH_USER_MODEL = 'users.User'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -90,7 +100,26 @@ DATABASES = {
     }
 }
 
-if os.getenv('DB_NAME'):
+def _database_from_url(url):
+    """Translate a postgres:// URL (as injected by Neon on Vercel) into Django settings."""
+    parsed = urlparse(url)
+    options = {k: v[0] for k, v in parse_qs(parsed.query).items() if k in ('sslmode', 'options')}
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': parsed.path.lstrip('/'),
+        'USER': unquote(parsed.username or ''),
+        'PASSWORD': unquote(parsed.password or ''),
+        'HOST': parsed.hostname or '',
+        'PORT': str(parsed.port or 5432),
+        'OPTIONS': options,
+        # Serverless functions are short-lived; let Neon's pooler manage connections.
+        'CONN_MAX_AGE': 0,
+    }
+
+
+if os.getenv('DATABASE_URL'):
+    DATABASES['default'] = _database_from_url(os.environ['DATABASE_URL'])
+elif os.getenv('DB_NAME'):
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME'),
@@ -149,6 +178,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+# WhiteNoise serves the Django admin's assets straight from the installed apps, so no
+# collectstatic step is needed on serverless deployments.
+WHITENOISE_USE_FINDERS = True
+
+# Deployed behind Vercel's HTTPS proxy: trust its scheme header and keep cookies secure.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+# The Django admin posts forms, so its HTTPS origins must be trusted for CSRF.
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{host}' for host in (
+        os.getenv('VERCEL_PROJECT_PRODUCTION_URL'), os.getenv('VERCEL_BRANCH_URL'), os.getenv('VERCEL_URL'),
+    ) if host
+] + [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
