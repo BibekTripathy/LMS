@@ -104,6 +104,10 @@ List endpoints use offset/limit or page number pagination.
 - `GET /api/v1/quizzes/{id}/results/me/`
   - Returns student's historical attempts, best score, highest percentage, and pass/fail summary.
   - **Authorization**: Requires valid `Enrollment`.
+- `GET /api/v1/quizzes/{id}/leaderboard/`
+  - Returns ranking leaderboard calculated using PostgreSQL ranking window queries (best score per student).
+  - Optional query parameter: `?limit=10`.
+  - **Authorization**: Requires valid `Enrollment` in the quiz's course, or course instructor/admin ownership.
 
 
 ### Quiz authoring (course instructor or admin)
@@ -172,6 +176,20 @@ The AI provider is called only by the backend (`ai_study` app). Every generated 
 | 503 | `AI_NOT_CONFIGURED` | Provider/key/model not configured on the server |
 | 504 | `AI_TIMEOUT` | Provider did not answer in time (after retries) |
 
-## 8. Certificates
+## 8. Analytics
+- `GET /api/v1/analytics/student/`
+  - Computes student progress, course and lesson completion rates, and average assessment scores directly from persisted database records.
+  - Returns enrolled course breakdowns, overall completion rate, average assessment score, recent activity, and recent quiz attempts.
+  - **Authorization**: `STUDENT` or `ADMIN`. Instructors are strictly forbidden.
+- `GET /api/v1/courses/{id}/analytics/`
+  - Computes course-level and student-level statistics for instructors and administrators.
+  - Returns total enrollments, completion rates, average course progress, lesson completion breakdown, quiz performance breakdown, and per-student learning progress and quiz metrics.
+  - **Authorization**: Course owner (`INSTRUCTOR`) or `ADMIN`. Other instructors and students are strictly forbidden.
+- `GET /api/v1/analytics/admin/`
+  - Computes platform-wide statistics for administrative monitoring.
+  - Returns user counts (students, instructors, admins), course breakdowns (published, draft, archived), enrollment counts and completion rates, lesson completions, and quiz performance metrics.
+  - **Authorization**: `ADMIN` only.
+
+## 9. Certificates
 - `GET /api/v1/courses/{id}/certificate/`
   - Returns the certificate details (including `verification_code`) if the student has passed all quizzes (highest score used) and completed all lessons.
