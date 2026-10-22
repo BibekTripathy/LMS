@@ -53,10 +53,18 @@ class Command(BaseCommand):
         email, password = os.getenv('DJANGO_SUPERUSER_EMAIL'), os.getenv('DJANGO_SUPERUSER_PASSWORD')
         if not (email and password):
             return
-        if User.objects.filter(email__iexact=email).exists():
+        existing = User.objects.filter(email__iexact=email).first()
+        if existing is None:
+            User.objects.create_superuser(email=email, password=password)
+            self.stdout.write(self.style.SUCCESS(f'Created superuser {email}.'))
             return
-        User.objects.create_superuser(email=email, password=password)
-        self.stdout.write(self.style.SUCCESS(f'Created superuser {email}.'))
+        # The owner may have signed up through the site first (a STUDENT account): promote it.
+        # The password is left alone so a password changed later is never reset by a deploy.
+        if not (existing.is_staff and existing.is_superuser and existing.role == 'ADMIN'):
+            existing.is_staff = existing.is_superuser = True
+            existing.role = 'ADMIN'
+            existing.save(update_fields=['is_staff', 'is_superuser', 'role'])
+            self.stdout.write(self.style.SUCCESS(f'Promoted existing account {email} to superuser.'))
 
     # --- demo data -------------------------------------------------------------------------
 
