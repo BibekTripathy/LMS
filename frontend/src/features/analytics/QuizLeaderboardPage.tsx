@@ -43,7 +43,7 @@ export const QuizLeaderboardPage: React.FC = () => {
   const showEmails = data.leaderboard.some((e) => e.student_email);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6 page-transition-enter">
       <Link
         to={`/quizzes/${id}/results`}
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6] transition"

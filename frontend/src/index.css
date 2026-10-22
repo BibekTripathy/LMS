@@ -232,7 +232,23 @@ body {
 @keyframes pageFadeSlide {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.995);
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-enter {
+  animation: pageFadeSlide 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mobileSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
   }
   100% {
     opacity: 1;
@@ -240,8 +256,19 @@ body {
   }
 }
 
-.page-transition-enter {
-  animation: pageFadeSlide 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.mobile-drawer-enter {
+  animation: mobileSlideDown 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+.lms-card-interactive {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms ease;
+  will-change: transform;
+}
+
+.lms-card-interactive:hover {
+  transform: translateY(-2px);
 }
 
 /* ─── 3D Card Flip Utilities ─────────────────────────────────────────────── */

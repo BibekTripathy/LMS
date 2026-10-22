@@ -87,7 +87,7 @@ export const CertificatesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 page-transition-enter">
       {/* Header Banner */}
       <div className="apple-card p-6 sm:p-8 bg-gradient-to-br from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#0D0D0E] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5">

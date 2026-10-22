@@ -169,7 +169,7 @@ export const LearningWorkspace: React.FC = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-[#FBFBFC] dark:bg-[#0A0B0D]">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-[#FBFBFC] dark:bg-[#0A0B0D] page-transition-enter">
       {/* Mobile Sidebar Backdrop & Drawer */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden flex">

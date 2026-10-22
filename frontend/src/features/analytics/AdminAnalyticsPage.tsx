@@ -50,7 +50,7 @@ export const AdminAnalyticsPage: React.FC = () => {
   const { users, courses, enrollments, progress, assessments } = data;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 page-transition-enter">
       <div className="lms-card p-6 sm:p-8 space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">Platform Analytics</h1>
         <p className="text-xs sm:text-sm text-[#868E96]">Live totals calculated across every course, enrollment, and user.</p>

@@ -96,7 +96,7 @@ const InteractiveShowcase: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveMockTab('notes')}
-            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
+            className={`relative z-10 py-1.5 px-1 sm:px-2 text-[11px] sm:text-xs font-medium rounded-full text-center transition-colors truncate ${
               activeMockTab === 'notes'
                 ? 'text-teal-700 dark:text-teal-300 font-semibold'
                 : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
@@ -107,7 +107,7 @@ const InteractiveShowcase: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveMockTab('flashcard')}
-            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
+            className={`relative z-10 py-1.5 px-1 sm:px-2 text-[11px] sm:text-xs font-medium rounded-full text-center transition-colors truncate ${
               activeMockTab === 'flashcard'
                 ? 'text-orange-700 dark:text-orange-400 font-semibold'
                 : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
@@ -118,7 +118,7 @@ const InteractiveShowcase: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveMockTab('assessment')}
-            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
+            className={`relative z-10 py-1.5 px-1 sm:px-2 text-[11px] sm:text-xs font-medium rounded-full text-center transition-colors truncate ${
               activeMockTab === 'assessment'
                 ? 'text-teal-700 dark:text-teal-300 font-semibold'
                 : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
@@ -432,15 +432,15 @@ const Home: React.FC = () => {
             <span>Cognify LMS &bull; Academic Learning Workspace</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#0F172A] dark:text-[#F8FAFC] heading-display leading-[1.05]">
+          <h1 className="text-3xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#0F172A] dark:text-[#F8FAFC] heading-display leading-[1.08] sm:leading-[1.05]">
             Master every concept with <span className="text-teal-600 dark:text-teal-400">precision</span> and <span className="text-orange-600 dark:text-orange-400">rigor</span>.
           </h1>
 
-          <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-lg text-[#64748B] dark:text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
             Cognify unifies structured curriculum delivery with synchronized lecture transcripts, interactive assessments, verifiable certificates, and detailed mastery telemetry.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2">
             {user ? (
               <Link
                 to="/dashboard"
@@ -472,7 +472,7 @@ const Home: React.FC = () => {
 
         {/* Feature Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+          <div className="lms-card lms-card-interactive p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
             <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold border border-teal-500/20">
               <BookOpen className="w-6 h-6" />
             </div>
@@ -484,7 +484,7 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(249,115,22,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+          <div className="lms-card lms-card-interactive p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(249,115,22,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
             <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold border border-orange-500/20">
               <Compass className="w-6 h-6" />
             </div>
@@ -496,7 +496,7 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+          <div className="lms-card lms-card-interactive p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
             <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold border border-teal-500/20">
               <Award className="w-6 h-6" />
             </div>

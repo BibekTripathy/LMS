@@ -24,19 +24,19 @@ export const StudentDashboard: React.FC = () => {
   const completedCount = enrollments.filter((e) => e.status === 'COMPLETED').length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 page-transition-enter">
       {/* Welcome Banner — Apple Surface Style */}
       <div className="relative rounded-3xl overflow-hidden apple-card p-6 sm:p-10 bg-gradient-to-br from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#0D0D0E]">
         <div className="relative z-10 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 text-xs font-semibold">
             <GraduationCap className="w-3.5 h-3.5" />
             <span>Student Learning Hub</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
-            Welcome back, <span className="text-[#0071E3] dark:text-[#32ADE6]">{user?.first_name || user?.email?.split('@')[0] || 'Learner'}</span>
+            Welcome back, <span className="text-teal-600 dark:text-teal-400">{user?.first_name || user?.email?.split('@')[0] || 'Learner'}</span>
           </h1>
           <p className="text-[#86868B] dark:text-[#98989D] text-sm sm:text-base max-w-2xl leading-relaxed">
-            Pick up right where you left off, reinforce concepts with AI flashcards, or discover new course topics.
+            Pick up right where you left off, reinforce concepts with active recall flashcards, or discover new course topics.
           </p>
         </div>
       </div>

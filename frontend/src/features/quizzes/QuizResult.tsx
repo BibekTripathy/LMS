@@ -78,7 +78,7 @@ export const QuizResult: React.FC = () => {
   const scorePercent = latestAttempt?.percentage ?? resultsSummary.highest_percentage ?? 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 page-transition-enter">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
         <button

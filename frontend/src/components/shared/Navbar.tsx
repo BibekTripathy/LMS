@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/auth';
 import {
@@ -51,19 +51,51 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
-  };
+  const isActive = useCallback(
+    (path: string) => {
+      if (path === '/') return location.pathname === '/';
+      return location.pathname.startsWith(path);
+    },
+    [location.pathname]
+  );
 
-  const navLinkClass = (path: string) =>
-    `px-3 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150 flex items-center gap-1.5 ${
-      isActive(path)
-        ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
-        : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
-    }`;
 
   const isStudent = user && !isInstructor && !isAdmin;
+
+  const navContainerRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (!navContainerRef.current) return;
+      const registeredPaths = Object.keys(itemRefs.current);
+      const activeKey = registeredPaths.find((path) => isActive(path));
+      const activeEl = activeKey ? itemRefs.current[activeKey] : null;
+
+      if (activeEl && navContainerRef.current) {
+        const containerRect = navContainerRef.current.getBoundingClientRect();
+        const elRect = activeEl.getBoundingClientRect();
+        if (elRect.width > 0) {
+          setIndicatorStyle({
+            left: elRect.left - containerRect.left,
+            width: elRect.width,
+            opacity: 1,
+          });
+          return;
+        }
+      }
+      setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+    };
+
+    updateIndicator();
+    const timer = setTimeout(updateIndicator, 40);
+    window.addEventListener('resize', updateIndicator);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateIndicator);
+    };
+  }, [isActive, user]);
 
   return (
     <nav className="sticky top-0 z-50 w-full lms-glass transition-colors">
@@ -86,18 +118,47 @@ export const Navbar: React.FC = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center space-x-1">
+            {/* Desktop Navigation Links with Animated Translucent Shifter */}
+            <div
+              ref={navContainerRef}
+              className="relative hidden md:flex items-center p-1 rounded-full shifter-track"
+            >
+              {/* Sliding Translucent Pill Indicator */}
+              <div
+                className="absolute top-1 bottom-1 rounded-full shifter-pill transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+                style={{
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`,
+                  opacity: indicatorStyle.opacity,
+                }}
+              />
+
               {/* Student only links */}
               {isStudent && (
-                <Link to="/dashboard" className={navLinkClass('/dashboard')}>
+                <Link
+                  to="/dashboard"
+                  ref={(el) => { itemRefs.current['/dashboard'] = el; }}
+                  className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                    isActive('/dashboard')
+                      ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                      : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                  }`}
+                >
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Dashboard
                 </Link>
               )}
 
               {/* Universal Course Catalogue link */}
-              <Link to="/courses" className={navLinkClass('/courses')}>
+              <Link
+                to="/courses"
+                ref={(el) => { itemRefs.current['/courses'] = el; }}
+                className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                  isActive('/courses')
+                    ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                    : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                }`}
+              >
                 <Compass className="w-3.5 h-3.5" />
                 Courses
               </Link>
@@ -105,15 +166,39 @@ export const Navbar: React.FC = () => {
               {/* Student only links */}
               {isStudent && (
                 <>
-                  <Link to="/study-centre" className={navLinkClass('/study-centre')}>
+                  <Link
+                    to="/study-centre"
+                    ref={(el) => { itemRefs.current['/study-centre'] = el; }}
+                    className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                      isActive('/study-centre')
+                        ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                        : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                    }`}
+                  >
                     <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                     Study Centre
                   </Link>
-                  <Link to="/analytics" className={navLinkClass('/analytics')}>
+                  <Link
+                    to="/analytics"
+                    ref={(el) => { itemRefs.current['/analytics'] = el; }}
+                    className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                      isActive('/analytics')
+                        ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                        : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                    }`}
+                  >
                     <BarChart3 className="w-3.5 h-3.5" />
                     Analytics
                   </Link>
-                  <Link to="/certificates" className={navLinkClass('/certificates')}>
+                  <Link
+                    to="/certificates"
+                    ref={(el) => { itemRefs.current['/certificates'] = el; }}
+                    className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                      isActive('/certificates')
+                        ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                        : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                    }`}
+                  >
                     <Award className="w-3.5 h-3.5" />
                     Certificates
                   </Link>
@@ -122,7 +207,15 @@ export const Navbar: React.FC = () => {
 
               {/* Instructor / Admin Studio */}
               {(isInstructor || isAdmin) && (
-                <Link to="/instructor" className={navLinkClass('/instructor')}>
+                <Link
+                  to="/instructor"
+                  ref={(el) => { itemRefs.current['/instructor'] = el; }}
+                  className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                    isActive('/instructor')
+                      ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                      : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                  }`}
+                >
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Studio
                 </Link>
@@ -130,7 +223,15 @@ export const Navbar: React.FC = () => {
 
               {/* Admin Platform Analytics */}
               {isAdmin && (
-                <Link to="/admin/analytics" className={navLinkClass('/admin')}>
+                <Link
+                  to="/admin/analytics"
+                  ref={(el) => { itemRefs.current['/admin'] = el; }}
+                  className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                    isActive('/admin')
+                      ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                      : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                  }`}
+                >
                   <BarChart3 className="w-3.5 h-3.5" />
                   Platform
                 </Link>
@@ -138,7 +239,15 @@ export const Navbar: React.FC = () => {
 
               {/* Logged-out links */}
               {!user && (
-                <Link to="/certificates/verify" className={navLinkClass('/certificates/verify')}>
+                <Link
+                  to="/certificates/verify"
+                  ref={(el) => { itemRefs.current['/certificates/verify'] = el; }}
+                  className={`relative z-10 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                    isActive('/certificates/verify')
+                      ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                      : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC]'
+                  }`}
+                >
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Verify Certificate
                 </Link>
@@ -235,12 +344,16 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-black/[0.06] dark:border-white/[0.08] bg-white/95 dark:bg-[#12141A]/95 backdrop-blur-2xl px-4 pt-3 pb-6 space-y-1">
+        <div className="md:hidden border-t border-black/[0.06] dark:border-white/[0.08] bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-2xl px-4 pt-3 pb-6 space-y-1 mobile-drawer-enter shadow-2xl">
           {isStudent && (
             <Link
               to="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+              className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                isActive('/dashboard')
+                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+              }`}
             >
               <LayoutDashboard className="w-4 h-4" /> Dashboard
             </Link>
@@ -248,7 +361,11 @@ export const Navbar: React.FC = () => {
           <Link
             to="/courses"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+            className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+              isActive('/courses')
+                ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+            }`}
           >
             <Compass className="w-4 h-4" /> Courses
           </Link>
@@ -257,21 +374,33 @@ export const Navbar: React.FC = () => {
               <Link
                 to="/study-centre"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-teal-600 dark:text-teal-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                  isActive('/study-centre')
+                    ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                    : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+                }`}
               >
                 <BookOpen className="w-4 h-4" /> Study Centre
               </Link>
               <Link
                 to="/analytics"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                  isActive('/analytics')
+                    ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                    : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+                }`}
               >
                 <BarChart3 className="w-4 h-4" /> Analytics
               </Link>
               <Link
                 to="/certificates"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                  isActive('/certificates')
+                    ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                    : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+                }`}
               >
                 <Award className="w-4 h-4" /> Certificates
               </Link>
@@ -281,7 +410,11 @@ export const Navbar: React.FC = () => {
             <Link
               to="/instructor"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-teal-600 dark:text-teal-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+              className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                isActive('/instructor')
+                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+              }`}
             >
               <LayoutDashboard className="w-4 h-4" /> Studio
             </Link>
@@ -290,7 +423,11 @@ export const Navbar: React.FC = () => {
             <Link
               to="/admin/analytics"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+              className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                isActive('/admin')
+                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+              }`}
             >
               <BarChart3 className="w-4 h-4" /> Platform
             </Link>
@@ -299,7 +436,11 @@ export const Navbar: React.FC = () => {
             <Link
               to="/certificates/verify"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#121316] dark:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+              className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-all ${
+                isActive('/certificates/verify')
+                  ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+              }`}
             >
               <ShieldCheck className="w-4 h-4" /> Verify Certificate
             </Link>
