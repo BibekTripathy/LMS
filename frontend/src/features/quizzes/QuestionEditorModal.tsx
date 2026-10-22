@@ -203,7 +203,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                     checked={opt.is_correct}
                     onChange={() => handleSetCorrect(idx)}
                     title="Mark as correct answer"
-                    className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+                    className="w-4 h-4 text-green-200 focus:ring-emerald-500 border-slate-300 cursor-pointer"
                   />
                   <input
                     type="text"

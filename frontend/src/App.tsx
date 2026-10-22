@@ -35,20 +35,16 @@ const Home = () => {
     <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-8">
       {/* NoteBox wordmark */}
       <div className="inline-block">
-        <span className="font-notebook text-6xl sm:text-7xl font-bold text-latte-blue dark:text-frappe-lavender drop-shadow-sm">
+        <span className="font-notebook text-6xl sm:text-7xl font-bold text-latte-flamingo dark:text-frappe-flamingo drop-shadow-sm">
           NoteBox
         </span>
-      </div>
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-        Your interactive learning notebook
       </div>
       <h1 className="text-3xl sm:text-4xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-snug">
         Learn smarter with structured courses,<br />
         <span className="text-latte-blue dark:text-frappe-blue">AI study tools</span> &amp; sticky-note simplicity
-
       </h1>
-      <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 max-w-2xl mx-auto leading-relaxed">
-        NoteBox turns complex topics into bite-sized lessons. Track your progress, quiz yourself with AI, and keep your learning organised — just like your favourite notebook.
+      <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 max-w-xl mx-auto leading-relaxed">
+        Bite-sized lessons, AI-powered quizzes, and visual progress tracking — all in one place.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
         {user ? (
@@ -66,12 +62,6 @@ const Home = () => {
             Get Started — It&apos;s Free
           </Link>
         )}
-        <Link
-          to="/courses"
-          className="inline-block px-6 py-3 bg-latte-surface0 dark:bg-frappe-surface0 hover:bg-latte-surface1 dark:hover:bg-frappe-surface1 text-latte-text dark:text-frappe-text border border-latte-surface1 dark:border-frappe-surface1 font-bold text-sm rounded-xl shadow-sm transition"
-        >
-          Browse Courses
-        </Link>
       </div>
 
       {/* Sticky note feature cards */}

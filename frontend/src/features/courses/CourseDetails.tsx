@@ -11,6 +11,16 @@ import {
   FileText,
   ArrowLeft,
   CheckCircle,
+  Code2,
+  FlaskConical,
+  Calculator,
+  Globe,
+  Music,
+  Palette,
+  Cpu,
+  Dumbbell,
+  HeartPulse,
+  Landmark,
 } from 'lucide-react';
 import { useCourseDetail, useMyEnrollments } from './hooks';
 import { useCourseProgress } from '../enrollments/hooks';
@@ -21,6 +31,36 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { getErrorMessage } from '../../lib/errors';
 import { useAuth } from '../../context/auth';
+
+/** Maps a course category keyword to a Catppuccin-themed banner style + icon */
+function getCategoryBanner(category?: string | null): {
+  bg: string;
+  iconColor: string;
+  Icon: React.FC<{ className?: string }>;
+} {
+  const cat = (category ?? '').toLowerCase();
+  if (/code|program|develop|web|software|javascript|python|react/.test(cat))
+    return { bg: 'bg-frappe-blue/10 dark:bg-frappe-blue/20', iconColor: 'text-frappe-blue', Icon: Code2 };
+  if (/science|physics|chemistry|biology|lab/.test(cat))
+    return { bg: 'bg-frappe-teal/10 dark:bg-frappe-teal/20', iconColor: 'text-frappe-teal', Icon: FlaskConical };
+  if (/math|calculus|algebra|statistic/.test(cat))
+    return { bg: 'bg-frappe-mauve/10 dark:bg-frappe-mauve/20', iconColor: 'text-frappe-mauve', Icon: Calculator };
+  if (/language|english|french|spanish|literature|history|social/.test(cat))
+    return { bg: 'bg-frappe-peach/10 dark:bg-frappe-peach/20', iconColor: 'text-frappe-peach', Icon: Globe };
+  if (/music|audio|sound/.test(cat))
+    return { bg: 'bg-frappe-yellow/10 dark:bg-frappe-yellow/20', iconColor: 'text-frappe-yellow', Icon: Music };
+  if (/art|design|graphic|ui|ux|creative/.test(cat))
+    return { bg: 'bg-frappe-pink/10 dark:bg-frappe-pink/20', iconColor: 'text-frappe-pink', Icon: Palette };
+  if (/tech|ai|machine|data|cyber/.test(cat))
+    return { bg: 'bg-frappe-sapphire/10 dark:bg-frappe-sapphire/20', iconColor: 'text-frappe-sapphire', Icon: Cpu };
+  if (/sport|fitness|gym|exercise/.test(cat))
+    return { bg: 'bg-frappe-green/10 dark:bg-frappe-green/20', iconColor: 'text-frappe-green', Icon: Dumbbell };
+  if (/medical|nursing|anatomy/.test(cat))
+    return { bg: 'bg-frappe-maroon/10 dark:bg-frappe-maroon/20', iconColor: 'text-frappe-maroon', Icon: HeartPulse };
+  if (/business|economics|finance|law|politic/.test(cat))
+    return { bg: 'bg-frappe-rosewater/10 dark:bg-frappe-rosewater/20', iconColor: 'text-frappe-rosewater', Icon: Landmark };
+  return { bg: 'bg-frappe-flamingo/10 dark:bg-frappe-flamingo/20', iconColor: 'text-frappe-flamingo', Icon: BookOpen };
+}
 
 export const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -163,20 +203,18 @@ export const CourseDetails: React.FC = () => {
 
         {/* Enrollment / Action Card */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-            <div className="relative h-44 rounded-xl overflow-hidden bg-gradient-to-tr from-indigo-900 via-indigo-700 to-purple-800 flex items-center justify-center">
+          <div className="sticky top-24 bg-latte-mantle dark:bg-frappe-surface0 rounded-2xl border border-latte-surface1 dark:border-frappe-surface1 p-5 shadow-sm space-y-5">
+            {(() => { const { bg, iconColor, Icon } = getCategoryBanner(course.category); return (
+            <div className={`relative h-40 rounded-xl overflow-hidden border border-latte-surface0 dark:border-frappe-surface1 ${bg} flex items-center justify-center`}>
               {course.thumbnail_url ? (
-                <img
-                  src={course.thumbnail_url}
-                  alt={course.title}
-                  className="w-full h-full object-cover"
-                />
+                <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
               ) : (
-                <BookOpen className="w-16 h-16 text-white/30" />
+                <Icon className={`w-16 h-16 ${iconColor} opacity-50`} />
               )}
             </div>
+            ); })()}
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <EnrollmentButton
                 courseId={course.id}
                 isAlreadyEnrolled={isEnrolled}
@@ -186,12 +224,12 @@ export const CourseDetails: React.FC = () => {
                 }}
               />
 
-              <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-center text-xs text-latte-subtext0 dark:text-frappe-subtext0">
                 Full lifetime access to all modules, quizzes, and AI study resources.
               </p>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+            <div className="pt-4 border-t border-latte-surface0 dark:border-frappe-surface1 space-y-2.5 text-xs text-latte-subtext1 dark:text-frappe-subtext1">
               <div className="flex items-center justify-between">
                 <span>Self-paced learning</span>
                 <span className="font-semibold">Yes</span>
@@ -224,7 +262,7 @@ export const CourseDetails: React.FC = () => {
         </div>
 
         {course.modules && course.modules.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {course.modules.map((module, moduleIdx) => {
               const isExpanded = expandedModules[module.id] ?? true;
               return (

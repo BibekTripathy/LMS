@@ -97,7 +97,7 @@ export const CertificatesPage: React.FC = () => {
         </div>
         <Link
           to="/verify"
-          className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 text-xs font-bold rounded-xl transition self-start"
+          className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300 text-xs font-bold rounded-xl transition self-start"
         >
           Verify a certificate
         </Link>
@@ -188,7 +188,7 @@ export const CertificatesPage: React.FC = () => {
                       type="button"
                       onClick={() => handleClaim(enrollment.course)}
                       disabled={pending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-200 hover:bg-indigo-400 text-white text-xs font-semibold rounded-lg disabled:opacity-50"
                     >
                       {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       Claim certificate

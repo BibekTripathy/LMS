@@ -90,7 +90,7 @@ export const StudentDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="font-notebook text-2xl sm:text-3xl font-bold text-latte-text dark:text-frappe-text">
-              Your Enrolled Courses
+              Your Enrolled Courses overview
             </h2>
             <p className="text-xs sm:text-sm text-latte-subtext1 dark:text-frappe-subtext1">
               Resume any lesson or track your completion progress.
@@ -106,8 +106,8 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <CardSkeleton key={i} />
             ))}
           </div>
@@ -126,7 +126,7 @@ export const StudentDashboard: React.FC = () => {
             actionHref="/courses"
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {activeEnrollments.map((enrollment) => (
               <EnrolledCourseCard key={enrollment.id} enrollment={enrollment} />
             ))}

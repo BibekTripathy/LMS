@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
 
 import { useCourses, useMyEnrollments } from './hooks';
 import { CourseFilters } from './CourseFilters';
@@ -45,10 +44,6 @@ export const CourseCatalogue: React.FC = () => {
         {/* margin line */}
         <div className="absolute left-16 top-0 bottom-0 w-px bg-frappe-red/25" />
         <div className="ml-14 relative z-10 max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-            <Sparkles className="w-3.5 h-3.5 text-frappe-mauve" />
-            NoteBox Course Catalogue
-          </div>
           <h1 className="font-notebook text-3xl sm:text-5xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-tight">
             Find Your Next Chapter
           </h1>
