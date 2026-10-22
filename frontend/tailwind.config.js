@@ -10,8 +10,11 @@ export default {
       colors: {
         brand: {
           blue: '#0066FF',
-          'blue-hover': '#0052CC',
-          dark: '#0A0B0D',
+          teal: '#0D9488',
+          'teal-hover': '#0F766E',
+          orange: '#F97316',
+          'orange-hover': '#EA580C',
+          dark: '#0B0F17',
           card: '#131418',
           border: 'rgba(255, 255, 255, 0.08)',
         },

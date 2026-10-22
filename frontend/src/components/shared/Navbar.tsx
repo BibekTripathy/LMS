@@ -59,8 +59,8 @@ export const Navbar: React.FC = () => {
   const navLinkClass = (path: string) =>
     `px-3 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150 flex items-center gap-1.5 ${
       isActive(path)
-        ? 'bg-black/[0.08] dark:bg-white/[0.12] text-[#0066FF] dark:text-[#38BDF8] font-semibold'
-        : 'text-[#6E6E73] dark:text-[#98989D] hover:text-[#121316] dark:hover:text-[#F3F4F6] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
+        ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold border border-teal-500/20'
+        : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
     }`;
 
   const isStudent = user && !isInstructor && !isAdmin;
@@ -72,16 +72,17 @@ export const Navbar: React.FC = () => {
           {/* Logo & Navigation */}
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2 group focus:outline-none">
-              <div className="w-8 h-8 rounded-xl bg-[#0066FF] flex items-center justify-center text-white shadow-sm shadow-[#0066FF]/25 group-hover:scale-105 active:scale-95 transition-transform duration-150">
+              <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-sm shadow-teal-600/25 group-hover:scale-105 active:scale-95 transition-transform duration-150">
                 <GraduationCap className="w-4 h-4" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-bold text-[17px] tracking-[-0.02em] text-[#121316] dark:text-[#F3F4F6]">
+                <span className="font-bold text-[17px] tracking-[-0.02em] text-[#0F172A] dark:text-[#F8FAFC]">
                   Cognify
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#868E96]">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#64748B]">
                   LMS
                 </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block" />
               </div>
             </Link>
 
@@ -105,7 +106,7 @@ export const Navbar: React.FC = () => {
               {isStudent && (
                 <>
                   <Link to="/study-centre" className={navLinkClass('/study-centre')}>
-                    <BookOpen className="w-3.5 h-3.5 text-[#0066FF] dark:text-[#38BDF8]" />
+                    <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                     Study Centre
                   </Link>
                   <Link to="/analytics" className={navLinkClass('/analytics')}>
@@ -162,7 +163,7 @@ export const Navbar: React.FC = () => {
                 {isInstructor && (
                   <Link
                     to="/instructor/courses/new"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0066FF] hover:bg-[#0052CC] active:scale-[0.98] rounded-full transition-all duration-150 shadow-sm shadow-[#0066FF]/20"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 active:scale-[0.98] rounded-full transition-all duration-150 shadow-sm shadow-teal-600/20"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
                     New Course
@@ -170,7 +171,7 @@ export const Navbar: React.FC = () => {
                 )}
 
                 <div className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
-                  <div className="w-6 h-6 rounded-full bg-[#0066FF] text-white flex items-center justify-center font-semibold text-[11px] uppercase shadow-inner">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center font-semibold text-[11px] uppercase shadow-inner">
                     {user.first_name ? user.first_name[0] : user.email[0]}
                   </div>
                   <div className="flex flex-col text-left">
@@ -256,7 +257,7 @@ export const Navbar: React.FC = () => {
               <Link
                 to="/study-centre"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#0066FF] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-teal-600 dark:text-teal-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
               >
                 <BookOpen className="w-4 h-4" /> Study Centre
               </Link>
@@ -280,7 +281,7 @@ export const Navbar: React.FC = () => {
             <Link
               to="/instructor"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-[#0066FF] hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+              className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl text-teal-600 dark:text-teal-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
             >
               <LayoutDashboard className="w-4 h-4" /> Studio
             </Link>

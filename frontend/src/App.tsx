@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -6,10 +6,6 @@ import {
   Award,
   ArrowRight,
   ShieldCheck,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
   CheckCircle,
   FileText,
   RotateCcw,
@@ -42,128 +38,93 @@ import type { UserRole } from './types';
 
 const INSTRUCTOR_ROLES: UserRole[] = ['INSTRUCTOR', 'ADMIN'];
 
-const TRANSCRIPT_SEGMENTS = [
-  { time: 2, label: '00:02', text: 'Welcome to Distributed Consensus Protocols. In this lecture, we examine state machine replication.' },
-  { time: 7, label: '00:07', text: 'When cluster nodes exchange AppendEntries RPCs, term numbers are strictly verified prior to persistent write commit.' },
-  { time: 14, label: '00:14', text: 'Leader election triggers deterministically whenever randomized heartbeat timeouts expire without coordinator acknowledgement.' },
-  { time: 20, label: '00:20', text: 'Quorum safety requires a strict majority floor(n/2) + 1 to prevent split-brain partitions across distributed boundaries.' },
+const LECTURE_NOTES = [
+  {
+    topic: 'State Machine Replication Invariant',
+    text: 'Every consensus node executes identical state transitions deterministically. When commands are committed to the replicated log, replicas process state changes in matching ordinal sequence.',
+    badge: 'Core Axiom',
+    tag: 'Determinism',
+  },
+  {
+    topic: 'AppendEntries RPC & Term Verification',
+    text: 'Replicas reject AppendEntries requests if leader term < currentTerm. If the follower log does not contain an entry matching prevLogIndex and prevLogTerm, it rejects to force log harmonization.',
+    badge: 'Safety Rule',
+    tag: 'Log Consistency',
+  },
+  {
+    topic: 'Leader Election Determinism',
+    text: 'Nodes transit from Follower to Candidate when randomized election timers elapse (150ms–300ms) without coordinator heartbeats, voting for at most one candidate per term on a first-come basis.',
+    badge: 'Liveness Rule',
+    tag: 'Election Safety',
+  },
 ];
 
 const InteractiveShowcase: React.FC = () => {
-  const [activeMockTab, setActiveMockTab] = useState<'video' | 'transcript' | 'flashcard'>('video');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [currentTime, setCurrentTime] = useState(4.2);
-  const [duration, setDuration] = useState(25);
+  const [activeMockTab, setActiveMockTab] = useState<'notes' | 'flashcard' | 'assessment'>('notes');
+  const [selectedNoteIndex, setSelectedNoteIndex] = useState(0);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [flashcardMastered, setFlashcardMastered] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [selectedQuizOption, setSelectedQuizOption] = useState<number | null>(null);
 
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(true));
-    }
-  };
-
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
-  };
-
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-      if (videoRef.current.duration) {
-        setDuration(videoRef.current.duration);
-      }
-    }
-  };
-
-  const seekTo = (seconds: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = seconds;
-      setCurrentTime(seconds);
-      if (!isPlaying) {
-        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-      }
-    }
-  };
-
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  // Find active transcript line
-  const activeTranscriptIndex = TRANSCRIPT_SEGMENTS.reduce((activeIdx, seg, idx) => {
-    return currentTime >= seg.time ? idx : activeIdx;
-  }, 0);
-
-  // Tab indices for sliding track
-  const tabIndex = activeMockTab === 'video' ? 0 : activeMockTab === 'transcript' ? 1 : 2;
+  const tabIndex = activeMockTab === 'notes' ? 0 : activeMockTab === 'flashcard' ? 1 : 2;
 
   return (
-    <div className="liquid-glass rounded-3xl p-3 sm:p-5 shadow-[0_24px_70px_rgba(0,0,0,0.12)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.65)] relative z-20">
+    <div className="liquid-glass rounded-3xl p-3 sm:p-5 shadow-[0_24px_70px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.5)] relative z-20">
       {/* macOS Window Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3 py-2 border-b border-black/[0.06] dark:border-white/[0.08] mb-4">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#FF5F56] border border-black/10 inline-block shadow-2xs" />
           <span className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-black/10 inline-block shadow-2xs" />
           <span className="w-3 h-3 rounded-full bg-[#27C93F] border border-black/10 inline-block shadow-2xs" />
-          <span className="ml-2.5 text-xs font-mono text-[#868E96] dark:text-[#A1A1AA]">
+          <span className="ml-2.5 text-xs font-mono text-[#64748B] dark:text-[#94A3B8]">
             cognify-lms // workspace-v1.0
           </span>
         </div>
 
-        {/* Finder Sliding Segmented Control */}
-        <div className="relative inline-flex p-1 rounded-full bg-black/[0.05] dark:bg-white/[0.08] border border-black/[0.05] dark:border-white/[0.08] self-start sm:self-auto">
-          {/* Animated Liquid Indicator Pill */}
+        {/* Translucent Finder Shifter Segmented Control */}
+        <div className="relative grid grid-cols-3 p-1 rounded-full shifter-track w-full sm:w-[460px] self-start sm:self-auto">
+          {/* Animated Translucent Indicator Pill */}
           <div
-            className="absolute top-1 bottom-1 rounded-full bg-white dark:bg-[#2A2B32] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="absolute top-1 bottom-1 rounded-full shifter-pill transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
             style={{
-              width: 'calc(33.333% - 4px)',
-              left: `calc(${tabIndex * 33.333}% + 2px)`,
+              width: 'calc((100% - 8px) / 3)',
+              left: '4px',
+              transform: `translateX(${tabIndex * 100}%)`,
             }}
           />
 
           <button
             type="button"
-            onClick={() => setActiveMockTab('video')}
-            className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeMockTab === 'video'
-                ? 'text-[#0066FF] dark:text-[#38BDF8] font-semibold'
-                : 'text-[#868E96] dark:text-[#94A3B8] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
+            onClick={() => setActiveMockTab('notes')}
+            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
+              activeMockTab === 'notes'
+                ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
             }`}
           >
-            Video Player
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveMockTab('transcript')}
-            className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-full transition-colors ${
-              activeMockTab === 'transcript'
-                ? 'text-[#0066FF] dark:text-[#38BDF8] font-semibold'
-                : 'text-[#868E96] dark:text-[#94A3B8] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
-            }`}
-          >
-            Synced Transcript
+            Lecture Reader
           </button>
           <button
             type="button"
             onClick={() => setActiveMockTab('flashcard')}
-            className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-full transition-colors ${
+            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
               activeMockTab === 'flashcard'
-                ? 'text-[#0066FF] dark:text-[#38BDF8] font-semibold'
-                : 'text-[#868E96] dark:text-[#94A3B8] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
+                ? 'text-orange-700 dark:text-orange-400 font-semibold'
+                : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
             }`}
           >
             Concept Flashcard
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMockTab('assessment')}
+            className={`relative z-10 py-1.5 px-2 text-xs font-medium rounded-full text-center transition-colors truncate ${
+              activeMockTab === 'assessment'
+                ? 'text-teal-700 dark:text-teal-300 font-semibold'
+                : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white'
+            }`}
+          >
+            Knowledge Check
           </button>
         </div>
       </div>
@@ -171,157 +132,76 @@ const InteractiveShowcase: React.FC = () => {
       {/* Interactive Workspace Body Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 p-1 sm:p-2 items-start">
         {/* Finder-Style Horizontal Sliding Viewport */}
-        <div className="lg:col-span-8 finder-viewport rounded-2xl border border-black/[0.08] dark:border-white/[0.1] bg-black/[0.02] dark:bg-black/40 shadow-inner overflow-hidden">
+        <div className="lg:col-span-8 finder-viewport rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-black/[0.02] dark:bg-black/30 shadow-inner overflow-hidden min-h-[360px]">
           <div
             className="finder-track"
             style={{
               transform: `translateX(-${tabIndex * 33.333333}%)`,
             }}
           >
-            {/* Pane 0: Live Video Player */}
+            {/* Pane 0: Lecture Reader */}
             <div className={`finder-pane ${tabIndex === 0 ? 'finder-pane-active' : 'finder-pane-inactive'}`}>
-              <div className="relative aspect-video bg-[#0A0D14] flex flex-col justify-between overflow-hidden text-white rounded-2xl group">
-                {/* Real HTML5 Video Stream */}
-                <video
-                  ref={videoRef}
-                  src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
-                  playsInline
-                  loop
-                  muted={isMuted}
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={() => {
-                    if (videoRef.current) setDuration(videoRef.current.duration || 25);
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity"
-                />
-
-                {/* Video Architectural Canvas & Telemetry Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-transparent to-[#08090C]/60 pointer-events-none" />
-
-                {/* Top Video Header */}
-                <div className="relative z-10 flex items-center justify-between p-4 pointer-events-auto">
-                  <span className="px-3 py-1 text-[11px] font-medium rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white/90">
-                    Module 2 &bull; Lesson 4: Distributed Consensus Protocols
-                  </span>
+              <div className="p-5 sm:p-6 flex flex-col justify-between text-left rounded-2xl bg-white/70 dark:bg-[#111622]/80 backdrop-blur-xl space-y-4 min-h-[360px]">
+                <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      LIVE TELEMETRY
+                    <span className="w-2 h-2 rounded-full bg-teal-500" />
+                    <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">
+                      Module 2 &bull; Distributed Consensus &amp; Raft Invariants
                     </span>
                   </div>
+                  <span className="text-[11px] font-mono text-[#64748B] dark:text-[#94A3B8]">
+                    5 min read &bull; Verified Academic Notes
+                  </span>
                 </div>
 
-                {/* Central Play/Pause Trigger */}
-                <div className="relative z-10 my-auto flex items-center justify-center pointer-events-auto">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/25 backdrop-blur-lg flex items-center justify-center cursor-pointer transition transform hover:scale-108 active:scale-95 shadow-xl border border-white/20"
-                    title={isPlaying ? 'Pause Lecture' : 'Play Lecture'}
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-6 h-6 text-white" />
-                    ) : (
-                      <Play className="w-6 h-6 text-white ml-1 fill-white" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Bottom Control Bar & Live Subtitle Pill */}
-                <div className="relative z-10 p-4 space-y-2 pointer-events-auto bg-gradient-to-t from-black/80 to-transparent">
-                  {/* Active Subtitle Pill */}
-                  <div className="text-center">
-                    <span className="inline-block px-3 py-1 text-xs font-medium rounded-lg bg-black/60 backdrop-blur-md text-white/95 border border-white/10 shadow-sm max-w-lg truncate">
-                      {TRANSCRIPT_SEGMENTS[activeTranscriptIndex]?.text || 'Distributed consensus guarantees consistency across node failure domains.'}
-                    </span>
-                  </div>
-
-                  {/* Scrubber Progress Bar */}
-                  <div
-                    className="h-1.5 w-full bg-white/20 hover:h-2.5 rounded-full overflow-hidden cursor-pointer transition-all"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                      seekTo(ratio * duration);
-                    }}
-                  >
-                    <div
-                      className="h-full bg-[#0066FF] rounded-full transition-all duration-100"
-                      style={{ width: `${(currentTime / (duration || 25)) * 100}%` }}
-                    />
-                  </div>
-
-                  {/* Timecode & Controls Row */}
-                  <div className="flex items-center justify-between text-xs font-mono text-white/80 pt-1">
-                    <div className="flex items-center gap-3">
-                      <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-                      <button
-                        type="button"
-                        onClick={toggleMute}
-                        className="hover:text-white transition p-1"
-                        title={isMuted ? 'Unmute' : 'Mute'}
-                      >
-                        {isMuted ? <VolumeX className="w-4 h-4 text-white/60" /> : <Volume2 className="w-4 h-4 text-[#38BDF8]" />}
-                      </button>
-                    </div>
-                    <span className="text-[#38BDF8] text-[11px] font-sans font-medium">
-                      Synced with State Machine Telemetry
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pane 1: Synced Transcript */}
-            <div className={`finder-pane ${tabIndex === 1 ? 'finder-pane-active' : 'finder-pane-inactive'}`}>
-              <div className="aspect-video p-5 sm:p-6 flex flex-col justify-between overflow-y-auto text-left rounded-2xl bg-white/70 dark:bg-[#13151D]/80 backdrop-blur-xl space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#0066FF] dark:text-[#38BDF8]">
-                    <FileText className="w-4 h-4" />
-                    <span>Synchronized Lecture Transcript &amp; Architecture Notes</span>
-                  </div>
-                  <span className="text-[11px] font-mono text-[#868E96]">Click timestamp to seek video</span>
-                </div>
-
-                <div className="space-y-2.5 text-xs sm:text-sm leading-relaxed overflow-y-auto pr-1">
-                  {TRANSCRIPT_SEGMENTS.map((seg, idx) => {
-                    const isActive = idx === activeTranscriptIndex;
+                <div className="space-y-3 overflow-y-auto max-h-[220px] pr-1">
+                  {LECTURE_NOTES.map((note, idx) => {
+                    const isSelected = idx === selectedNoteIndex;
                     return (
                       <div
-                        key={seg.label}
-                        onClick={() => seekTo(seg.time)}
-                        className={`p-3 rounded-xl transition-all cursor-pointer border flex items-start gap-3 ${
-                          isActive
-                            ? 'bg-[#0066FF]/10 dark:bg-[#0066FF]/15 border-[#0066FF]/30 text-[#121316] dark:text-white font-medium shadow-2xs'
-                            : 'border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.04] text-[#6E6E73] dark:text-[#94A3B8]'
+                        key={note.topic}
+                        onClick={() => setSelectedNoteIndex(idx)}
+                        className={`p-3.5 rounded-xl transition-all cursor-pointer border text-left ${
+                          isSelected
+                            ? 'bg-teal-500/10 border-teal-500/30 text-[#0F172A] dark:text-white shadow-2xs'
+                            : 'border-black/[0.04] dark:border-white/[0.04] hover:bg-black/[0.02] dark:hover:bg-white/[0.03] text-[#64748B] dark:text-[#94A3B8]'
                         }`}
                       >
-                        <span className={`font-mono text-xs font-semibold px-2 py-0.5 rounded ${
-                          isActive ? 'bg-[#0066FF] text-white' : 'bg-black/[0.05] dark:bg-white/[0.08] text-[#868E96]'
-                        }`}>
-                          {seg.label}
-                        </span>
-                        <p className="flex-1">{seg.text}</p>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h4 className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+                            {note.topic}
+                          </h4>
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                            isSelected
+                              ? 'bg-teal-600 text-white font-semibold'
+                              : 'bg-black/[0.04] dark:bg-white/[0.06] text-[#64748B] dark:text-[#94A3B8]'
+                          }`}>
+                            {note.badge}
+                          </span>
+                        </div>
+                        <p className="text-xs leading-relaxed">
+                          {note.text}
+                        </p>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="pt-2 text-[11px] text-[#868E96] font-mono flex items-center justify-between border-t border-black/[0.05] dark:border-white/[0.06]">
-                  <span>Module 2: Raft Consensus Invariants</span>
-                  <span className="text-[#0066FF] dark:text-[#38BDF8]">4 timestamps indexed</span>
+                <div className="pt-2 text-[11px] text-[#64748B] dark:text-[#94A3B8] font-mono flex items-center justify-between border-t border-black/[0.05] dark:border-white/[0.06]">
+                  <span>Syllabus Chapter 2.4</span>
+                  <span className="text-teal-600 dark:text-teal-400 font-semibold">Deterministic State Machines</span>
                 </div>
               </div>
             </div>
 
-            {/* Pane 2: Concept Flashcard with 3D Flip */}
-            <div className={`finder-pane ${tabIndex === 2 ? 'finder-pane-active' : 'finder-pane-inactive'}`}>
-              <div className="aspect-video p-5 sm:p-6 flex flex-col justify-between text-left rounded-2xl bg-white/70 dark:bg-[#13151D]/80 backdrop-blur-xl">
-                <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
-                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-[#0066FF]/10 text-[#0066FF] dark:text-[#38BDF8] border border-[#0066FF]/20">
-                    Syllabus Flashcard &bull; Card 3 of 12
+            {/* Pane 1: Concept Flashcard with 3D Flip */}
+            <div className={`finder-pane ${tabIndex === 1 ? 'finder-pane-active' : 'finder-pane-inactive'}`}>
+              <div className="p-5 sm:p-6 flex flex-col justify-between text-left rounded-2xl bg-white/70 dark:bg-[#111622]/80 backdrop-blur-xl min-h-[360px]">
+                <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20">
+                    Active Recall Flashcard &bull; Card 3 of 12
                   </span>
-                  <span className="text-[11px] font-mono text-[#868E96]">Click card to flip</span>
+                  <span className="text-[11px] font-mono text-[#64748B] dark:text-[#94A3B8]">Click card to flip</span>
                 </div>
 
                 {/* 3D Flip Card Container */}
@@ -330,30 +210,34 @@ const InteractiveShowcase: React.FC = () => {
                   className="perspective-1000 my-auto cursor-pointer"
                 >
                   <div
-                    className={`relative w-full min-h-[160px] rounded-2xl p-6 text-center flex flex-col justify-center border transition-transform duration-500 transform-style-3d ${
-                      cardFlipped ? 'rotate-y-180 bg-emerald-500/10 border-emerald-500/30' : 'bg-black/[0.03] dark:bg-white/[0.04] border-black/[0.08] dark:border-white/[0.1]'
+                    className={`relative w-full min-h-[170px] rounded-2xl p-6 text-center flex flex-col justify-center border transition-transform duration-500 transform-style-3d ${
+                      cardFlipped
+                        ? 'rotate-y-180 bg-orange-500/10 border-orange-500/30'
+                        : 'bg-black/[0.02] dark:bg-white/[0.03] border-black/[0.06] dark:border-white/[0.08]'
                     }`}
                   >
                     {!cardFlipped ? (
                       <div className="space-y-2">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0066FF] dark:text-[#38BDF8]">
-                          Core Distributed Invariant
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                          Core Invariant Rule
                         </span>
-                        <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-[#121316] dark:text-[#F3F4F6]">
+                        <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC]">
                           Split-Brain Partition Prevention
                         </h4>
-                        <p className="text-xs text-[#868E96]">Click to reveal mathematical proof &amp; quorum rule</p>
+                        <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                          Click to reveal mathematical proof &amp; quorum rule
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                          Consensus Quorum Rule
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                          Quorum Overlap Theorem
                         </span>
-                        <p className="text-sm sm:text-base font-semibold text-[#121316] dark:text-white leading-relaxed max-w-lg mx-auto font-mono">
+                        <p className="text-sm sm:text-base font-semibold text-[#0F172A] dark:text-white leading-relaxed max-w-lg mx-auto font-mono">
                           Q = floor(n / 2) + 1
                         </p>
-                        <p className="text-xs text-[#6E6E73] dark:text-[#94A3B8] max-w-md mx-auto">
-                          Any two majority quorums must overlap by at least one common server, guaranteeing exactly one valid leader term.
+                        <p className="text-xs text-[#64748B] dark:text-[#94A3B8] max-w-md mx-auto">
+                          Any two majority quorums must overlap by at least one server, guaranteeing at most one legitimate leader per term.
                         </p>
                       </div>
                     )}
@@ -364,10 +248,10 @@ const InteractiveShowcase: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setFlashcardMastered(!flashcardMastered)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition ${
                       flashcardMastered
-                        ? 'bg-emerald-500 text-white shadow-xs'
-                        : 'bg-black/[0.04] dark:bg-white/[0.06] text-[#868E96] hover:text-[#121316] dark:hover:text-white'
+                        ? 'bg-orange-600 text-white shadow-xs'
+                        : 'bg-black/[0.04] dark:bg-white/[0.06] text-[#64748B] hover:text-[#0F172A] dark:hover:text-white'
                     }`}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
@@ -377,10 +261,92 @@ const InteractiveShowcase: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setCardFlipped(!cardFlipped)}
-                    className="text-xs text-[#0066FF] dark:text-[#38BDF8] font-medium flex items-center gap-1 hover:underline"
+                    className="text-xs text-orange-600 dark:text-orange-400 font-medium flex items-center gap-1 hover:underline"
                   >
                     <RotateCcw className="w-3.5 h-3.5" /> Flip Card
                   </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Pane 2: Knowledge Check (Assessment Drill) */}
+            <div className={`finder-pane ${tabIndex === 2 ? 'finder-pane-active' : 'finder-pane-inactive'}`}>
+              <div className="p-5 sm:p-6 flex flex-col justify-between text-left rounded-2xl bg-white/70 dark:bg-[#111622]/80 backdrop-blur-xl min-h-[360px] space-y-3">
+                <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                    Practice Drill &bull; Question 1 of 5
+                  </span>
+                  <span className="text-[11px] font-mono text-[#64748B] dark:text-[#94A3B8]">Untimed Self-Assessment</span>
+                </div>
+
+                <div className="space-y-3 my-auto">
+                  <h4 className="text-sm sm:text-base font-semibold text-[#0F172A] dark:text-[#F8FAFC]">
+                    In a cluster of 5 nodes running Raft, what is the maximum number of simultaneous node failures tolerated while preserving consensus safety and liveness?
+                  </h4>
+
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {[
+                      { index: 0, label: 'A', text: '1 node', correct: false },
+                      { index: 1, label: 'B', text: '2 nodes (Majority Quorum = 3 nodes remain)', correct: true },
+                      { index: 2, label: 'C', text: '3 nodes', correct: false },
+                    ].map((opt) => {
+                      const isSelected = selectedQuizOption === opt.index;
+                      let optionClasses = 'border-black/[0.06] dark:border-white/[0.08] hover:bg-black/[0.02] dark:hover:bg-white/[0.03] text-[#0F172A] dark:text-[#F8FAFC]';
+                      if (isSelected) {
+                        if (opt.correct) {
+                          optionClasses = 'border-teal-500 bg-teal-500/10 text-teal-800 dark:text-teal-200 font-medium';
+                        } else {
+                          optionClasses = 'border-orange-500 bg-orange-500/10 text-orange-800 dark:text-orange-200 font-medium';
+                        }
+                      }
+                      return (
+                        <button
+                          key={opt.index}
+                          type="button"
+                          onClick={() => setSelectedQuizOption(opt.index)}
+                          className={`w-full p-2.5 rounded-xl border text-left text-xs transition flex items-center gap-3 ${optionClasses}`}
+                        >
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-bold ${
+                            isSelected && opt.correct
+                              ? 'bg-teal-600 text-white'
+                              : isSelected && !opt.correct
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-black/[0.05] dark:bg-white/[0.08] text-[#64748B]'
+                          }`}>
+                            {opt.label}
+                          </span>
+                          <span className="flex-1">{opt.text}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedQuizOption !== null && (
+                    <div className={`p-2.5 rounded-xl text-xs ${
+                      selectedQuizOption === 1
+                        ? 'bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-200'
+                        : 'bg-orange-500/10 border border-orange-500/30 text-orange-800 dark:text-orange-200'
+                    }`}>
+                      {selectedQuizOption === 1 ? (
+                        <span>Correct. A 5-node cluster requires floor(5/2) + 1 = 3 nodes for quorum; thus at most 2 nodes can fail.</span>
+                      ) : (
+                        <span>Incorrect. A strict majority requires 3 nodes to agree, so losing more than 2 nodes breaks availability.</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-black/[0.05] dark:border-white/[0.06]">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedQuizOption(null)}
+                    className="text-xs text-[#64748B] hover:text-[#0F172A] dark:hover:text-white transition"
+                  >
+                    Reset Drill
+                  </button>
+                  <span className="text-[11px] font-mono text-teal-600 dark:text-teal-400 font-semibold">
+                    Instant Graded Telemetry
+                  </span>
                 </div>
               </div>
             </div>
@@ -388,52 +354,57 @@ const InteractiveShowcase: React.FC = () => {
         </div>
 
         {/* Sidebar Syllabus Preview Pane */}
-        <div className="lg:col-span-4 flex flex-col justify-between liquid-glass-subtle rounded-2xl p-4 sm:p-5 text-left space-y-4">
+        <div className="lg:col-span-4 flex flex-col justify-between liquid-glass-subtle rounded-2xl p-4 sm:p-5 text-left space-y-4 min-h-[360px]">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#868E96]">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B] dark:text-[#94A3B8]">
                 Course Syllabus
               </span>
-              <span className="text-xs font-mono font-bold text-[#0066FF] dark:text-[#38BDF8]">
-                75% Completed
+              <span className="text-xs font-mono font-bold text-teal-600 dark:text-teal-400">
+                75% Complete
               </span>
             </div>
 
+            {/* Gradient Progress Bar */}
+            <div className="h-1.5 w-full bg-black/[0.04] dark:bg-white/[0.08] rounded-full overflow-hidden mb-3">
+              <div className="h-full bg-gradient-to-r from-teal-500 to-orange-500 rounded-full w-3/4" />
+            </div>
+
             <div className="space-y-2">
-              <div className="p-3 rounded-xl bg-white dark:bg-[#1C1E26] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-between text-xs">
+              <div className="p-3 rounded-xl bg-white dark:bg-[#141926] border border-black/[0.06] dark:border-white/[0.08] shadow-2xs flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                  <span className="font-semibold text-[#121316] dark:text-[#F3F4F6]">1. Distributed Architecture</span>
+                  <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                  <span className="font-semibold text-[#0F172A] dark:text-[#F8FAFC]">1. Distributed Architecture</span>
                 </div>
-                <span className="text-[11px] text-[#868E96] font-mono">18m</span>
+                <span className="text-[11px] text-[#64748B] font-mono">18m</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0066FF]/10 border border-[#0066FF]/25 flex items-center justify-between text-xs shadow-2xs">
+              <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-between text-xs shadow-2xs">
                 <div className="flex items-center gap-2.5">
-                  <Play className="w-4 h-4 text-[#0066FF] fill-[#0066FF] flex-shrink-0" />
-                  <span className="font-bold text-[#0066FF] dark:text-[#38BDF8]">2. Consensus Protocols</span>
+                  <BookOpen className="w-4 h-4 text-teal-600 dark:text-teal-400 flex-shrink-0" />
+                  <span className="font-bold text-teal-700 dark:text-teal-300">2. Consensus Protocols</span>
                 </div>
-                <span className="text-[11px] text-[#0066FF] dark:text-[#38BDF8] font-mono font-bold">24m</span>
+                <span className="text-[11px] text-teal-700 dark:text-teal-300 font-mono font-bold">24m</span>
               </div>
 
               <div className="p-3 rounded-xl bg-white/60 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between text-xs opacity-75">
                 <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-[#868E96] flex-shrink-0" />
-                  <span className="text-[#6E6E73] dark:text-[#94A3B8]">3. Sharding &amp; Partitioning</span>
+                  <FileText className="w-4 h-4 text-[#64748B] flex-shrink-0" />
+                  <span className="text-[#64748B] dark:text-[#94A3B8]">3. Sharding &amp; Partitioning</span>
                 </div>
-                <span className="text-[11px] text-[#868E96] font-mono">31m</span>
+                <span className="text-[11px] text-[#64748B] font-mono">31m</span>
               </div>
             </div>
           </div>
 
           {/* Bottom Quick Action Card */}
-          <div className="p-3.5 bg-white/90 dark:bg-[#1C1E26]/90 rounded-xl border border-black/[0.06] dark:border-white/[0.08] space-y-1.5 shadow-2xs">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0066FF] dark:text-[#38BDF8]">
-              <Award className="w-4 h-4 text-[#0066FF]" />
-              <span>Knowledge Check</span>
+          <div className="p-3.5 bg-white/90 dark:bg-[#141926]/90 rounded-xl border border-black/[0.06] dark:border-white/[0.08] space-y-1.5 shadow-2xs">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-teal-700 dark:text-teal-300">
+              <Award className="w-4 h-4 text-orange-500" />
+              <span>Academic Mastery Telemetry</span>
             </div>
-            <p className="text-[11px] text-[#868E96] leading-relaxed">
-              Verify your comprehension with structured assessment questions drawn from this lecture.
+            <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Verify your comprehension with structured assessment questions and active recall flashcards.
             </p>
           </div>
         </div>
@@ -447,25 +418,25 @@ const Home: React.FC = () => {
 
   return (
     <div className="landing-ambient-canvas min-h-screen relative overflow-hidden">
-      {/* Luminous Light Shafts & Stage Spotlight */}
+      {/* Luminous Light Shafts & Stage Spotlight with Teal & Orange Mesh */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-tr from-[#0066FF]/25 via-[#0EA5E9]/15 to-transparent blur-[140px] rounded-full opacity-70 dark:opacity-50"
+        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-tr from-teal-500/20 via-orange-500/10 to-transparent blur-[140px] rounded-full opacity-70 dark:opacity-50"
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 space-y-24 relative z-10 page-transition-enter">
         {/* Hero Section */}
         <div className="text-center space-y-6 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.12] text-xs font-semibold text-[#6E6E73] dark:text-[#98989D] shadow-sm backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#0066FF] animate-pulse" />
-            <span>Cognify LMS &bull; Institutional Learning Workspace</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.12] text-xs font-semibold text-[#64748B] dark:text-[#94A3B8] shadow-sm backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+            <span>Cognify LMS &bull; Academic Learning Workspace</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#121316] dark:text-[#F3F4F6] heading-display leading-[1.05]">
-            Master every concept with <span className="text-[#0066FF] dark:text-[#38BDF8]">precision</span> and rigor.
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#0F172A] dark:text-[#F8FAFC] heading-display leading-[1.05]">
+            Master every concept with <span className="text-teal-600 dark:text-teal-400">precision</span> and <span className="text-orange-600 dark:text-orange-400">rigor</span>.
           </h1>
 
-          <p className="text-base sm:text-lg text-[#6E6E73] dark:text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
             Cognify unifies structured curriculum delivery with synchronized lecture transcripts, interactive assessments, verifiable certificates, and detailed mastery telemetry.
           </p>
 
@@ -473,7 +444,7 @@ const Home: React.FC = () => {
             {user ? (
               <Link
                 to="/dashboard"
-                className="btn-primary px-7 py-3 text-sm font-semibold rounded-full gap-2 shadow-md shadow-[#0066FF]/20"
+                className="btn-primary px-7 py-3 text-sm font-semibold rounded-full gap-2 shadow-md shadow-teal-600/20"
               >
                 Go to Dashboard
                 <ArrowRight className="w-4 h-4" />
@@ -481,7 +452,7 @@ const Home: React.FC = () => {
             ) : (
               <Link
                 to="/register"
-                className="btn-primary px-7 py-3 text-sm font-semibold rounded-full gap-2 shadow-md shadow-[#0066FF]/20"
+                className="btn-primary px-7 py-3 text-sm font-semibold rounded-full gap-2 shadow-md shadow-teal-600/20"
               >
                 Get Started Free
                 <ArrowRight className="w-4 h-4" />
@@ -501,37 +472,37 @@ const Home: React.FC = () => {
 
         {/* Feature Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(0,102,255,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
-            <div className="w-12 h-12 rounded-2xl bg-[#0066FF]/10 text-[#0066FF] flex items-center justify-center font-bold border border-[#0066FF]/20">
+          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold border border-teal-500/20">
               <BookOpen className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">Structured Courses</h3>
-              <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#94A3B8] leading-relaxed">
+              <h3 className="text-lg font-bold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight">Structured Courses</h3>
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                 Curated modules, rich lesson notes, and synchronized lecture transcripts built for methodical, deep comprehension.
               </p>
             </div>
           </div>
 
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(0,102,255,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold border border-indigo-500/20">
+          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(249,115,22,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold border border-orange-500/20">
               <Compass className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">Concept Synthesis &amp; Practice</h3>
-              <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#94A3B8] leading-relaxed">
+              <h3 className="text-lg font-bold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight">Concept Synthesis &amp; Practice</h3>
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                 Topic summaries, flashcard review decks, and targeted MCQ drills indexed directly from lesson transcripts.
               </p>
             </div>
           </div>
 
-          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(0,102,255,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/20">
+          <div className="lms-card p-6 sm:p-8 space-y-4 hover:shadow-[0_16px_40px_rgba(13,148,136,0.08)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.5)] transition-all duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold border border-teal-500/20">
               <Award className="w-6 h-6" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">Verifiable Credentials</h3>
-              <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#94A3B8] leading-relaxed">
+              <h3 className="text-lg font-bold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight">Verifiable Credentials</h3>
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                 Real-time progress telemetry, timed graded assessments, and cryptographically verifiable certificates upon completion.
               </p>
             </div>
@@ -539,16 +510,16 @@ const Home: React.FC = () => {
         </div>
 
         {/* Platform Rigor Banner */}
-        <div className="lms-card p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white via-[#F8FAFC] to-[#F1F5F9] dark:from-[#13151D] dark:via-[#111319] dark:to-[#0D0F14] text-left">
+        <div className="lms-card p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-white via-[#F8FAFC] to-[#F1F5F9] dark:from-[#111622] dark:via-[#0F131D] dark:to-[#0B0E15] text-left">
           <div className="space-y-2 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 text-xs font-bold uppercase tracking-wider text-[#0066FF] dark:text-[#38BDF8]">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
               <ShieldCheck className="w-4 h-4" />
               <span>Architectural Academic Platform</span>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-[#121316] dark:text-[#F3F4F6]">
+            <h2 className="text-2xl font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC]">
               Engineered for authentic mastery.
             </h2>
-            <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#94A3B8] max-w-xl">
+            <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] max-w-xl">
               Equipping learners and educators with structured curriculum management, robust assessment engines, and verified milestone tracking.
             </p>
           </div>

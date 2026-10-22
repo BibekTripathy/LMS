@@ -358,7 +358,7 @@ export const LearningWorkspace: React.FC = () => {
                           to="/study-centre"
                           className="btn-secondary px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 inline-flex"
                         >
-                          <Layers className="w-3.5 h-3.5 text-[#0066FF]" />
+                          <Layers className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                           Open Study Centre
                         </Link>
                       </div>

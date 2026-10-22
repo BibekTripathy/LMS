@@ -70,14 +70,14 @@ export const StudentDashboard: React.FC = () => {
         <div className="apple-card p-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#86868B]">Study Centre</span>
-            <div className="w-8 h-8 rounded-full bg-[#0066FF]/10 text-[#0066FF] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
           </div>
           <div>
             <Link
               to="/study-centre"
-              className="text-xs font-semibold text-[#0071E3] dark:text-[#32ADE6] hover:underline flex items-center gap-1 mt-3"
+              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 mt-3"
             >
               Open Study Centre →
             </Link>

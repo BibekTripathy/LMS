@@ -37,7 +37,7 @@ export const CourseCatalogue: React.FC = () => {
       {/* Hero Header */}
       <div className="relative rounded-3xl overflow-hidden lms-card p-8 sm:p-12 bg-gradient-to-br from-white via-[#F8FAFC] to-[#F1F5F9] dark:from-[#13151D] dark:via-[#111319] dark:to-[#0D0F14]">
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0066FF]/10 text-[#0066FF] dark:text-[#38BDF8] text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 text-xs font-semibold">
             <Compass className="w-3.5 h-3.5" />
             <span>Course Catalogue</span>
           </div>

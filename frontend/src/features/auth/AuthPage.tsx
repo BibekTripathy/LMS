@@ -58,25 +58,25 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
       {/* Background Ambient Aura */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#0066FF]/20 via-[#0EA5E9]/10 to-transparent blur-[120px] rounded-full opacity-60 dark:opacity-40"
+        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-teal-500/20 via-orange-500/10 to-transparent blur-[120px] rounded-full opacity-60 dark:opacity-40"
       />
 
       <div className="max-w-md w-full space-y-6 relative z-10 page-transition-enter">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-[#0066FF] rounded-2xl flex items-center justify-center mx-auto text-white shadow-md shadow-[#0066FF]/25">
+          <div className="w-12 h-12 bg-teal-600 rounded-2xl flex items-center justify-center mx-auto text-white shadow-md shadow-teal-600/25">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#121316] dark:text-[#F3F4F6] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight">
             {isLogin ? 'Sign in to Cognify' : 'Create your account'}
           </h2>
-          <p className="text-xs sm:text-sm text-[#868E96]">
+          <p className="text-xs sm:text-sm text-[#64748B]">
             {isLogin ? "Don't have an account? " : 'Already have an account? '}
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError(null);
               }}
-              className="font-semibold text-[#0066FF] dark:text-[#38BDF8] hover:underline"
+              className="font-semibold text-teal-600 dark:text-teal-400 hover:underline"
             >
               {isLogin ? 'Sign up' : 'Sign in'}
             </button>
@@ -86,21 +86,21 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
         {/* Demo Fast-Login Pills: local development builds only */}
         {import.meta.env.DEV && (
           <div className="lms-card p-3.5 space-y-2 text-xs">
-            <span className="font-semibold text-[#868E96] block uppercase tracking-wider text-[10px] font-mono">
+            <span className="font-semibold text-[#64748B] block uppercase tracking-wider text-[10px] font-mono">
               Quick Demo Sign-In
             </span>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => fillDemoAccount('instructor@demo.local')}
-                className="px-3 py-1 bg-[#0066FF]/10 hover:bg-[#0066FF]/15 text-[#0066FF] dark:text-[#38BDF8] rounded-full font-medium active:scale-95 transition"
+                className="px-3 py-1 bg-teal-500/10 hover:bg-teal-500/15 text-teal-700 dark:text-teal-300 rounded-full font-medium active:scale-95 transition"
               >
                 Instructor (instructor@demo.local)
               </button>
               <button
                 type="button"
                 onClick={() => fillDemoAccount('student@demo.local')}
-                className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full font-medium active:scale-95 transition"
+                className="px-3 py-1 bg-orange-500/10 hover:bg-orange-500/15 text-orange-700 dark:text-orange-300 rounded-full font-medium active:scale-95 transition"
               >
                 Student (student@demo.local)
               </button>
@@ -132,7 +132,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Jane"
-                      className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-[#0066FF]/30"
+                      className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-teal-500/30"
                     />
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Doe"
-                    className="w-full px-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-[#0066FF]/30"
+                    className="w-full px-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-teal-500/30"
                   />
                 </div>
               </div>
@@ -159,7 +159,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-[#0066FF]/30"
+                  className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-teal-500/30"
                 />
               </div>
             </div>
@@ -174,7 +174,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'login' }) => 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-[#0066FF]/30"
+                  className="w-full pl-9 pr-3 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-xl text-xs sm:text-sm text-[#121316] dark:text-[#F3F4F6] focus:outline-none focus:ring-2 focus:ring-teal-500/30"
                 />
               </div>
             </div>
