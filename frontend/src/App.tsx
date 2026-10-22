@@ -42,9 +42,9 @@ const Home = () => {
           Your interactive learning notebook
         </span>
       </div>
-      <h1 className="text-3xl sm:text-4xl font-bold text-latte-text dark:text-frappe-text tracking-tight leading-snug">
+      <h1 className="text-3xl sm:text-4xl font-bold text-rose-500 dark:text-rose-300">
         Learn smarter with structured courses,<br />
-        <span className="text-latte-blue light:text-frappe-blue">AI study tools</span> &amp;
+        <span className="text-latte-blue light:text-frappe-blue">AI study tools</span>
       </h1>
       <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 max-w-xl mx-auto leading-relaxed">
         Bite-sized lessons, AI-powered quizzes, and visual progress tracking - all in one place.
