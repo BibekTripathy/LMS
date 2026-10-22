@@ -4,9 +4,11 @@ import {
   BookOpen,
   AlignLeft,
   FileText,
-  Layers,
+  Sparkles,
   Menu,
   X,
+  AlertCircle,
+  Award,
 } from 'lucide-react';
 
 import {
@@ -96,32 +98,33 @@ export const LearningWorkspace: React.FC = () => {
 
   // Handle errors
   const courseError = courseQuery.error
-    ? getErrorMessage(courseQuery.error, 'Failed to load course details.')
+    ? getErrorMessage(courseQuery.error, 'Failed to load course information.')
     : null;
   const lessonError = lessonQuery.error
-    ? getErrorMessage(lessonQuery.error, 'Failed to load lesson.')
+    ? getErrorMessage(lessonQuery.error, 'Failed to load lesson content.')
     : null;
 
-  // Check enrollment permissions
-  const isEnrollmentError =
-    getErrorCode(courseQuery.error) === 'ENROLLMENT_REQUIRED' ||
-    getErrorCode(lessonQuery.error) === 'ENROLLMENT_REQUIRED';
+  // Check 403 / un-enrolled error
+  const isUnauthorized =
+    getErrorCode(courseQuery.error) === '403' ||
+    getErrorCode(lessonQuery.error) === '403';
 
-  if (isEnrollmentError) {
+  if (isUnauthorized) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-        <ErrorState
-          title="Enrollment Required"
-          message="You must be actively enrolled in this course to access its learning workspace."
-        />
-        <div>
-          <Link
-            to={courseId ? `/courses/${courseId}` : '/courses'}
-            className="btn-primary px-5 py-2.5 text-xs font-semibold rounded-full"
-          >
-            Go to Course Page to Enroll
-          </Link>
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+          <AlertCircle className="w-8 h-8" />
         </div>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Enrollment Required</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          You must have an active enrollment in this course to access lessons, stream videos, and track your progress.
+        </p>
+        <Link
+          to={`/courses/${courseId}`}
+          className="inline-block px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition"
+        >
+          View Course & Enroll
+        </Link>
       </div>
     );
   }
@@ -129,14 +132,15 @@ export const LearningWorkspace: React.FC = () => {
   if (courseQuery.isLoading) {
     return (
       <div className="flex h-[calc(100vh-4rem)]">
-        <div className="hidden md:block w-80 lg:w-96 border-r border-black/[0.08] dark:border-white/[0.08] p-4 space-y-4">
+        <div className="hidden md:block w-80 p-4 border-r border-slate-200 dark:border-slate-800 space-y-4">
           <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-full" />
           <Skeleton className="h-32 w-full" />
         </div>
         <div className="flex-1 p-6 space-y-6">
-          <Skeleton className="w-full aspect-video rounded-2xl" />
+          <Skeleton className="aspect-video w-full rounded-2xl" />
           <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-24 w-full" />
         </div>
       </div>
     );
@@ -144,10 +148,10 @@ export const LearningWorkspace: React.FC = () => {
 
   if (courseError || !course) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16">
+      <div className="max-w-3xl mx-auto px-4 py-16">
         <ErrorState
-          title="Course Not Found"
-          message={courseError || 'Could not find this course.'}
+          title="Could Not Open Workspace"
+          message={courseError || 'Course not found.'}
           onRetry={() => courseQuery.refetch()}
         />
       </div>
@@ -155,13 +159,13 @@ export const LearningWorkspace: React.FC = () => {
   }
 
   const sidebarFooter = (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {courseProgress?.is_completed && (
         <Link
           to="/certificates"
-          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-[#059669]/10 text-[#059669] border border-[#059669]/20"
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold"
         >
-          View Course Certificate
+          <Award className="w-4 h-4" /> Course complete: claim your certificate
         </Link>
       )}
       <CourseQuizList courseId={course.id} compact />
@@ -169,7 +173,7 @@ export const LearningWorkspace: React.FC = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-[#FBFBFC] dark:bg-[#0A0B0D] page-transition-enter">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Mobile Sidebar Backdrop & Drawer */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden flex">
@@ -177,12 +181,12 @@ export const LearningWorkspace: React.FC = () => {
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="relative z-50 w-80 max-w-[85%] bg-white dark:bg-[#131418] h-full shadow-2xl">
-            <div className="p-3 border-b border-black/[0.08] dark:border-white/[0.08] flex justify-between items-center">
-              <span className="text-xs font-bold text-[#868E96] uppercase font-mono">Curriculum Modules</span>
+          <div className="relative z-50 w-80 max-w-[85%] bg-white dark:bg-slate-900 h-full shadow-2xl">
+            <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-500 uppercase">Curriculum Modules</span>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="p-1.5 text-[#868E96] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] rounded-lg"
+                className="p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -216,15 +220,15 @@ export const LearningWorkspace: React.FC = () => {
       {/* Main Workspace Stage */}
       <main className="flex-1 flex flex-col h-full overflow-y-auto">
         {/* Top Control Bar for Mobile / Quick Navigation */}
-        <div className="md:hidden p-3 bg-white dark:bg-[#131418] border-b border-black/[0.08] dark:border-white/[0.08] flex items-center justify-between">
+        <div className="md:hidden p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="btn-secondary px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200"
           >
             <Menu className="w-4 h-4" />
             Curriculum
           </button>
-          <span className="text-xs font-mono font-semibold text-[#868E96]">
+          <span className="text-xs font-bold text-slate-500">
             {courseProgress?.progress_percentage ?? 0}% completed
           </span>
         </div>
@@ -257,12 +261,12 @@ export const LearningWorkspace: React.FC = () => {
               />
 
               {/* Lesson Title & Completion Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="space-y-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {lesson.title}
                   </h1>
-                  <p className="text-xs text-[#868E96]">
+                  <p className="text-xs text-slate-500">
                     Part of {allLessons.find((l) => l.id === lesson.id)?.moduleTitle || 'Curriculum'}
                   </p>
                 </div>
@@ -282,13 +286,13 @@ export const LearningWorkspace: React.FC = () => {
 
               {/* Tabs for Reading Content & Transcript */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-black/[0.06] dark:border-white/[0.08]">
+                <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
                   <button
                     onClick={() => setActiveTab('reading')}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition ${
+                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
                       activeTab === 'reading'
-                        ? 'border-[#0066FF] text-[#0066FF]'
-                        : 'border-transparent text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
+                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                     }`}
                   >
                     <BookOpen className="w-4 h-4" />
@@ -297,10 +301,10 @@ export const LearningWorkspace: React.FC = () => {
 
                   <button
                     onClick={() => setActiveTab('transcript')}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition ${
+                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
                       activeTab === 'transcript'
-                        ? 'border-[#0066FF] text-[#0066FF]'
-                        : 'border-transparent text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
+                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                     }`}
                   >
                     <AlignLeft className="w-4 h-4" />
@@ -309,35 +313,35 @@ export const LearningWorkspace: React.FC = () => {
 
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition ${
+                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
                       activeTab === 'overview'
-                        ? 'border-[#0066FF] text-[#0066FF]'
-                        : 'border-transparent text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6]'
+                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                     }`}
                   >
                     <FileText className="w-4 h-4" />
-                    Overview &amp; Notes
+                    Overview & Notes
                   </button>
                 </div>
 
                 {/* Tab Content Display */}
-                <div className="lms-card p-6 min-h-[220px]">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 min-h-[220px] shadow-sm">
                   {activeTab === 'reading' && (
-                    <div className="text-sm leading-relaxed text-[#121316] dark:text-[#F3F4F6] whitespace-pre-line">
+                    <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line">
                       {lesson.reading_content || lesson.content ? (
                         lesson.reading_content || lesson.content
                       ) : (
-                        <p className="text-[#868E96] italic text-xs">No reading material provided for this lesson.</p>
+                        <p className="text-slate-400 italic">No reading material provided for this lesson.</p>
                       )}
                     </div>
                   )}
 
                   {activeTab === 'transcript' && (
-                    <div className="text-xs leading-relaxed text-[#121316] dark:text-[#F3F4F6] whitespace-pre-line bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-xl border border-black/[0.04] dark:border-white/[0.06] font-mono">
+                    <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 font-mono text-xs">
                       {lesson.transcript ? (
                         lesson.transcript
                       ) : (
-                        <p className="text-[#868E96] italic font-sans text-xs">
+                        <p className="text-slate-400 italic font-sans text-sm">
                           No audio/video transcript available for this lesson.
                         </p>
                       )}
@@ -345,21 +349,21 @@ export const LearningWorkspace: React.FC = () => {
                   )}
 
                   {activeTab === 'overview' && (
-                    <div className="space-y-4 text-xs text-[#64666E] dark:text-[#94969E]">
+                    <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
                       <div>
-                        <h4 className="font-bold text-[#121316] dark:text-[#F3F4F6] text-sm">Lesson Summary</h4>
-                        <p className="mt-1 leading-relaxed">
+                        <h4 className="font-bold text-slate-900 dark:text-white">Lesson Summary</h4>
+                        <p className="mt-1">
                           {lesson.content || 'Study the lecture video and attached reading material.'}
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-4">
                         <Link
                           to="/study-centre"
-                          className="btn-secondary px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 inline-flex"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 transition"
                         >
-                          <Layers className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                          Open Study Centre
+                          <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                          Generate AI Practice Flashcards
                         </Link>
                       </div>
                     </div>
@@ -380,3 +384,4 @@ export const LearningWorkspace: React.FC = () => {
     </div>
   );
 };
+

@@ -4,13 +4,21 @@ import { PlayCircle, CheckCircle2, BookOpen, User as UserIcon } from 'lucide-rea
 
 import type { Enrollment } from '../../types';
 import { useCourseProgress } from '../enrollments/hooks';
-import { ProgressBar } from '../../components/ui/ProgressBar';
-import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 
 export interface EnrolledCourseCardProps {
   enrollment: Enrollment;
 }
+
+// Accent palette cycling — one per card, Catppuccin Frappé hues
+const BANNER_ACCENTS = [
+  { bg: 'bg-frappe-blue/20 dark:bg-frappe-blue/30',    icon: 'text-frappe-blue',    border: 'border-t-frappe-blue' },
+  { bg: 'bg-frappe-mauve/20 dark:bg-frappe-mauve/30',  icon: 'text-frappe-mauve',   border: 'border-t-frappe-mauve' },
+  { bg: 'bg-frappe-teal/20 dark:bg-frappe-teal/30',    icon: 'text-frappe-teal',    border: 'border-t-frappe-teal' },
+  { bg: 'bg-frappe-green/20 dark:bg-frappe-green/30',  icon: 'text-frappe-green',   border: 'border-t-frappe-green' },
+  { bg: 'bg-frappe-peach/20 dark:bg-frappe-peach/30',  icon: 'text-frappe-peach',   border: 'border-t-frappe-peach' },
+  { bg: 'bg-frappe-yellow/20 dark:bg-frappe-yellow/30',icon: 'text-frappe-yellow',  border: 'border-t-frappe-yellow' },
+];
 
 export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollment }) => {
   const navigate = useNavigate();
@@ -25,6 +33,10 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
   const isCompleted = progress?.is_completed || enrollment.status === 'COMPLETED';
   const targetLessonId = progress?.last_accessed_lesson_id;
 
+  // Pick a stable accent from course id
+  const accentIdx = courseId ? courseId.charCodeAt(0) % BANNER_ACCENTS.length : 0;
+  const accent = BANNER_ACCENTS[accentIdx];
+
   const handleResume = () => {
     if (targetLessonId) {
       navigate(`/courses/${courseId}/learn/${targetLessonId}`);
@@ -34,9 +46,10 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
   };
 
   return (
-    <div className="apple-card hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition-all duration-200 flex flex-col justify-between overflow-hidden">
-      {/* Top Media & Banner */}
-      <div className="relative h-44 bg-gradient-to-tr from-[#0071E3]/20 via-[#5856D6]/20 to-[#AF52DE]/20 dark:from-[#0071E3]/30 dark:to-[#AF52DE]/30 flex items-center justify-center overflow-hidden">
+    <div className={`bg-latte-mantle dark:bg-frappe-surface0 rounded-xl border-t-4 ${accent.border} border border-latte-surface0 dark:border-frappe-surface1 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden`}>
+
+      {/* Thumbnail banner */}
+      <div className={`relative h-36 ${accent.bg} flex items-center justify-center overflow-hidden`}>
         {course?.thumbnail_url ? (
           <img
             src={course.thumbnail_url}
@@ -44,51 +57,53 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
             className="w-full h-full object-cover"
           />
         ) : (
-          <BookOpen className="w-12 h-12 text-[#86868B] dark:text-[#636366]" />
+          <BookOpen className={`w-12 h-12 ${accent.icon} opacity-40`} />
         )}
 
+        {/* Category pill */}
         <div className="absolute top-3 left-3">
           {course?.category && (
-            <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-black/60 dark:bg-black/70 backdrop-blur-md text-white shadow-sm">
+            <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-frappe-base/70 backdrop-blur-md text-frappe-text shadow-sm">
               {course.category}
             </span>
           )}
         </div>
 
+        {/* Status pill */}
         <div className="absolute top-3 right-3">
           {isCompleted ? (
-            <Badge variant="success" size="sm">
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Completed
-            </Badge>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-frappe-green/20 text-frappe-green border border-frappe-green/40">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+            </span>
           ) : (
-            <Badge variant="default" size="sm">
+            <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-lg bg-frappe-blue/20 text-frappe-blue border border-frappe-blue/40">
               In Progress
-            </Badge>
+            </span>
           )}
         </div>
       </div>
 
-      {/* Course Details & Progress */}
+      {/* Course info */}
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs text-[#86868B]">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-latte-subtext0 dark:text-frappe-subtext0">
             <UserIcon className="w-3.5 h-3.5" />
             <span>{course?.instructor_name || 'Instructor'}</span>
           </div>
 
-          <h3 className="text-base font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] line-clamp-1 hover:text-[#0071E3] dark:hover:text-[#32ADE6] transition-colors">
+          <h3 className="font-notebook text-lg font-bold text-latte-text dark:text-frappe-text line-clamp-1 hover:text-frappe-blue transition-colors">
             <Link to={`/courses/${courseId}`}>{course?.title || 'Enrolled Course'}</Link>
           </h3>
 
-          <p className="text-xs text-[#86868B] dark:text-[#98989D] line-clamp-2 leading-relaxed">
+          <p className="text-xs text-latte-subtext0 dark:text-frappe-subtext0 line-clamp-2">
             {course?.description || 'Continue your learning journey for this course.'}
           </p>
         </div>
 
-        {/* Progress bar container */}
-        <div className="pt-2 space-y-2">
+        {/* Progress */}
+        <div className="space-y-1.5">
           {isLoadingProgress ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex justify-between">
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="h-3 w-10" />
@@ -97,37 +112,46 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({ enrollme
             </div>
           ) : (
             <>
-              <div className="flex justify-between items-center text-xs font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
-                <span>Course Progress</span>
-                <span className="text-[#0071E3] dark:text-[#32ADE6] font-mono">{Math.round(percentage)}%</span>
-              </div>
-              <ProgressBar
-                value={percentage}
-                variant={isCompleted ? 'emerald' : 'indigo'}
-                size="sm"
-              />
-              <div className="flex justify-between items-center text-[11px] text-[#86868B]">
-                <span>
-                  {progress?.completed_lessons ?? 0} of {progress?.total_lessons ?? course?.lessons_count ?? 0} lessons
+              <div className="flex justify-between items-center text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
+                <span>Progress</span>
+                <span className={`font-bold ${isCompleted ? 'text-frappe-green' : 'text-frappe-blue'}`}>
+                  {Math.round(percentage)}%
                 </span>
-                {isCompleted && <span className="text-[#34C759] font-semibold">100% Complete</span>}
+              </div>
+              {/* Custom progress track in theme colours */}
+              <div className="w-full h-1.5 bg-latte-surface0 dark:bg-frappe-surface1 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isCompleted ? 'bg-frappe-green' : 'bg-frappe-blue'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }}
+                />
+              </div>
+              <div className="flex justify-between items-center text-[11px] text-latte-subtext0 dark:text-frappe-subtext0">
+                <span>
+                  {progress?.completed_lessons ?? 0} of{' '}
+                  {progress?.total_lessons ?? course?.lessons_count ?? 0} lessons
+                </span>
+                {isCompleted && (
+                  <span className="text-frappe-green font-semibold">✓ Complete</span>
+                )}
               </div>
             </>
           )}
         </div>
 
-        {/* Action Button */}
-        <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
+        {/* Action button */}
+        <div className="pt-1 border-t border-latte-surface0 dark:border-frappe-surface1">
           <button
             onClick={handleResume}
-            className={`w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 font-semibold text-xs rounded-full active:scale-[0.98] transition-all duration-150 ${
+            className={`w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 font-bold text-xs rounded-xl transition-colors ${
               isCompleted
-                ? 'bg-black/[0.04] dark:bg-white/[0.08] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] text-[#1D1D1F] dark:text-[#F5F5F7]'
-                : 'bg-[#0071E3] hover:bg-[#0077ED] text-white shadow-sm shadow-[#0071E3]/25'
+                ? 'bg-latte-surface0 dark:bg-frappe-surface1 hover:bg-latte-surface1 dark:hover:bg-frappe-surface2 text-latte-text dark:text-frappe-text'
+                : 'bg-frappe-blue hover:bg-frappe-sapphire text-white'
             }`}
           >
             <PlayCircle className="w-4 h-4" />
-            <span>{isCompleted ? 'Review Course Material' : 'Resume Learning'}</span>
+            <span>{isCompleted ? 'Review Material' : 'Resume Learning'}</span>
           </button>
         </div>
       </div>

@@ -14,13 +14,14 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
 }) => {
   const variantClasses = {
-    default: 'bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] border-[#0071E3]/20',
-    success: 'bg-[#34C759]/10 text-[#248A3D] dark:text-[#34C759] border-[#34C759]/20',
-    warning: 'bg-[#FF9500]/10 text-[#B25000] dark:text-[#FF9F0A] border-[#FF9500]/20',
-    danger: 'bg-[#FF3B30]/10 text-[#D70015] dark:text-[#FF453A] border-[#FF3B30]/20',
-    purple: 'bg-[#AF52DE]/10 text-[#8944AB] dark:text-[#BF5AF2] border-[#AF52DE]/20',
-    slate: 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1D1D1F] dark:text-[#F5F5F7] border-black/[0.06] dark:border-white/[0.08]',
-    info: 'bg-[#32ADE6]/10 text-[#0071A4] dark:text-[#70D7FF] border-[#32ADE6]/20',
+    // All variants now use Catppuccin Frappé tokens
+    default:  'bg-frappe-blue/10 text-frappe-blue border-frappe-blue/30 dark:bg-frappe-blue/20 dark:text-frappe-blue dark:border-frappe-blue/40',
+    success:  'bg-frappe-green/10 text-frappe-green border-frappe-green/30 dark:bg-frappe-green/20 dark:text-frappe-green dark:border-frappe-green/40',
+    warning:  'bg-frappe-yellow/10 text-latte-yellow border-frappe-yellow/30 dark:bg-frappe-yellow/15 dark:text-frappe-yellow dark:border-frappe-yellow/40',
+    danger:   'bg-frappe-red/10 text-frappe-red border-frappe-red/30 dark:bg-frappe-red/15 dark:text-frappe-red dark:border-frappe-red/40',
+    purple:   'bg-frappe-mauve/10 text-frappe-mauve border-frappe-mauve/30 dark:bg-frappe-mauve/15 dark:text-frappe-mauve dark:border-frappe-mauve/40',
+    slate:    'bg-latte-surface0 text-latte-subtext1 border-latte-surface1 dark:bg-frappe-surface1 dark:text-frappe-subtext1 dark:border-frappe-surface2',
+    info:     'bg-frappe-sky/10 text-frappe-sky border-frappe-sky/30 dark:bg-frappe-sky/15 dark:text-frappe-sky dark:border-frappe-sky/40',
   }[variant];
 
   const sizeClasses = {

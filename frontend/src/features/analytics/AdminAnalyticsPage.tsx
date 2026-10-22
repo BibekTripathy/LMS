@@ -7,13 +7,13 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { getErrorMessage } from '../../lib/errors';
 
 const Breakdown: React.FC<{ title: string; rows: [string, React.ReactNode][] }> = ({ title, rows }) => (
-  <section className="lms-card p-5 space-y-3">
-    <h2 className="text-xs font-bold text-[#121316] dark:text-[#F3F4F6] uppercase tracking-wider">{title}</h2>
-    <dl className="space-y-1.5 text-xs">
+  <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+    <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3">{title}</h2>
+    <dl className="space-y-1.5 text-sm">
       {rows.map(([label, value]) => (
-        <div key={label} className="flex justify-between items-center py-1 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0">
-          <dt className="text-[#868E96]">{label}</dt>
-          <dd className="font-semibold font-mono text-[#121316] dark:text-[#F3F4F6]">{value}</dd>
+        <div key={label} className="flex justify-between">
+          <dt className="text-slate-500">{label}</dt>
+          <dd className="font-semibold text-slate-900 dark:text-white">{value}</dd>
         </div>
       ))}
     </dl>
@@ -50,10 +50,10 @@ export const AdminAnalyticsPage: React.FC = () => {
   const { users, courses, enrollments, progress, assessments } = data;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 page-transition-enter">
-      <div className="lms-card p-6 sm:p-8 space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#121316] dark:text-[#F3F4F6] tracking-tight">Platform Analytics</h1>
-        <p className="text-xs sm:text-sm text-[#868E96]">Live totals calculated across every course, enrollment, and user.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Platform Analytics</h1>
+        <p className="text-sm text-slate-500">Live totals across every course and user.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

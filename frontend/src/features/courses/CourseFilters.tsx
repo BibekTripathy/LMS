@@ -53,22 +53,22 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
   const hasActiveFilters = Boolean(filters.search || filters.category || filters.difficulty);
 
   return (
-    <div className="apple-card p-4 sm:p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
       {/* Top search & quick stats */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search by course title, topic, or instructor..."
             value={filters.search || ''}
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-9 py-2 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-full text-sm text-[#1D1D1F] dark:text-[#F5F5F7] placeholder-[#86868B] focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:border-[#0071E3] transition"
+            className="w-full pl-10 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
           />
           {filters.search && (
             <button
               onClick={() => onChange({ ...filters, search: undefined })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868B] hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               title="Clear search"
             >
               <X className="w-4 h-4" />
@@ -79,7 +79,7 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
         {/* Clear filters & count */}
         <div className="flex items-center justify-between sm:justify-end gap-3">
           {totalResults !== undefined && (
-            <span className="text-xs font-semibold text-[#86868B]">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               {totalResults} {totalResults === 1 ? 'course' : 'courses'} found
             </span>
           )}
@@ -87,7 +87,7 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
           {hasActiveFilters && (
             <button
               onClick={handleClear}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 rounded-full active:scale-95 transition"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 rounded-lg transition"
             >
               <X className="w-3.5 h-3.5" />
               Reset Filters
@@ -97,8 +97,8 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
       </div>
 
       {/* Filter Selectors */}
-      <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#86868B] uppercase tracking-wider mr-1">
+      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">
           <Filter className="w-3.5 h-3.5" />
           Filters:
         </div>
@@ -112,7 +112,7 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
             id="category-select"
             value={filters.category || 'All Categories'}
             onChange={(e) => handleCategoryChange(e.target.value)}
-            className="px-3 py-1.5 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-full text-xs font-medium text-[#1D1D1F] dark:text-[#F5F5F7] focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30"
+            className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -131,7 +131,7 @@ export const CourseFilters: React.FC<CourseFiltersProps> = ({
             id="difficulty-select"
             value={filters.difficulty || ''}
             onChange={(e) => handleDifficultyChange(e.target.value)}
-            className="px-3 py-1.5 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-full text-xs font-medium text-[#1D1D1F] dark:text-[#F5F5F7] focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30"
+            className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             {DIFFICULTIES.map((diff) => (
               <option key={diff.label} value={diff.value}>

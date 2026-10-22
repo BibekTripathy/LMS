@@ -1,306 +1,96 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Modern Institutional LMS Design System ─────────────────────────────── */
+/* ─── Base / Root ─────────────────────────────────────────────────────────── */
 :root {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color-scheme: light dark;
+  --nb-line-color: rgba(76, 79, 105, 0.13);
+  --nb-margin-color: rgba(210, 15, 57, 0.18);
 }
 
 body {
-  @apply bg-[#FAFAFC] text-[#0F172A] dark:bg-[#0B0F17] dark:text-[#F8FAFC] font-sans antialiased selection:bg-teal-500/20 selection:text-teal-700 dark:selection:text-teal-300;
-  min-height: 100vh;
+  @apply bg-latte-base text-latte-text font-sans transition-colors duration-300;
+  /* Light mode: crisp ruled notebook lines + red margin line */
+  background-image:
+    linear-gradient(90deg, transparent 55px, var(--nb-margin-color) 55px, var(--nb-margin-color) 57px, transparent 57px),
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      var(--nb-line-color) 28px
+    );
+  background-attachment: local;
 }
 
-/* ─── Typography Utilities ────────────────────────────────────────────────── */
-.font-mono {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-}
-
-.heading-display {
-  letter-spacing: -0.035em;
-  font-weight: 800;
-  line-height: 1.08;
-}
-
-.heading-section {
-  letter-spacing: -0.025em;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.heading-card {
-  letter-spacing: -0.015em;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-/* ─── Architectural Background Canvas ─────────────────────────────────────── */
-.landing-ambient-canvas {
-  position: relative;
-  background-color: #FAFAFC;
-  background-image: 
-    radial-gradient(circle at 18% -5%, rgba(13, 148, 136, 0.08) 0%, transparent 55%),
-    radial-gradient(circle at 85% 15%, rgba(249, 115, 22, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 50% 60%, rgba(20, 184, 166, 0.04) 0%, transparent 50%),
-    radial-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
-}
-
-.dark .landing-ambient-canvas {
-  background-color: #0B0F17;
-  background-image: 
-    radial-gradient(circle at 20% -60px, rgba(20, 184, 166, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 85% 15%, rgba(249, 115, 22, 0.07) 0%, transparent 45%),
-    radial-gradient(circle at 50% 60%, rgba(20, 184, 166, 0.05) 0%, transparent 50%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    radial-gradient(rgba(20, 184, 166, 0.08) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px, 32px 32px;
-}
-
-/* ─── Liquid Glass Material Panels ────────────────────────────────────────── */
-.liquid-glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(248, 250, 252, 0.70) 50%,
-    rgba(255, 255, 255, 0.80) 100%
+.dark body {
+  background-color: #303446;
+  color: #c6d0f5;
+  /* Dark mode: subtle lines only, no margin */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(198, 208, 245, 0.07) 28px
   );
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 
-    0 24px 64px -12px rgba(0, 102, 255, 0.08),
-    0 8px 24px -4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 2px 0 rgba(255, 255, 255, 0.95);
 }
 
-.dark .liquid-glass {
-  background: linear-gradient(
-    135deg,
-    rgba(25, 27, 34, 0.75) 0%,
-    rgba(15, 17, 22, 0.65) 50%,
-    rgba(22, 25, 32, 0.72) 100%
+/* ─── Notebook Paper Background ───────────────────────────────────────────── */
+.notebook-bg {
+  background-color: #eff1f5;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(76, 79, 105, 0.1) 28px
   );
-  backdrop-filter: blur(32px) saturate(190%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    0 30px 80px -15px rgba(0, 0, 0, 0.7),
-    0 12px 32px -8px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Secondary liquid glass surface */
-.liquid-glass-subtle {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+.dark .notebook-bg {
+  background-color: #303446;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(198, 208, 245, 0.07) 28px
+  );
 }
 
-.dark .liquid-glass-subtle {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* ─── Sticky Notes: light, airy pastels for both modes ───────────────────── */
+.sticky-yellow {
+  background: #fefae8;
+  border-top: 3px solid #e5c890;
+}
+.dark .sticky-yellow {
+  background: #3f3618;
+  border-top: 3px solid #e5c890;
 }
 
-/* ─── Translucent Tile Shifter Control ────────────────────────────────────── */
-.shifter-track {
-  background: rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+.sticky-blue {
+  background: #edf4fe;
+  border-top: 3px solid #8caaee;
+}
+.dark .sticky-blue {
+  background: #1d2d46;
+  border-top: 3px solid #8caaee;
 }
 
-.dark .shifter-track {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+.sticky-green {
+  background: #edfaf2;
+  border-top: 3px solid #a6d189;
+}
+.dark .sticky-green {
+  background: #1e3223;
+  border-top: 3px solid #a6d189;
 }
 
-.shifter-pill {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px) saturate(190%);
-  -webkit-backdrop-filter: blur(16px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 
-    0 4px 16px -2px rgba(0, 0, 0, 0.06),
-    0 1px 3px 0 rgba(0, 0, 0, 0.04),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+.sticky-pink {
+  background: #fdf0f9;
+  border-top: 3px solid #f4b8e4;
 }
-
-.dark .shifter-pill {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(16px) saturate(190%);
-  -webkit-backdrop-filter: blur(16px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
-    0 6px 20px -4px rgba(0, 0, 0, 0.5),
-    0 2px 6px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-/* Modern Glassmorphic Nav & Headers */
-.lms-glass {
-  background: rgba(251, 251, 252, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.dark .lms-glass {
-  background: rgba(14, 15, 18, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ─── Architectural Card Surfaces ─────────────────────────────────────────── */
-.lms-card {
-  @apply bg-white dark:bg-[#12141A] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.4)] rounded-2xl;
-}
-
-.lms-card-elevated {
-  @apply lms-card transition-all duration-200 ease-out hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] hover:border-black/[0.14] dark:hover:border-white/[0.16];
-}
-
-/* ─── Interactive Buttons ─────────────────────────────────────────────────── */
-.btn-primary {
-  @apply inline-flex items-center justify-center font-semibold text-white bg-teal-600 hover:bg-teal-500 active:bg-teal-700 active:scale-[0.98] transition-all duration-150 ease-out rounded-xl shadow-xs disabled:opacity-50 disabled:pointer-events-none;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center font-medium bg-black/[0.04] hover:bg-black/[0.08] text-[#0F172A] dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-[#F8FAFC] active:scale-[0.98] transition-all duration-150 ease-out rounded-xl border border-black/[0.08] dark:border-white/[0.1];
-}
-
-/* Backward compatibility for apple tokens */
-.apple-glass {
-  @apply lms-glass;
-}
-.apple-card {
-  @apply lms-card;
-}
-.apple-btn-primary {
-  @apply btn-primary;
-}
-.apple-btn-secondary {
-  @apply btn-secondary;
-}
-
-/* ─── Finder-Like Sliding Column Shift Animation ─────────────────────────── */
-.finder-viewport {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-}
-
-.finder-track {
-  display: flex;
-  width: 300%;
-  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-.finder-pane {
-  width: 33.333333%;
-  flex-shrink: 0;
-  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1), transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.finder-pane-inactive {
-  opacity: 0.35;
-  transform: scale(0.985);
-  pointer-events: none;
-}
-
-.finder-pane-active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* ─── Fluid Page-to-Page Route Transitions ───────────────────────────────── */
-@keyframes pageFadeSlide {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.page-transition-enter {
-  animation: pageFadeSlide 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity;
-}
-
-@keyframes mobileSlideDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.99);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.mobile-drawer-enter {
-  animation: mobileSlideDown 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: top;
-  will-change: transform, opacity;
-}
-
-.lms-card-interactive {
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms ease;
-  will-change: transform;
-}
-
-.lms-card-interactive:hover {
-  transform: translateY(-2px);
-}
-
-/* ─── 3D Card Flip Utilities ─────────────────────────────────────────────── */
-.perspective-1000 {
-  perspective: 1000px;
-}
-.transform-style-3d {
-  transform-style: preserve-3d;
-}
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.dark .sticky-pink {
+  background: #381d33;
+  border-top: 3px solid #f4b8e4;
 }
 
 /* ─── Scrollbar ───────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 9999px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-latte-surface0 dark:bg-frappe-surface1 rounded-full; }

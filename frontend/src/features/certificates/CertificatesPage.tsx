@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { isAxiosError } from 'axios';
-import { Award, BadgeCheck, Copy, ExternalLink, Loader2, ShieldCheck } from 'lucide-react';
+import { Award, BadgeCheck, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { useMyCertificates, useClaimCertificate } from './hooks';
 import { useMyEnrollments } from '../enrollments/hooks';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -17,10 +17,8 @@ function criteriaFromError(err: unknown): CertificateCriteria | null {
 }
 
 const CriteriaSummary: React.FC<{ criteria: CertificateCriteria }> = ({ criteria }) => (
-  <div className="mt-3 p-3.5 rounded-2xl bg-[#FF9500]/10 border border-[#FF9500]/20 text-xs text-[#B25000] dark:text-[#FF9F0A] space-y-1.5">
-    <p className="font-bold flex items-center gap-1.5">
-      <span>Not eligible yet</span>
-    </p>
+  <div className="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+    <p className="font-bold">Not eligible yet</p>
     {criteria.reason && <p>{criteria.reason}</p>}
     {criteria.total_lessons !== undefined && (
       <p>
@@ -33,10 +31,10 @@ const CriteriaSummary: React.FC<{ criteria: CertificateCriteria }> = ({ criteria
       </p>
     )}
     {criteria.missing_quizzes && criteria.missing_quizzes.length > 0 && (
-      <ul className="list-disc pl-4 space-y-0.5">
+      <ul className="list-disc pl-4">
         {criteria.missing_quizzes.map((q) => (
           <li key={q.quiz_id}>
-            <Link to={`/quizzes/${q.quiz_id}`} className="font-semibold underline">
+            <Link to={`/quizzes/${q.quiz_id}`} className="underline">
               {q.title}
             </Link>{' '}
             (pass mark {q.pass_percentage}%)
@@ -87,37 +85,31 @@ export const CertificatesPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 page-transition-enter">
-      {/* Header Banner */}
-      <div className="apple-card p-6 sm:p-8 bg-gradient-to-br from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#0D0D0E] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF9500]/10 text-[#FF9500] text-xs font-semibold">
-            <Award className="w-3.5 h-3.5" />
-            <span>Academic Credentials</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight flex items-center gap-2">
-            My Certificates
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Award className="w-6 h-6 text-amber-500" /> My Certificates
           </h1>
-          <p className="text-xs sm:text-sm text-[#86868B] max-w-xl">
+          <p className="text-sm text-slate-500">
             Certificates are issued when you complete every required lesson and pass every published quiz in a course.
           </p>
         </div>
         <Link
           to="/verify"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-[#0071E3] dark:text-[#32ADE6] text-xs font-semibold rounded-full border border-black/[0.04] dark:border-white/[0.08] active:scale-[0.98] transition self-start sm:self-auto"
+          className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 text-xs font-bold rounded-xl transition self-start"
         >
-          <ShieldCheck className="w-3.5 h-3.5" />
           Verify a certificate
         </Link>
       </div>
 
       {/* Earned certificates */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">Earned</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">Earned</h2>
         {certificatesQuery.isLoading ? (
           <div className="grid sm:grid-cols-2 gap-4">
-            <Skeleton className="h-40 rounded-2xl" />
-            <Skeleton className="h-40 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
           </div>
         ) : certificatesQuery.error ? (
           <ErrorState
@@ -132,36 +124,31 @@ export const CertificatesPage: React.FC = () => {
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="apple-card p-6 border-l-4 border-l-[#FF9500] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all space-y-4"
+                className="p-5 rounded-2xl border border-amber-200 dark:border-amber-900 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/30 dark:to-slate-900 shadow-sm space-y-3"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#FF9500]/10 text-[#FF9500] flex items-center justify-center flex-shrink-0">
-                    <BadgeCheck className="w-6 h-6" />
-                  </div>
+                  <BadgeCheck className="w-8 h-8 text-amber-500 flex-shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="font-bold text-base text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">{cert.course_title}</h3>
-                    <p className="text-xs text-[#86868B] mt-0.5">
+                    <h3 className="font-bold text-slate-900 dark:text-white">{cert.course_title}</h3>
+                    <p className="text-xs text-slate-500">
                       Issued {new Date(cert.issued_at).toLocaleDateString()} • Instructor {cert.instructor_name || '—'}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between bg-black/[0.02] dark:bg-white/[0.04] px-3 py-2 rounded-xl border border-black/[0.05] dark:border-white/[0.07]">
-                  <span className="text-[10px] text-[#86868B] uppercase font-mono tracking-wider">Verification Hash</span>
-                  <span className="text-xs font-mono font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] break-all">
-                    {cert.verification_code}
-                  </span>
-                </div>
-                <div className="flex gap-2 pt-1">
+                <p className="text-xs font-mono bg-white/70 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 break-all">
+                  {cert.verification_code}
+                </p>
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => copyLink(cert.verification_code)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-full bg-black/[0.04] dark:bg-white/[0.08] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] text-[#1D1D1F] dark:text-[#F5F5F7] active:scale-[0.98] transition"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50"
                   >
-                    <Copy className="w-3.5 h-3.5 text-[#86868B]" /> {copied === cert.verification_code ? 'Copied!' : 'Copy verify link'}
+                    <Copy className="w-3.5 h-3.5" /> {copied === cert.verification_code ? 'Copied!' : 'Copy verify link'}
                   </button>
                   <Link
                     to={`/verify/${encodeURIComponent(cert.verification_code)}`}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white active:scale-[0.98] transition shadow-xs"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300"
                   >
                     <ExternalLink className="w-3.5 h-3.5" /> Open
                   </Link>
@@ -174,13 +161,13 @@ export const CertificatesPage: React.FC = () => {
 
       {/* Claim */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">Check eligibility</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">Check eligibility</h2>
         {enrollmentsQuery.isLoading ? (
           <Skeleton className="h-20 rounded-2xl" />
         ) : enrollmentsQuery.error ? (
           <ErrorState message={getErrorMessage(enrollmentsQuery.error)} onRetry={() => enrollmentsQuery.refetch()} />
         ) : claimable.length === 0 ? (
-          <p className="text-sm text-[#86868B]">
+          <p className="text-sm text-slate-500">
             {certificates.length > 0 ? 'Every enrolled course already has a certificate.' : 'Enroll in a course to start working towards a certificate.'}
           </p>
         ) : (
@@ -191,24 +178,24 @@ export const CertificatesPage: React.FC = () => {
               return (
                 <div
                   key={enrollment.id}
-                  className="apple-card p-5 space-y-2"
+                  className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
+                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-100">
                       {enrollment.course_detail?.title ?? 'Course'}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleClaim(enrollment.course)}
                       disabled={pending}
-                      className="apple-btn-primary px-4 py-2 text-xs font-semibold rounded-full"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50"
                     >
-                      {pending && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
+                      {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       Claim certificate
                     </button>
                   </div>
                   {result?.criteria && <CriteriaSummary criteria={result.criteria} />}
-                  {result?.error && <p className="mt-2 text-xs text-[#FF3B30] font-semibold">{result.error}</p>}
+                  {result?.error && <p className="mt-2 text-xs text-rose-600">{result.error}</p>}
                 </div>
               );
             })}

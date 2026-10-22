@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, type LucideIcon } from 'lucide-react';
 
+
 export interface EmptyStateProps {
   icon?: LucideIcon;
   title: string;
@@ -22,27 +23,27 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`text-center py-12 px-6 rounded-3xl apple-card border-dashed border-black/[0.12] dark:border-white/[0.15] bg-white/40 dark:bg-[#1C1C1E]/40 backdrop-blur-md flex flex-col items-center justify-center space-y-3.5 ${className}`}
+      className={`text-center py-12 px-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex flex-col items-center justify-center space-y-3 ${className}`}
     >
-      <div className="w-14 h-14 rounded-2xl bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] flex items-center justify-center">
+      <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
         <Icon className="w-7 h-7" />
       </div>
       <div className="max-w-md space-y-1">
-        <h3 className="text-base font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">{title}</h3>
-        <p className="text-sm text-[#86868B] dark:text-[#98989D] leading-relaxed">{description}</p>
+        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{title}</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
       </div>
-      {actionText && onAction && (
+      {(actionText && onAction) && (
         <button
           onClick={onAction}
-          className="mt-2 apple-btn-primary px-5 py-2.5 text-xs font-semibold rounded-full shadow-sm"
+          className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition"
         >
           {actionText}
         </button>
       )}
-      {actionText && actionHref && !onAction && (
+      {(actionText && actionHref && !onAction) && (
         <a
           href={actionHref}
-          className="mt-2 apple-btn-primary px-5 py-2.5 text-xs font-semibold rounded-full shadow-sm"
+          className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition"
         >
           {actionText}
         </a>

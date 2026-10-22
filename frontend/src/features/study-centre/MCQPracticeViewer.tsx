@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { MCQContent } from '../../types';
-import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, Check, RotateCcw } from 'lucide-react';
 
 interface MCQPracticeViewerProps {
   content: MCQContent;
@@ -30,7 +30,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
 
   if (!mcqs || mcqs.length === 0) {
     return (
-      <div className="p-8 text-center text-[#868E96]">
+      <div className="p-8 text-center text-slate-500">
         No revision MCQs found in this resource.
       </div>
     );
@@ -44,27 +44,27 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#059669] bg-[#059669]/10 px-2.5 py-0.5 rounded-full">
-            Interactive Practice
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded">
+            Interactive Self-Check Practice
           </span>
-          <h2 className="text-xl font-bold text-[#121316] dark:text-[#F3F4F6] mt-1">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
             {lessonTitle}
           </h2>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-xs font-semibold text-[#868E96]">
-              Score: <span className="font-bold text-[#121316] dark:text-[#F3F4F6] font-mono">{correctCount}</span> /{' '}
+            <p className="text-xs font-semibold text-slate-500">
+              Score: <span className="font-bold text-slate-900 dark:text-white">{correctCount}</span> /{' '}
               {answeredCount} answered
             </p>
           </div>
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6] rounded-full transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
             title="Reset practice"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs text-[#868E96] hover:text-[#121316] dark:hover:text-[#F3F4F6]"
+              className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800"
             >
               Close
             </button>
@@ -82,90 +82,109 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
         </div>
       </div>
 
-      {/* Questions List */}
+      {/* MCQs List */}
       <div className="space-y-6">
-        {mcqs.map((q, qIdx) => {
+        {mcqs.map((mcq, qIdx) => {
           const selectedOption = userAnswers[qIdx];
-          const hasAnswered = selectedOption !== undefined;
-          const isCorrect = selectedOption === q.correct_option_index;
+          const isAnswered = selectedOption !== undefined;
+          const isCorrect = isAnswered && selectedOption === mcq.correct_option_index;
 
           return (
             <div
               key={qIdx}
-              className="lms-card p-6 space-y-4"
+              className={`p-6 bg-white dark:bg-slate-900 rounded-2xl border transition shadow-sm space-y-4 ${
+                !isAnswered
+                  ? 'border-slate-200 dark:border-slate-800'
+                  : isCorrect
+                  ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/10'
+                  : 'border-rose-300 dark:border-rose-800 bg-rose-50/10'
+              }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#0066FF]/10 text-[#0066FF] text-xs font-bold font-mono flex items-center justify-center">
+              {/* Question Prompt */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
                     {qIdx + 1}
                   </span>
-                  <h3 className="text-sm font-semibold text-[#121316] dark:text-[#F3F4F6]">
-                    {q.prompt}
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    {mcq.prompt}
                   </h3>
                 </div>
 
-                {hasAnswered && (
-                  <span className={`text-xs font-semibold flex items-center gap-1 ${
-                    isCorrect ? 'text-[#059669]' : 'text-[#DC2626]'
-                  }`}>
-                    {isCorrect ? (
-                      <>
-                        <CheckCircle className="w-4 h-4" /> Correct
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-4 h-4" /> Incorrect
-                      </>
-                    )}
+                {isAnswered && (
+                  <span
+                    className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
+                      isCorrect
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                    }`}
+                  >
+                    {isCorrect ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                    {isCorrect ? 'Correct' : 'Incorrect'}
                   </span>
                 )}
               </div>
 
-              {/* Options Grid */}
-              <div className="grid grid-cols-1 gap-2 pt-2">
-                {q.options.map((opt, optIdx) => {
-                  const isThisSelected = selectedOption === optIdx;
-                  const isThisCorrect = optIdx === q.correct_option_index;
+              {/* Choices */}
+              <div className="space-y-2.5 pt-1">
+                {mcq.options.map((optionText, optIdx) => {
+                  const isSelected = selectedOption === optIdx;
+                  const isRightChoice = optIdx === mcq.correct_option_index;
 
-                  let optionStyles = 'border-black/[0.08] dark:border-white/[0.08] bg-black/[0.01] dark:bg-white/[0.02] hover:bg-black/[0.03] dark:hover:bg-white/[0.04] text-[#121316] dark:text-[#F3F4F6]';
+                  let optionStyles =
+                    'border-slate-200 dark:border-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200';
 
-                  if (hasAnswered) {
-                    if (isThisCorrect) {
-                      optionStyles = 'border-[#059669] bg-[#059669]/10 text-[#059669] font-medium';
-                    } else if (isThisSelected) {
-                      optionStyles = 'border-[#DC2626] bg-[#DC2626]/10 text-[#DC2626]';
+                  if (isAnswered) {
+                    if (isRightChoice) {
+                      optionStyles =
+                        'border-emerald-400 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200 font-semibold';
+                    } else if (isSelected && !isRightChoice) {
+                      optionStyles =
+                        'border-rose-400 bg-rose-50 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200 font-semibold';
                     } else {
-                      optionStyles = 'border-black/[0.04] dark:border-white/[0.04] opacity-50';
+                      optionStyles = 'opacity-50 border-slate-200 dark:border-slate-800';
                     }
                   }
 
                   return (
                     <button
                       key={optIdx}
-                      disabled={hasAnswered}
+                      type="button"
+                      disabled={isAnswered}
                       onClick={() => handleSelectOption(qIdx, optIdx)}
-                      className={`w-full text-left p-3.5 rounded-xl border transition flex items-center justify-between text-xs ${optionStyles}`}
+                      className={`w-full text-left p-3.5 rounded-xl border transition text-xs sm:text-sm flex items-center justify-between gap-3 ${optionStyles}`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
-                          {String.fromCharCode(65 + optIdx)}
-                        </span>
-                        <span>{opt}</span>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                            isSelected
+                              ? isRightChoice
+                                ? 'border-emerald-600 bg-emerald-600 text-white'
+                                : 'border-rose-600 bg-rose-600 text-white'
+                              : 'border-slate-300 dark:border-slate-600'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </div>
+                        <span>{optionText}</span>
                       </div>
+
+                      {isAnswered && isRightChoice && (
+                        <span className="text-[11px] font-bold text-emerald-600">Correct Answer</span>
+                      )}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Explanation Disclosure */}
-              {hasAnswered && q.explanation && (
-                <div className="p-3.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] text-xs space-y-1">
-                  <span className="font-semibold text-[#868E96] uppercase text-[10px] tracking-wider block">
+              {/* Explanation Reveal */}
+              {isAnswered && mcq.explanation && (
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1 animate-in fade-in">
+                  <p className="font-bold uppercase tracking-wider text-[10px] text-slate-500 flex items-center gap-1">
+                    <HelpCircle className="w-3.5 h-3.5" />
                     Explanation
-                  </span>
-                  <p className="text-[#64666E] dark:text-[#94969E] leading-relaxed">
-                    {q.explanation}
                   </p>
+                  <p>{mcq.explanation}</p>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BadgeCheck, Search, ShieldX, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Search, ShieldX } from 'lucide-react';
 import { useVerifyCertificate } from './hooks';
 import { getErrorCode, getErrorMessage } from '../../lib/errors';
 
@@ -21,17 +21,10 @@ export const VerifyCertificatePage: React.FC = () => {
   const notFound = getErrorCode(verifyQuery.error) === 'CERTIFICATE_NOT_FOUND';
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-16 space-y-8 page-transition-enter">
-      <div className="text-center space-y-2">
-        <div className="w-12 h-12 rounded-2xl bg-[#0071E3]/10 text-[#0071E3] dark:text-[#32ADE6] flex items-center justify-center mx-auto shadow-xs">
-          <ShieldCheck className="w-6 h-6" />
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
-          Verify a Certificate
-        </h1>
-        <p className="text-xs sm:text-sm text-[#86868B]">
-          Enter the cryptographically signed verification code printed on the credential.
-        </p>
+    <div className="max-w-xl mx-auto px-4 py-12 space-y-6">
+      <div className="text-center space-y-1">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Verify a Certificate</h1>
+        <p className="text-sm text-slate-500">Enter the verification code printed on the certificate.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
@@ -43,49 +36,48 @@ export const VerifyCertificatePage: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="CERT-XXXXXXXXXXXX"
-          className="flex-1 px-4 py-2.5 bg-black/[0.03] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.08] rounded-full text-xs sm:text-sm font-mono text-[#1D1D1F] dark:text-[#F5F5F7] focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30"
+          className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           type="submit"
-          className="apple-btn-primary px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-full gap-1.5 shadow-sm"
+          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg"
         >
           <Search className="w-4 h-4" /> Verify
         </button>
       </form>
 
-      {verifyQuery.isLoading && <p className="text-center text-xs text-[#86868B]">Checking authenticity…</p>}
+      {verifyQuery.isLoading && <p className="text-center text-sm text-slate-500">Checking…</p>}
 
       {result && (
         <div
-          className="apple-card p-6 border-l-4 border-l-[#34C759] space-y-4 shadow-sm"
+          className="p-6 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/30 space-y-2"
           data-testid="verify-valid"
         >
-          <div className="flex items-center gap-2 font-bold text-sm text-[#34C759]">
-            <BadgeCheck className="w-5 h-5 flex-shrink-0" />
-            <span>Valid certificate</span>
-          </div>
-          <dl className="text-xs sm:text-sm grid grid-cols-3 gap-y-2 pt-1 border-t border-black/[0.04] dark:border-white/[0.06]">
-            <dt className="text-[#86868B]">Awarded to</dt>
-            <dd className="col-span-2 font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">{result.student_name}</dd>
-            <dt className="text-[#86868B]">Course</dt>
-            <dd className="col-span-2 font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">{result.course_title}</dd>
-            <dt className="text-[#86868B]">Instructor</dt>
-            <dd className="col-span-2 text-[#6E6E73] dark:text-[#98989D]">{result.instructor_name || '—'}</dd>
-            <dt className="text-[#86868B]">Issued</dt>
-            <dd className="col-span-2 text-[#6E6E73] dark:text-[#98989D]">{new Date(result.issued_at).toLocaleDateString()}</dd>
-            <dt className="text-[#86868B]">Code</dt>
-            <dd className="col-span-2 font-mono text-xs text-[#0071E3] dark:text-[#32ADE6] break-all">{result.verification_code}</dd>
+          <p className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-300">
+            <BadgeCheck className="w-5 h-5" /> Valid certificate
+          </p>
+          <dl className="text-sm grid grid-cols-3 gap-y-1">
+            <dt className="text-slate-500">Awarded to</dt>
+            <dd className="col-span-2 font-semibold text-slate-900 dark:text-white">{result.student_name}</dd>
+            <dt className="text-slate-500">Course</dt>
+            <dd className="col-span-2 font-semibold text-slate-900 dark:text-white">{result.course_title}</dd>
+            <dt className="text-slate-500">Instructor</dt>
+            <dd className="col-span-2 text-slate-800 dark:text-slate-200">{result.instructor_name || '—'}</dd>
+            <dt className="text-slate-500">Issued</dt>
+            <dd className="col-span-2 text-slate-800 dark:text-slate-200">{new Date(result.issued_at).toLocaleDateString()}</dd>
+            <dt className="text-slate-500">Code</dt>
+            <dd className="col-span-2 font-mono text-xs break-all">{result.verification_code}</dd>
           </dl>
         </div>
       )}
 
       {verifyQuery.error && (
-        <div className="apple-card p-6 border border-[#FF3B30]/20 bg-[#FF3B30]/5 text-center space-y-1.5">
-          <ShieldX className="w-7 h-7 text-[#FF3B30] mx-auto" />
-          <p className="font-bold text-sm text-[#FF3B30]">
+        <div className="p-6 rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/30 text-center space-y-1">
+          <ShieldX className="w-8 h-8 text-rose-500 mx-auto" />
+          <p className="font-bold text-rose-700 dark:text-rose-300">
             {notFound ? 'No certificate matches this code' : 'Verification failed'}
           </p>
-          {!notFound && <p className="text-xs text-[#86868B]">{getErrorMessage(verifyQuery.error)}</p>}
+          {!notFound && <p className="text-sm text-slate-500">{getErrorMessage(verifyQuery.error)}</p>}
         </div>
       )}
     </div>

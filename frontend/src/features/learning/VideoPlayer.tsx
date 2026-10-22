@@ -90,6 +90,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [persistPosition]);
 
+
   // Handle Pause
   const handlePause = () => {
     if (videoRef.current) {
@@ -114,13 +115,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   if (!videoUrl) {
     return (
       <div
-        className="w-full aspect-video bg-black/[0.03] dark:bg-[#131418] rounded-2xl flex flex-col items-center justify-center text-[#868E96] space-y-3 p-6 border border-black/[0.08] dark:border-white/[0.08]"
+        className="w-full aspect-video bg-slate-900 rounded-2xl flex flex-col items-center justify-center text-white/50 space-y-3 p-6 border border-slate-800 shadow-inner"
         data-testid="no-video-container"
       >
-        <VideoOff className="w-10 h-10 text-[#868E96]" />
+        <VideoOff className="w-12 h-12 text-slate-500" />
         <div className="text-center">
-          <p className="text-sm font-semibold text-[#121316] dark:text-[#F3F4F6]">No video stream for this lesson</p>
-          <p className="text-xs text-[#868E96] mt-1">
+          <p className="text-sm font-semibold text-slate-300">No video stream for this lesson</p>
+          <p className="text-xs text-slate-500 mt-1">
             Check the Reading Content and Transcript tabs below for this lesson's curriculum.
           </p>
         </div>
@@ -133,7 +134,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   if (embedUrl) {
     return (
-      <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-sm border border-black/[0.1] dark:border-white/[0.1] relative">
+      <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-lg border border-slate-800 relative">
         <iframe
           src={embedUrl}
           title="Lesson Video"
@@ -146,7 +147,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }
 
   return (
-    <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-sm border border-black/[0.1] dark:border-white/[0.1] group">
+    <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-xl border border-slate-800 group">
       <video
         ref={videoRef}
         src={videoUrl}
@@ -163,18 +164,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Playback progress & save indicator banner */}
       <div className="absolute top-3 right-3 flex items-center gap-2 pointer-events-none">
         {isSaving ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[11px] font-medium text-white/90 shadow">
-            <Loader2 className="w-3 h-3 animate-spin text-[#0066FF]" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-medium text-white/80 shadow">
+            <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
             Saving progress...
           </span>
         ) : isSaved ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#059669]/90 backdrop-blur-md text-[11px] font-semibold text-white shadow">
-            <Check className="w-3 h-3 text-white" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-950/80 backdrop-blur-md text-[11px] font-semibold text-emerald-300 shadow border border-emerald-800/50">
+            <Check className="w-3 h-3 text-emerald-400" />
             Progress saved ({formatTime(currentTime)})
           </span>
         ) : currentTime > 0 ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] font-mono text-white/80 shadow">
-            <PlayCircle className="w-3 h-3 text-[#0066FF]" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/50 backdrop-blur-md text-[11px] font-medium text-white/70 shadow">
+            <PlayCircle className="w-3 h-3 text-indigo-400" />
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         ) : null}

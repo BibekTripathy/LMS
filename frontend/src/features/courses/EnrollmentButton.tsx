@@ -28,10 +28,10 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     return (
       <button
         onClick={() => navigate(`/courses/${courseId}/learn`)}
-        className={`inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all ${className}`}
+        className={`inline-flex items-center justify-center gap-2 px-6 py-3 bg-frappe-teal hover:bg-frappe-sapphire text-frappe-base font-bold text-sm rounded-xl shadow-sm transition-all ${className}`}
       >
         <CheckCircle2 className="w-4 h-4" />
-        <span>Enrolled &bull; Continue Learning</span>
+        <span>Enrolled • Continue Learning</span>
       </button>
     );
   }
@@ -63,7 +63,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
       <button
         onClick={handleEnroll}
         disabled={enrollMutation.isPending}
-        className={`w-full btn-primary justify-center ${className}`}
+        className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-frappe-blue hover:bg-frappe-sapphire disabled:opacity-60 text-white font-bold text-sm rounded-xl shadow-sm transition-all ${className}`}
       >
         {enrollMutation.isPending ? (
           <>
@@ -79,7 +79,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
       </button>
 
       {errorMessage && (
-        <div className="flex items-center gap-1.5 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900">
+        <div className="flex items-center gap-1.5 p-2.5 rounded-lg bg-frappe-red/10 text-frappe-red text-xs font-medium border border-frappe-red/30">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>{errorMessage}</span>
         </div>
