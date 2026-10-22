@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Compass, Sparkles, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Compass, Sparkles, CheckCircle2 } from 'lucide-react';
 
 import { useAuth } from '../../context/auth';
 import { useMyEnrollments } from '../enrollments/hooks';
@@ -35,14 +35,13 @@ export const StudentDashboard: React.FC = () => {
             <div key={i} className="w-4 h-4 rounded-full border-2 border-latte-surface1 dark:border-frappe-surface1 bg-latte-base dark:bg-frappe-base" />
           ))}
         </div>
-        <div className="ml-14 relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-latte-surface0 dark:bg-frappe-surface0 text-latte-subtext1 dark:text-frappe-subtext1 text-xs font-semibold border border-latte-surface1 dark:border-frappe-surface1">
-            <GraduationCap className="w-4 h-4 text-frappe-blue" />
-            <span>Student Learning Hub</span>
-          </div>
+        <div className="ml-14 relative z-10 space-y-1.5">
           <h1 className="font-notebook text-3xl sm:text-5xl font-bold text-latte-text dark:text-frappe-text">
             Welcome back, <span className="text-frappe-blue">{user?.first_name || user?.email?.split('@')[0] || 'Learner'}!</span>
           </h1>
+          <p className="text-xs font-semibold text-latte-flamingo dark:text-frappe-flamingo tracking-wide">
+            Student Learning Hub
+          </p>
           <p className="text-latte-subtext1 dark:text-frappe-subtext1 text-sm sm:text-base">
             Pick up right where you left off, or explore new courses.
           </p>

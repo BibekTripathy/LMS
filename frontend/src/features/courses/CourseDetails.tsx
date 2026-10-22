@@ -132,7 +132,7 @@ export const CourseDetails: React.FC = () => {
         <div className="text-center mt-6">
           <Link
             to="/courses"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-frappe-blue hover:text-frappe-sapphire"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Course Catalogue
@@ -148,7 +148,7 @@ export const CourseDetails: React.FC = () => {
       <div>
         <Link
           to="/courses"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-indigo-600 transition"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-latte-subtext0 hover:text-frappe-blue transition"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Catalogue
@@ -175,27 +175,27 @@ export const CourseDetails: React.FC = () => {
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-latte-text dark:text-frappe-text tracking-tight leading-tight">
             {course.title}
           </h1>
 
-          <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+          <p className="text-base text-latte-subtext1 dark:text-frappe-subtext1 leading-relaxed whitespace-pre-line">
             {course.description}
           </p>
 
-          <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-6 text-sm text-latte-subtext0 dark:text-frappe-subtext0 pt-2 border-t border-latte-surface0 dark:border-frappe-surface1">
             <div className="flex items-center gap-2">
-              <UserIcon className="w-4 h-4 text-indigo-600" />
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
+              <UserIcon className="w-4 h-4 text-frappe-blue" />
+              <span className="font-semibold text-latte-text dark:text-frappe-subtext1">
                 {course.instructor_name || 'Instructor'}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-slate-400" />
+              <Layers className="w-4 h-4 text-latte-overlay0" />
               <span>{course.modules?.length ?? course.modules_count ?? 0} modules</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4 text-slate-400" />
+              <BookOpen className="w-4 h-4 text-latte-overlay0" />
               <span>{course.lessons_count ?? 0} lessons</span>
             </div>
           </div>
@@ -251,12 +251,12 @@ export const CourseDetails: React.FC = () => {
       <div className="space-y-5 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Course Curriculum</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-2xl font-bold text-latte-text dark:text-frappe-text">Course Curriculum</h2>
+            <p className="text-sm text-latte-subtext0">
               Explore the structured modules and interactive video lessons included in this course.
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-latte-subtext0">
             {course.modules?.length ?? 0} modules
           </span>
         </div>
@@ -268,29 +268,29 @@ export const CourseDetails: React.FC = () => {
               return (
                 <div
                   key={module.id}
-                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm"
+                  className="bg-latte-base dark:bg-frappe-base rounded-2xl border border-latte-surface0 dark:border-frappe-surface1 overflow-hidden shadow-sm"
                 >
                   <button
                     onClick={() => toggleModule(module.id)}
-                    className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                    className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-latte-mantle dark:hover:bg-slate-800/50 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center">
+                      <span className="w-7 h-7 rounded-lg bg-frappe-blue/10 dark:bg-frappe-blue/20 text-frappe-blue dark:text-indigo-400 text-xs font-bold flex items-center justify-center">
                         {moduleIdx + 1}
                       </span>
                       <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        <h3 className="text-base font-bold text-latte-text dark:text-frappe-text">
                           {module.title}
                         </h3>
                         {module.description && (
-                          <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                          <p className="text-xs text-latte-subtext0 line-clamp-1 mt-0.5">
                             {module.description}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex items-center gap-3 text-xs text-latte-subtext0">
                       <span>{module.lessons?.length || 0} lessons</span>
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4" />
@@ -301,24 +301,24 @@ export const CourseDetails: React.FC = () => {
                   </button>
 
                   {isExpanded && module.lessons && module.lessons.length > 0 && (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-latte-mantle/50 dark:bg-frappe-mantle/40 border-t border-latte-surface0 dark:border-frappe-surface1">
                       {module.lessons.map((lesson, lessonIdx) => (
                         <div
                           key={lesson.id}
-                          className="px-6 py-3.5 flex items-center justify-between text-xs hover:bg-white dark:hover:bg-slate-800/80 transition"
+                          className="px-6 py-3.5 flex items-center justify-between text-xs hover:bg-latte-base dark:hover:bg-slate-800/80 transition"
                         >
                           <div className="flex items-center gap-3">
                             {lesson.video_url ? (
-                              <PlayCircle className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                              <PlayCircle className="w-4 h-4 text-frappe-blue flex-shrink-0" />
                             ) : (
-                              <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <FileText className="w-4 h-4 text-latte-overlay0 flex-shrink-0" />
                             )}
-                            <span className="font-medium text-slate-800 dark:text-slate-200">
+                            <span className="font-medium text-latte-text dark:text-frappe-text">
                               {moduleIdx + 1}.{lessonIdx + 1} {lesson.title}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3 text-slate-400">
+                          <div className="flex items-center gap-3 text-latte-overlay0">
                             {lesson.is_required && (
                               <Badge variant="slate" size="sm">
                                 Required
@@ -327,14 +327,14 @@ export const CourseDetails: React.FC = () => {
                             {isEnrolled && completedLessonIds.has(lesson.id) ? (
                               <Link
                                 to={`/courses/${course.id}/learn/${lesson.id}`}
-                                className="flex items-center gap-1 font-semibold text-emerald-600 hover:text-emerald-700"
+                                className="flex items-center gap-1 font-semibold text-frappe-teal hover:text-frappe-teal"
                               >
                                 <CheckCircle className="w-3.5 h-3.5" /> Review
                               </Link>
                             ) : isEnrolled ? (
                               <Link
                                 to={`/courses/${course.id}/learn/${lesson.id}`}
-                                className="font-semibold text-indigo-600 hover:text-indigo-700"
+                                className="font-semibold text-frappe-blue hover:text-frappe-sapphire"
                               >
                                 Start
                               </Link>
@@ -353,7 +353,7 @@ export const CourseDetails: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="p-8 text-center text-sm text-slate-500 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <div className="p-8 text-center text-sm text-latte-subtext0 bg-latte-base dark:bg-frappe-base rounded-2xl border border-latte-surface0 dark:border-frappe-surface1">
             No modules have been added to this course yet.
           </div>
         )}

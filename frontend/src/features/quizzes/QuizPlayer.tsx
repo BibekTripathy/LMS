@@ -124,8 +124,8 @@ export const QuizPlayer: React.FC = () => {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+          <div className="w-10 h-10 border-4 border-frappe-blue/20 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
             Initializing assessment session...
           </p>
         </div>
@@ -144,14 +144,14 @@ export const QuizPlayer: React.FC = () => {
         {getErrorCode(startQuery.error) === 'MAX_ATTEMPTS_REACHED' ? (
           <Link
             to={`/quizzes/${id}/results`}
-            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
+            className="inline-block px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-medium text-sm rounded-xl transition"
           >
             View Your Results
           </Link>
         ) : (
           <Link
             to="/courses"
-            className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
+            className="inline-block px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-medium text-sm rounded-xl transition"
           >
             Return to Courses
           </Link>
@@ -172,7 +172,7 @@ export const QuizPlayer: React.FC = () => {
         </p>
         <button
           onClick={() => navigate(-1)}
-          className="inline-block px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition"
+          className="inline-block px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-medium text-sm rounded-xl transition"
         >
           Go Back
         </button>
@@ -190,7 +190,7 @@ export const QuizPlayer: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 rounded uppercase">
+            <span className="text-xs font-bold px-2 py-0.5 bg-frappe-blue/10 text-frappe-blue dark:bg-frappe-blue/15 dark:text-frappe-lavender rounded uppercase">
               Official Assessment
             </span>
             <span className="text-xs text-slate-500">Pass threshold: {quiz.pass_percentage}%</span>
@@ -205,7 +205,7 @@ export const QuizPlayer: React.FC = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-sm font-bold border ${
                 timeLeftSeconds <= 120
                   ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse'
-                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                  : 'bg-latte-mantle dark:bg-frappe-surface0 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
               }`}
             >
               <Clock className="w-4 h-4" />
@@ -216,7 +216,7 @@ export const QuizPlayer: React.FC = () => {
           <button
             onClick={() => setShowSubmitModal(true)}
             disabled={submitting}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
             Finish & Submit
@@ -227,7 +227,7 @@ export const QuizPlayer: React.FC = () => {
       {/* Progress Indicator */}
       <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
         <div
-          className="bg-indigo-600 h-2 transition-all duration-300"
+          className="bg-frappe-blue h-2 transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -236,7 +236,7 @@ export const QuizPlayer: React.FC = () => {
         {/* Main Question Card */}
         <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+            <span className="text-xs font-bold text-frappe-blue uppercase tracking-wider">
               Question {currentIndex + 1} of {questions.length}
             </span>
             <span className="text-xs text-slate-400 font-medium">{currentQ.marks || 1} mark(s)</span>
@@ -258,14 +258,14 @@ export const QuizPlayer: React.FC = () => {
                     onClick={() => handleSelectOption(currentQ.id, opt.id)}
                     className={`w-full text-left p-4 rounded-xl border transition flex items-center gap-3.5 ${
                       isSelected
-                        ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-200 font-semibold shadow-sm'
+                        ? 'border-frappe-blue/20 bg-frappe-blue/10/70 dark:bg-frappe-blue/15/40 text-indigo-950 dark:text-indigo-200 font-semibold shadow-sm'
                         : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition ${
                         isSelected
-                          ? 'border-indigo-600 bg-indigo-600 text-white'
+                          ? 'border-frappe-blue/20 bg-frappe-blue text-white'
                           : 'border-slate-300 dark:border-slate-600'
                       }`}
                     >
@@ -282,7 +282,7 @@ export const QuizPlayer: React.FC = () => {
             <button
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition disabled:opacity-30"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition disabled:opacity-30"
             >
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
@@ -290,7 +290,7 @@ export const QuizPlayer: React.FC = () => {
             {currentIndex < questions.length - 1 ? (
               <button
                 onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-semibold text-xs rounded-xl shadow-sm transition"
               >
                 Next Question <ChevronRight className="w-4 h-4" />
               </button>
@@ -326,11 +326,11 @@ export const QuizPlayer: React.FC = () => {
                   onClick={() => setCurrentIndex(idx)}
                   className={`h-10 rounded-xl font-bold text-xs flex items-center justify-center transition border ${
                     isCurrent
-                      ? 'border-indigo-600 ring-2 ring-indigo-500/30'
+                      ? 'border-frappe-blue/20 ring-2 ring-indigo-500/30'
                       : 'border-transparent'
                   } ${
                     isAnswered
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                      ? 'bg-frappe-teal/15 text-frappe-teal dark:bg-frappe-teal/20 dark:text-frappe-teal'
                       : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200'
                   }`}
                 >
@@ -358,8 +358,8 @@ export const QuizPlayer: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ready to submit?</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              You have answered <span className="font-bold text-indigo-600">{answeredCount}</span> of{' '}
+            <p className="text-sm text-latte-subtext1 dark:text-frappe-subtext1">
+              You have answered <span className="font-bold text-frappe-blue">{answeredCount}</span> of{' '}
               <span className="font-bold">{questions.length}</span> questions.
               {answeredCount < questions.length && (
                 <span className="block mt-2 text-amber-600 font-semibold text-xs">
@@ -380,7 +380,7 @@ export const QuizPlayer: React.FC = () => {
                 type="button"
                 disabled={submitting}
                 onClick={submitQuiz}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-2.5 bg-frappe-sapphire hover:bg-frappe-blue text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
               >
                 {submitting ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

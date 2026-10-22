@@ -69,7 +69,7 @@ export const QuizLeaderboardPage: React.FC = () => {
       </div>
 
       {data.my_entry && (
-        <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-sm">
+        <div className="p-4 rounded-2xl bg-frappe-blue/10 dark:bg-frappe-blue/15 border border-frappe-blue/20 dark:border-frappe-blue/30 text-sm">
           Your rank: <strong>#{data.my_entry.rank}</strong> with {data.my_entry.highest_percentage}% (
           {data.my_entry.total_attempts} attempt{data.my_entry.total_attempts === 1 ? '' : 's'})
         </div>
@@ -80,7 +80,7 @@ export const QuizLeaderboardPage: React.FC = () => {
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
           <table className="w-full text-sm" data-testid="leaderboard-table">
-            <thead className="text-xs uppercase text-slate-500 bg-slate-50 dark:bg-slate-800/50">
+            <thead className="text-xs uppercase text-slate-500 bg-latte-mantle dark:bg-frappe-surface0/50">
               <tr>
                 <th className="px-4 py-3 text-left">Rank</th>
                 <th className="px-4 py-3 text-left">Learner</th>
@@ -93,14 +93,14 @@ export const QuizLeaderboardPage: React.FC = () => {
               {data.leaderboard.map((entry) => {
                 const isMe = entry.student_id === user?.id;
                 return (
-                  <tr key={entry.student_id} className={isMe ? 'bg-indigo-50/60 dark:bg-indigo-950/30' : ''}>
+                  <tr key={entry.student_id} className={isMe ? 'bg-frappe-blue/10 dark:bg-frappe-blue/10' : ''}>
                     <td className="px-4 py-3 font-bold">
                       <span className="inline-flex items-center gap-1">
                         {entry.rank <= 3 && <Medal className={`w-4 h-4 ${medalColour[entry.rank - 1]}`} />}#{entry.rank}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-semibold text-slate-800 dark:text-slate-100">
+                      <span className="font-semibold text-latte-text dark:text-frappe-text">
                         {entry.student_name}
                         {isMe && ' (you)'}
                       </span>
@@ -113,7 +113,7 @@ export const QuizLeaderboardPage: React.FC = () => {
                     <td className="px-4 py-3 text-right">
                       <span
                         className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
-                          entry.passed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                          entry.passed ? 'bg-frappe-teal/20 text-frappe-teal' : 'bg-rose-100 text-rose-700'
                         }`}
                       >
                         {entry.passed ? 'Passed' : 'Not yet'}

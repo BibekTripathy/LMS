@@ -89,7 +89,7 @@ export const StudyCentrePage: React.FC = () => {
       ) : (
         <>
           <div className="flex flex-wrap gap-3">
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex flex-col gap-1">
+            <label className="text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1 flex flex-col gap-1">
               Course
               <select className={selectClass} value={courseId} onChange={(e) => { setCourseId(e.target.value); setSelectedId(null); }}>
                 {courses.map((c) => (
@@ -97,7 +97,7 @@ export const StudyCentrePage: React.FC = () => {
                 ))}
               </select>
             </label>
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex flex-col gap-1">
+            <label className="text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1 flex flex-col gap-1">
               Lesson
               <select className={selectClass} value={lessonId} onChange={(e) => { setLessonId(e.target.value); setSelectedId(null); setEditing(false); }}>
                 {lessons.map((l) => (
@@ -163,7 +163,7 @@ export const StudyCentrePage: React.FC = () => {
                       <button
                         onClick={() => publish.mutate(selected.id)}
                         disabled={publish.isPending}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white disabled:opacity-50"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-frappe-teal text-frappe-base disabled:opacity-50"
                       >
                         Publish to students
                       </button>
@@ -172,13 +172,13 @@ export const StudyCentrePage: React.FC = () => {
                       <button
                         onClick={() => convert.mutate(selected.id)}
                         disabled={convert.isPending}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white disabled:opacity-50"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-frappe-blue text-white disabled:opacity-50"
                       >
                         Convert to graded quiz
                       </button>
                     )}
                     {selected.converted_quiz && (
-                      <Link to={`/instructor/courses/${courseId}/quizzes`} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700">
+                      <Link to={`/instructor/courses/${courseId}/quizzes`} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-frappe-blue/10 text-frappe-blue">
                         Open in quiz builder
                       </Link>
                     )}
@@ -188,7 +188,7 @@ export const StudyCentrePage: React.FC = () => {
                   <p role="alert" className="text-xs text-rose-600">{getErrorMessage(actionError)}</p>
                 )}
                 {convert.isSuccess && (
-                  <p className="text-xs text-emerald-700">
+                  <p className="text-xs text-frappe-teal">
                     Draft quiz “{convert.data.title}” created with {convert.data.total_questions} questions. Review and publish it in the quiz builder.
                   </p>
                 )}

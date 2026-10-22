@@ -44,7 +44,7 @@ export const StudentAnalyticsView: React.FC = () => {
                 {user?.role || 'STUDENT'}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-latte-subtext1 dark:text-frappe-subtext1">
               {user?.email}
             </p>
           </div>
@@ -53,13 +53,13 @@ export const StudentAnalyticsView: React.FC = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 dark:text-indigo-300 text-xs font-bold rounded-xl transition"
+            className="px-4 py-2 bg-frappe-blue/10 hover:bg-frappe-blue/20 text-frappe-blue dark:bg-frappe-blue/15 dark:hover:bg-frappe-blue/25 dark:text-frappe-lavender text-xs font-bold rounded-xl transition"
           >
             My Learning Dashboard
           </Link>
           <Link
             to="/courses"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition"
+            className="px-4 py-2 bg-frappe-sapphire hover:bg-frappe-blue text-white text-xs font-bold rounded-xl shadow-sm transition"
           >
             Browse Courses
           </Link>
@@ -87,7 +87,7 @@ export const StudentAnalyticsView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Total Enrolled */}
             <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-xl bg-frappe-blue/10 dark:bg-frappe-blue/20 text-frappe-blue dark:text-frappe-blue flex items-center justify-center font-bold">
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
@@ -100,7 +100,7 @@ export const StudentAnalyticsView: React.FC = () => {
 
             {/* Completed Courses */}
             <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-frappe-teal dark:text-frappe-teal flex items-center justify-center font-bold">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
@@ -150,8 +150,8 @@ export const StudentAnalyticsView: React.FC = () => {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-600 dark:text-slate-300">Average Quiz Accuracy</span>
-                    <span className="text-indigo-600 dark:text-indigo-400">{data.average_quiz_percentage}%</span>
+                    <span className="text-latte-subtext1 dark:text-frappe-subtext1">Average Quiz Accuracy</span>
+                    <span className="text-frappe-blue dark:text-frappe-blue">{data.average_quiz_percentage}%</span>
                   </div>
                   <ProgressBar
                     value={data.average_quiz_percentage}
@@ -162,8 +162,8 @@ export const StudentAnalyticsView: React.FC = () => {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-600 dark:text-slate-300">Course Completion Rate</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">
+                    <span className="text-latte-subtext1 dark:text-frappe-subtext1">Course Completion Rate</span>
+                    <span className="text-frappe-teal dark:text-frappe-teal">
                       {data.total_enrolled > 0
                         ? Math.round((data.completed_courses / data.total_enrolled) * 100)
                         : 0}
@@ -212,7 +212,7 @@ export const StudentAnalyticsView: React.FC = () => {
                   </div>
                 ) : (
                   <table className="w-full text-left text-xs" data-testid="recent-attempts-table">
-                    <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
+                    <thead className="bg-latte-mantle dark:bg-frappe-surface0/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className="py-3 px-6">Quiz Title</th>
                         <th className="py-3 px-6">Course</th>
@@ -225,7 +225,7 @@ export const StudentAnalyticsView: React.FC = () => {
                       {data.recent_attempts.map((attempt, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
                           <td className="py-3.5 px-6 font-bold text-slate-900 dark:text-white">
-                            <Link to={`/quizzes/${attempt.quiz_id}/results`} className="hover:text-indigo-600">
+                            <Link to={`/quizzes/${attempt.quiz_id}/results`} className="hover:text-frappe-blue">
                               {attempt.quiz_title}
                             </Link>
                           </td>

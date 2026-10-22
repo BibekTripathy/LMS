@@ -27,23 +27,24 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     lg: 'h-4',
   }[size];
 
+  // Map legacy indigo/emerald/purple to Catppuccin equivalents
   const variantClasses = {
-    indigo: 'bg-indigo-600',
-    emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500',
-    purple: 'bg-purple-600',
+    indigo: 'bg-frappe-blue',
+    emerald: 'bg-frappe-teal',
+    amber: 'bg-frappe-peach',
+    purple: 'bg-frappe-mauve',
   }[variant];
 
   return (
     <div className={`w-full ${className}`}>
       {(label || showPercentage) && (
-        <div className="flex justify-between items-center mb-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex justify-between items-center mb-1 text-xs font-medium text-latte-subtext1 dark:text-frappe-subtext1">
           {label && <span>{label}</span>}
           {showPercentage && <span className="font-semibold">{percentage}%</span>}
         </div>
       )}
       <div
-        className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden ${sizeClasses}`}
+        className={`w-full bg-latte-surface0 dark:bg-frappe-surface1 rounded-full overflow-hidden ${sizeClasses}`}
         role="progressbar"
         aria-valuenow={percentage}
         aria-valuemin={0}

@@ -46,7 +46,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-frappe-teal bg-frappe-teal/10 dark:bg-frappe-teal/20 px-2 py-0.5 rounded">
             Interactive Self-Check Practice
           </span>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
@@ -64,7 +64,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
             title="Reset practice"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -96,7 +96,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                 !isAnswered
                   ? 'border-slate-200 dark:border-slate-800'
                   : isCorrect
-                  ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/10'
+                  ? 'border-frappe-teal/30 dark:border-frappe-teal/50 bg-frappe-teal/5'
                   : 'border-rose-300 dark:border-rose-800 bg-rose-50/10'
               }`}
             >
@@ -115,7 +115,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                   <span
                     className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
                       isCorrect
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        ? 'bg-frappe-teal/15 text-frappe-teal dark:bg-frappe-teal/20 dark:text-frappe-teal'
                         : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                     }`}
                   >
@@ -137,7 +137,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                   if (isAnswered) {
                     if (isRightChoice) {
                       optionStyles =
-                        'border-emerald-400 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200 font-semibold';
+                        'border-frappe-teal/50 bg-frappe-teal/10 text-frappe-teal dark:bg-frappe-teal/20 dark:text-frappe-teal font-semibold';
                     } else if (isSelected && !isRightChoice) {
                       optionStyles =
                         'border-rose-400 bg-rose-50 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200 font-semibold';
@@ -159,7 +159,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                           className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 text-xs font-bold ${
                             isSelected
                               ? isRightChoice
-                                ? 'border-emerald-600 bg-emerald-600 text-white'
+                                ? 'border-frappe-teal bg-frappe-teal text-frappe-base'
                                 : 'border-rose-600 bg-rose-600 text-white'
                               : 'border-slate-300 dark:border-slate-600'
                           }`}
@@ -170,7 +170,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
                       </div>
 
                       {isAnswered && isRightChoice && (
-                        <span className="text-[11px] font-bold text-emerald-600">Correct Answer</span>
+                        <span className="text-[11px] font-bold text-frappe-teal">Correct Answer</span>
                       )}
                     </button>
                   );
@@ -179,7 +179,7 @@ export const MCQPracticeViewer: React.FC<MCQPracticeViewerProps> = ({
 
               {/* Explanation Reveal */}
               {isAnswered && mcq.explanation && (
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1 animate-in fade-in">
+                <div className="p-3.5 bg-latte-mantle dark:bg-frappe-surface0/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-latte-subtext1 dark:text-frappe-subtext1 space-y-1 animate-in fade-in">
                   <p className="font-bold uppercase tracking-wider text-[10px] text-slate-500 flex items-center gap-1">
                     <HelpCircle className="w-3.5 h-3.5" />
                     Explanation

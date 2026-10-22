@@ -28,7 +28,7 @@ export const ResourceEditor: React.FC<ResourceEditorProps> = ({ resource, onDone
 
   return (
     <form onSubmit={save} className="space-y-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+      <label className="block text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
         Title
         <input
           className={inputClass}
@@ -57,7 +57,7 @@ export const ResourceEditor: React.FC<ResourceEditorProps> = ({ resource, onDone
       )}
 
       <div className="flex gap-2">
-        <button type="submit" disabled={update.isPending} className="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl disabled:opacity-50">
+        <button type="submit" disabled={update.isPending} className="px-4 py-2 bg-frappe-blue text-white text-xs font-semibold rounded-xl disabled:opacity-50">
           {update.isPending ? 'Saving…' : 'Save draft'}
         </button>
         <button type="button" onClick={onDone} className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700">
@@ -82,7 +82,7 @@ const FlashcardsFields: React.FC<{ value: FlashcardContent; onChange: (c: Flashc
           </button>
         </div>
       ))}
-      <button type="button" onClick={() => onChange({ ...value, cards: [...value.cards, { front: '', back: '' }] })} className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600">
+      <button type="button" onClick={() => onChange({ ...value, cards: [...value.cards, { front: '', back: '' }] })} className="inline-flex items-center gap-1 text-xs font-semibold text-frappe-blue">
         <Plus className="w-4 h-4" /> Add card
       </button>
     </div>
@@ -91,15 +91,15 @@ const FlashcardsFields: React.FC<{ value: FlashcardContent; onChange: (c: Flashc
 
 const SummaryFields: React.FC<{ value: SummaryContent; onChange: (c: SummaryContent) => void }> = ({ value, onChange }) => (
   <div className="space-y-3">
-    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+    <label className="block text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
       Summary
       <textarea className={inputClass} rows={5} value={value.summary} onChange={(e) => onChange({ ...value, summary: e.target.value })} />
     </label>
-    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+    <label className="block text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
       Key points (one per line)
       <textarea className={inputClass} rows={4} defaultValue={value.key_points.join('\n')} onChange={(e) => onChange({ ...value, key_points: lines(e.target.value) })} />
     </label>
-    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+    <label className="block text-xs font-semibold text-latte-subtext1 dark:text-frappe-subtext1">
       Revision topics (one per line)
       <textarea className={inputClass} rows={3} defaultValue={value.revision_topics.join('\n')} onChange={(e) => onChange({ ...value, revision_topics: lines(e.target.value) })} />
     </label>

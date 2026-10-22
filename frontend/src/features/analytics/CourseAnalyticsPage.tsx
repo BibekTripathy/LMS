@@ -106,7 +106,7 @@ export const CourseAnalyticsPage: React.FC = () => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {data.quizzes_breakdown.map((quiz) => (
                     <tr key={quiz.quiz_id}>
-                      <td className="py-2 font-semibold text-slate-800 dark:text-slate-100">
+                      <td className="py-2 font-semibold text-latte-text dark:text-frappe-text">
                         {quiz.title}
                         {quiz.status !== 'PUBLISHED' && <span className="ml-1 text-slate-400">({quiz.status.toLowerCase()})</span>}
                       </td>
@@ -114,7 +114,7 @@ export const CourseAnalyticsPage: React.FC = () => {
                       <td className="py-2 text-right">{quiz.average_score}%</td>
                       <td className="py-2 text-right">{quiz.pass_rate}%</td>
                       <td className="py-2 text-right">
-                        <Link to={`/quizzes/${quiz.quiz_id}/leaderboard`} className="text-indigo-600 hover:underline">
+                        <Link to={`/quizzes/${quiz.quiz_id}/leaderboard`} className="text-frappe-blue hover:underline">
                           Leaderboard
                         </Link>
                       </td>
@@ -146,7 +146,7 @@ export const CourseAnalyticsPage: React.FC = () => {
                 {data.students.map((s) => (
                   <tr key={s.student_id}>
                     <td className="py-2">
-                      <span className="font-semibold text-slate-800 dark:text-slate-100">{s.student_name}</span>
+                      <span className="font-semibold text-latte-text dark:text-frappe-text">{s.student_name}</span>
                       <span className="block text-slate-400">{s.student_email}</span>
                     </td>
                     <td className="py-2 pr-4">
