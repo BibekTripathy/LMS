@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getErrorMessage } from '../../lib/errors';
 import type { AIGeneratableType, AIResource } from '../../types';
 import { useStudyResourceMutations } from './hooks';
-import { AlertCircle, BookOpen, Brain, Layers, Sparkles } from 'lucide-react';
+import { AlertCircle, BookOpen, Brain, Layers, FileText } from 'lucide-react';
 
 interface AIResourceGeneratorProps {
   lessonId: string;
@@ -35,7 +35,7 @@ export const AIResourceGenerator: React.FC<AIResourceGeneratorProps> = ({ lesson
   return (
     <form onSubmit={handleGenerate} className="p-5 lms-card space-y-4">
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#0066FF]" />
+        <FileText className="w-4 h-4 text-[#0066FF]" />
         <h2 className="text-sm font-bold text-[#121316] dark:text-[#F3F4F6]">
           Generate a draft from this lesson
         </h2>

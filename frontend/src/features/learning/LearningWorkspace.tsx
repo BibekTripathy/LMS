@@ -4,7 +4,7 @@ import {
   BookOpen,
   AlignLeft,
   FileText,
-  Sparkles,
+  Layers,
   Menu,
   X,
 } from 'lucide-react';
@@ -358,8 +358,8 @@ export const LearningWorkspace: React.FC = () => {
                           to="/study-centre"
                           className="btn-secondary px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 inline-flex"
                         >
-                          <Sparkles className="w-3.5 h-3.5 text-[#0066FF]" />
-                          Open AI Study Tools
+                          <Layers className="w-3.5 h-3.5 text-[#0066FF]" />
+                          Open Study Centre
                         </Link>
                       </div>
                     </div>

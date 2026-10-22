@@ -11,7 +11,7 @@ import { ResourceEditor } from './ResourceEditor';
 import { RevisionPanel } from './RevisionPanel';
 import { SummaryViewer } from './SummaryViewer';
 import { useLessonResources, useMyEnrollments, useStudyResourceMutations } from './hooks';
-import { AlertCircle, Sparkles } from 'lucide-react';
+import { AlertCircle, Layers } from 'lucide-react';
 
 const TYPE_LABELS: Record<string, string> = {
   FLASHCARDS: 'Flashcards',
@@ -66,12 +66,12 @@ export const StudyCentrePage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header Banner */}
       <div className="apple-card p-6 sm:p-8 bg-gradient-to-br from-white via-[#FAFAFC] to-[#F2F2F7] dark:from-[#1C1C1E] dark:via-[#161618] dark:to-[#0D0D0E] space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#AF52DE]/10 text-[#AF52DE] text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Cognify Intelligence Suite</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0066FF]/10 text-[#0066FF] text-xs font-semibold">
+          <Layers className="w-3.5 h-3.5" />
+          <span>Academic Study Tools</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] tracking-tight">
-          AI Study Centre
+          Study Centre
         </h1>
         <p className="text-xs sm:text-sm text-[#86868B] max-w-2xl leading-relaxed">
           {isInstructor

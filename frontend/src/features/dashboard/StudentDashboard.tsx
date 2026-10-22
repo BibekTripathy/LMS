@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Compass, Sparkles, CheckCircle2 } from 'lucide-react';
+import { BookOpen, GraduationCap, Compass, Layers, CheckCircle2 } from 'lucide-react';
 
 import { useAuth } from '../../context/auth';
 import { useMyEnrollments } from '../enrollments/hooks';
@@ -69,9 +69,9 @@ export const StudentDashboard: React.FC = () => {
 
         <div className="apple-card p-5 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#86868B]">AI Study Centre</span>
-            <div className="w-8 h-8 rounded-full bg-[#AF52DE]/10 text-[#AF52DE] flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#86868B]">Study Centre</span>
+            <div className="w-8 h-8 rounded-full bg-[#0066FF]/10 text-[#0066FF] flex items-center justify-center">
+              <Layers className="w-4 h-4" />
             </div>
           </div>
           <div>
