@@ -188,7 +188,7 @@ export const CertificatesPage: React.FC = () => {
                       type="button"
                       onClick={() => handleClaim(enrollment.course)}
                       disabled={pending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-200 hover:bg-indigo-400 text-white text-xs font-semibold rounded-lg disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-300 hover:bg-pink-400 text-white text-xs font-semibold rounded-lg disabled:opacity-50"
                     >
                       {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       Claim certificate
